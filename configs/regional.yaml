@@ -1,0 +1,22 @@
+# Craton-regional: one tectonic region on one rented data-centre GPU.
+# Declared now so the code never assumes the laptop; it first runs in P12.
+name: regional
+status: planned
+description: One tectonic region (e.g. the whole Mediterranean) on a single A100-class GPU.
+target_hardware: one NVIDIA A100 80 GB (bf16)
+params_range: [50_000_000, 150_000_000]
+
+model:
+  d_model: 768        # GPT-2 small width
+  n_layers: 12
+  n_heads: 12
+  context_tokens: 8192
+  dropout: 0.1
+
+train:
+  precision: bf16
+  micro_batch: 32
+  grad_accum: 8
+  lr: 2.0e-4
+  weight_decay: 0.1
+  seeds: [0, 1, 2]

@@ -1,0 +1,22 @@
+# Craton-mini: the laptop twin. Central Italy, an RTX 2060 with 6 GB of VRAM.
+# Same code as the big versions; only this file is different.
+name: mini
+status: active
+description: Laptop twin for central Italy. Every phase runs here first.
+target_hardware: NVIDIA RTX 2060, 6 GB VRAM, 16 GB RAM (Turing, fp16 + GradScaler, no bf16)
+params_range: [2_000_000, 5_000_000]
+
+model:
+  d_model: 256        # features per token
+  n_layers: 6
+  n_heads: 8          # 256 / 8 = 32 features per head
+  context_tokens: 1024
+  dropout: 0.1
+
+train:
+  precision: fp16
+  micro_batch: 16
+  grad_accum: 4       # effective batch 64
+  lr: 3.0e-4
+  weight_decay: 0.05
+  seeds: [0, 1, 2]
