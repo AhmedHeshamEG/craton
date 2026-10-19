@@ -1,0 +1,19 @@
+# environments
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# data and checkpoints live outside git; results/ JSONs are committed
+data/
+checkpoints/
+*.ckpt
+*.pt
+
+# editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

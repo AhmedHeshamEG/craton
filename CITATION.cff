@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use Craton, please cite it like this."
+title: "Craton: one model for the solid Earth"
+abstract: >-
+  A foundation model for geology built the way LLMs are built: one token format for every
+  measurement on Earth, masked modelling across space and time with 4D positions, probabilistic
+  outputs only, and a benchmark suite (CratonBench) guarded by a ratchet.
+type: software
+authors:
+  - given-names: Ahmed
+    family-names: Hesham
+repository-code: "https://github.com/AhmedHeshamEG/craton"
+license: Apache-2.0
+version: 0.1.0
+date-released: 2026-10-19
+keywords:
+  - seismology
+  - earthquakes
+  - foundation model
+  - transformer
+  - probabilistic forecasting
