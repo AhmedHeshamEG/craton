@@ -6,6 +6,7 @@ craton check         everything that must pass before a change lands
 craton ratchet       judge pending benchmark runs (``--accept`` to put them on the board)
 craton scoreboard    regenerate SCOREBOARD.md from results/scoreboard.json
 craton spec          the token spec: slots, instruments, examples, validation
+craton data          adapters and regions: list, fetch, build, cards
 """
 
 from __future__ import annotations
@@ -32,7 +33,16 @@ from craton.bench import scoreboard as scoreboard_mod
 from craton.bench.results import RunResults, Scoreboard
 from craton.config import CratonConfig, available_configs, config_hash, load_config
 from craton.hardware import HardwareReport, plan_precision, probe, smoke_test
-from craton.paths import find_root, pending_dir, runs_dir, scoreboard_json
+from craton.paths import (
+    data_health_json,
+    find_root,
+    pending_dir,
+    raw_dir,
+    runs_dir,
+    scoreboard_json,
+    snapshots_dir,
+    tokens_dir,
+)
 from craton.records import append_only_problems
 from craton.spec import REGISTRY, SPEC_VERSION, Token, TokenError, sequence_problems, validate_token
 from craton.spec import docs as spec_docs
@@ -360,6 +370,101 @@ def _spec_validate(path: Path) -> int:
     return 0 if ok else 1
 
 
+# ---------------------------------------------------------------- data
+
+
+def _mib(n: int) -> str:
+    return f"{n / 2**20:,.1f} MiB"
+
+
+def cmd_data(args: argparse.Namespace) -> int:
+    from craton.adapters import ADAPTERS, get_adapter
+    from craton.adapters import build as build_mod
+    from craton.adapters import cards as cards_mod
+    from craton.adapters.http import Http
+    from craton.adapters.region import available_regions, load_region
+    from craton.store.raw import RawStore
+
+    root = find_root()
+    action = args.action
+    if action == "cards":
+        for path in cards_mod.write(root):
+            console.print(f"wrote {path.relative_to(root).as_posix()}")
+        return 0
+    if action == "list":
+        _title("data")
+        t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
+        for col in ("adapter", "version", "makes", "needs", "licence"):
+            t.add_column(col)
+        for name in sorted(ADAPTERS):
+            a = get_adapter(name)
+            card = a.card()
+            needs = ", ".join(a.requires) or "·"
+            t.add_row(name, a.version, ", ".join(a.instruments), needs, card.license)
+        console.print(t)
+        for rname in available_regions(root):
+            r = load_region(rname, root)
+            snap = build_mod.latest_snapshot(snapshots_dir(root), r.name)
+            built = f"snapshot [bold]{snap.id}[/]" if snap else "[dim]not built yet[/]"
+            console.print(
+                f"region [bold]{r.name}[/] · {r.start[:10]} → {r.end[:10]} · "
+                f"{', '.join(r.adapters)} · {built}"
+            )
+        console.print()
+        return 0
+
+    region = load_region(args.region or "central_italy", root)
+    raw = RawStore(raw_dir(root))
+    if action == "fetch":
+        _title(f"data fetch {region.name}")
+        reports = build_mod.fetch(
+            region, raw, Http(), refresh=args.refresh, log=lambda m: console.print(f"[dim]{m}[/]")
+        )
+        for name, rep in reports.items():
+            console.print(
+                f"[green]✓[/] {name}: {rep.downloaded} downloaded ({_mib(rep.bytes)}), "
+                f"{rep.cached} cached"
+            )
+            for note in rep.notes:
+                console.print(f"  [dim]{note}[/]")
+        console.print()
+        return 0
+
+    # build
+    _title(f"data build {region.name}")
+    start = time.perf_counter()
+    snap = build_mod.build(
+        region,
+        raw,
+        tokens_dir(root),
+        snapshots_dir(root),
+        log=lambda m: console.print(f"[dim]{m}[/]"),
+    )
+    build_mod.write_health(data_health_json(root), snap)
+    scoreboard_mod.write(root)
+    t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
+    for col in ("adapter", "tokens", "files", "raw", "rejected"):
+        t.add_column(col)
+    for name, a in snap.body["adapters"].items():
+        rej = sum(a["rejects"].values())
+        t.add_row(
+            name,
+            f"{a['tokens']:,}",
+            str(len(a["files"])),
+            f"{a['raw_files']} · {_mib(a['raw_bytes'])}",
+            f"{rej:,}" if rej else "·",
+        )
+    console.print(t)
+    took = time.perf_counter() - start
+    console.print(
+        f"snapshot [bold {ACCENT}]{snap.id}[/] · {snap.path.relative_to(root).as_posix()} "
+        f"· {took:.0f}s"
+    )
+    console.print("[dim]same raw files → same snapshot id. Health → results/data_health.json[/]")
+    console.print()
+    return 0
+
+
 # ---------------------------------------------------------------- check
 
 
@@ -404,6 +509,12 @@ def cmd_check(args: argparse.Namespace) -> int:
             problems.append(drift)
         return not problems, "\n".join(problems)
 
+    def cards_step() -> tuple[bool, str]:
+        from craton.adapters import cards as cards_mod
+
+        problems = cards_mod.drift_problems(root)
+        return not problems, "\n".join(problems)
+
     def ratchet_step() -> tuple[bool, str]:
         board = Scoreboard.load(scoreboard_json(root))
         msgs, ok = [], True
@@ -421,6 +532,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         Step("scoreboard is generated", scoreboard_step),
         Step(f"records append-only vs {args.base}", records_step),
         Step(f"token spec {SPEC_VERSION} add-only, docs generated", spec_step),
+        Step("data cards generated", cards_step),
         Step("ratchet", ratchet_step),
     ]
 
@@ -475,6 +587,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("action", nargs="?", choices=("show", "example", "validate", "docs"))
     s.add_argument("target", nargs="?", help="example name or file to validate")
     s.set_defaults(func=cmd_spec)
+
+    dd = sub.add_parser("data", help="adapters and regions: list, fetch, build, cards")
+    dd.add_argument("action", choices=("list", "fetch", "build", "cards"))
+    dd.add_argument("region", nargs="?", help="region name (default: central_italy)")
+    dd.add_argument("--refresh", action="store_true", help="fetch again even if cached")
+    dd.set_defaults(func=cmd_data)
     return p
 
 
