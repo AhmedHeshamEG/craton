@@ -333,3 +333,57 @@ def test_scoreboard_shows_the_data(tmp_path: Path) -> None:
     assert f"### test · snapshot `{snap.id}`" in md
     assert "largest Mw 6.5 on 2016-10-30" in md
     assert "12 at earthquakes + 0 hourly" in md
+
+
+def test_a_stranger_adds_a_source_without_touching_the_core(tmp_path: Path) -> None:
+    from collections.abc import Iterator
+
+    from craton.adapters.base import Adapter, DataCard, FetchReport, Log
+    from craton.adapters.http import Fetcher
+    from craton.spec import Token, validate_token
+    from craton.spec.examples import limestone_porosity
+
+    class Borehole(Adapter):
+        name = "test_borehole"
+        version = "0.1.0"
+        instruments = ("rock_porosity",)
+
+        def card(self) -> DataCard:
+            return DataCard(
+                "test_borehole",
+                "t",
+                "p",
+                "h",
+                self.instruments,
+                "CC0-1.0",
+                "t",
+                ("c",),
+                "a",
+                (("value", "x"),),
+                "u",
+                ("i",),
+                self.version,
+            )
+
+        def fetch(
+            self, region: Region, raw: RawStore, http: Fetcher, refresh: bool, log: Log
+        ) -> FetchReport:
+            raw.put(self.name, "core-1", "u", b"porosity 0.05", "2026-10-20", ".txt")
+            return FetchReport(downloaded=1)
+
+        def tokens(self, ctx: BuildContext) -> Iterator[list[Token]]:
+            (f,) = ctx.raw.current(self.name).values()
+            ctx.use(f)
+            d = limestone_porosity()
+            d["provenance"] = {**d["provenance"], "content_hash": f.content_hash}
+            yield [validate_token(d)]
+
+    register(Borehole)
+    try:
+        region = _region("2015-01-01T00:00:00Z", "2017-01-01T00:00:00Z", ("test_borehole",))
+        raw = RawStore(tmp_path / "raw")
+        fetch(region, raw, FakeHttp({}))
+        snap = build(region, raw, tmp_path / "t", tmp_path / "s")
+        assert snap.body["adapters"]["test_borehole"]["tokens"] == 1
+    finally:
+        ADAPTERS.pop("test_borehole")
