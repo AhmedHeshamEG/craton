@@ -5,7 +5,7 @@ and a release. A phase isn't done if any exit test fails. Live numbers are in [`
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
-CORE       ███░░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    P0–P6   foundation → a model that knows when it doesn't know
+CORE       ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    P0–P6   foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P7–P10  fake planets, the ghost, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P11–P12 any time horizon, then mini → regional → planet
 ALL        ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1/13

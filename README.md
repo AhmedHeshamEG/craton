@@ -106,7 +106,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       ███░░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    foundation → a model that knows when it doesn't know
+CORE       ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
