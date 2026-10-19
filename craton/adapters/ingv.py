@@ -157,11 +157,11 @@ class IngvCatalog(Adapter):
                 "Event types other than earthquake, induced event, quarry blast and explosion are "
                 "refused and counted, never guessed. In central Italy that is five controlled "
                 "explosions and one anthropogenic event.",
-                "120 events from 2009-2012 (and six from 1986-1990) carry the generic magnitude type "
-                "`M` and author `UNKNOWN`. Spec 1.0.0 has no `M`, so they are refused and counted; "
-                "a later minor version can add it to the vocabulary.",
-                "The catalogue reports duration magnitude Md until 2004 and local magnitude ML from "
-                "2005. Completeness is estimated for each type separately.",
+                "120 events carry the generic magnitude type `M` (114 from 2009-2012 with author "
+                "`UNKNOWN`, six from 1986-1990). Spec 1.0.0 has no `M`, so they are refused and "
+                "counted; a later minor version can add it to the vocabulary.",
+                "The catalogue reports duration magnitude Md until 2004 and local magnitude ML "
+                "from 2005. Completeness is estimated for each type separately.",
             ),
             adapter_version=self.version,
         )

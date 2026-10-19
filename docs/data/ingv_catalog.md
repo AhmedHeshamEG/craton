@@ -47,5 +47,5 @@ The text service publishes no errors. Magnitude 1σ is assumed: 0.1 for Mw, 0.2 
 - Events from 1985 to April 2005 were added to the service years after it went online; their locations come from older procedures and are less precise.
 - INGV revises recent months. A refresh brings new bytes, a new hash and new tokens; the old version stays in the raw store.
 - Event types other than earthquake, induced event, quarry blast and explosion are refused and counted, never guessed. In central Italy that is five controlled explosions and one anthropogenic event.
-- 120 events from 2009-2012 (and six from 1986-1990) carry the generic magnitude type `M` and author `UNKNOWN`. Spec 1.0.0 has no `M`, so they are refused and counted; a later minor version can add it to the vocabulary.
+- 120 events carry the generic magnitude type `M` (114 from 2009-2012 with author `UNKNOWN`, six from 1986-1990). Spec 1.0.0 has no `M`, so they are refused and counted; a later minor version can add it to the vocabulary.
 - The catalogue reports duration magnitude Md until 2004 and local magnitude ML from 2005. Completeness is estimated for each type separately.
