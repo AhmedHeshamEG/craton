@@ -1,0 +1,35 @@
+name: New data source
+description: A dataset that should become Craton tokens
+labels: [data]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: What is it?
+      placeholder: e.g. INGV seismic catalogue, a borehole pore-pressure record, a historical chronicle
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Where does it live?
+      description: Landing page or API endpoint.
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Licence and citation
+      placeholder: e.g. CC BY 4.0, cite DOI 10.xxxx/...
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Which kind of token?
+      options: [observation, forcing, property, event, derived, not sure]
+  - type: textarea
+    id: notes
+    attributes:
+      label: Coverage, quirks, known issues
+      description: Region, time span, sampling, gaps, magnitude types, anything a careful user should know.

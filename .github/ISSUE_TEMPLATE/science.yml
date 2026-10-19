@@ -1,0 +1,18 @@
+name: Science check
+description: Something in the plan or the code is wrong, outdated, or overclaims
+labels: [science]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      description: Quote the line or link the file.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Papers, data, or reasoning. The real world wins over the plan.
+    validations:
+      required: true
