@@ -3,6 +3,33 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [0.3.0] — 2026-10-20 · P2 First data
+
+### Added
+- **Adapters** (`craton.adapters`): `fetch` → `tokens` → `card`, registered by name, run in dependency
+  order. Three built-ins:
+  - `ingv_catalog`: every earthquake INGV located in a region since 1985, through the FDSN event service.
+  - `ngl_gnss`: daily positions of every Nevada Geodetic Laboratory station in a region (IGS20).
+  - `iers_tides`: the solid-Earth tide at every catalogue earthquake, plus an hourly series per region.
+- **The body tide in NumPy** (`craton.geo`): a port of the IERS 2010 routines with an analytic Sun and Moon.
+  Matches the IERS test cases to 1e-12 m, PySolid to 0.4 mm and the JPL DE440 ephemeris to 0.71 mm.
+  Runs on Windows; no new dependency.
+- **The raw store** (`craton.store.raw`): downloads kept exactly as served, named by sha256, with an
+  append-only manifest per source. Every token's `content_hash` points at its raw file.
+- **Regions** (`configs/regions/`) and **snapshots**: a build is named by the hash of its content, so the
+  same downloads always give the same snapshot id.
+- `craton data list | fetch | build | cards`.
+- **Data health** on the scoreboard (`results/data_health.json`): tokens, rejects by reason, the catalogue's
+  magnitude of completeness per year, GNSS gaps, tide peaks. `craton check` keeps the two in sync.
+- **Data cards** in `docs/data/`, generated from the adapters and drift-checked.
+- The coverage figure (`scripts/figures/coverage.py`), `lessons/P2.md`, an adapter guide in
+  `CONTRIBUTING.md`, decisions D-021 … D-028.
+
+### Fixed
+- The GNSS example token said CC-BY-4.0; the Nevada Geodetic Laboratory states no licence. It now says
+  `LicenseRef-NGL-as-is` (D-024).
+- `.gitignore` ignored every folder named `data/`, including `docs/data/`; it now ignores only the root one.
+
 ## [0.2.0] — 2026-10-20 · P1 The universal token
 
 ### Added
