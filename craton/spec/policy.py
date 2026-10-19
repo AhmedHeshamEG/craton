@@ -39,7 +39,8 @@ def freeze(path: Path | None = None) -> Path:
     if out.exists():
         raise FileExistsError(f"{out.name} is frozen; a new release needs a new version number")
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(snapshot(), indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    text = json.dumps(snapshot(), indent=1, sort_keys=True) + "\n"
+    out.write_text(text, encoding="utf-8", newline="\n")
     return out
 
 
