@@ -5,10 +5,10 @@ and a release. A phase isn't done if any exit test fails. Live numbers are in [`
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
-CORE       ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    P0–P6   foundation → a model that knows when it doesn't know
+CORE       █████████░░░░░░░░░░░░░░░░░░░░░   2/7    P0–P6   foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P7–P10  fake planets, the ghost, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P11–P12 any time horizon, then mini → regional → planet
-ALL        ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1/13
+ALL        █████░░░░░░░░░░░░░░░░░░░░░░░░░   2/13
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -116,9 +116,9 @@ does and why it protects the foundation.
 **Build**
 1. `craton/spec/` with **Token Spec v1.0.0**:
    - `kind`: observation | forcing | property | event | derived
-   - `instrument`: from a versioned registry (seismic_catalog, gnss_daily, tide_model, …)
-   - `lat`, `lon` (WGS84 degrees), `depth_km` (positive down, negative above sea level), `time` (UTC, ISO 8601 +
-     float seconds since a fixed epoch)
+   - `instrument`: from a versioned registry (seismic_catalog, gnss_daily, solid_earth_tide, …)
+   - `lat`, `lon` (WGS84 degrees), `depth_km` (positive down from the WGS84 ellipsoid, D-012), `time` (float
+     seconds since 1970 UTC, proleptic Gregorian, D-011; optional ISO 8601 copy)
    - `value` (vector, declared units and channel names per instrument)
    - `uncertainty` (same shape as value, 1σ, required, never zero)
    - `provenance`: source, dataset version, license, adapter version, content hash, `synthetic` flag
@@ -489,7 +489,7 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 
 ## Tracker
 
-- [x] P0 Foundation · [ ] P1 Universal token · [ ] P2 Adapters + store · [ ] P3 Benchmarks + baselines
+- [x] P0 Foundation · [x] P1 Universal token · [ ] P2 Adapters + store · [ ] P3 Benchmarks + baselines
 - [ ] P4 Craton-mini v0 · [ ] P5 Fusion · [ ] P6 The 8 locks
 - [ ] P7 Fake planets · [ ] P8 Ghost + atlas · [ ] P9 Translator · [ ] P10 Microscope
 - [ ] P11 Long horizons · [ ] P12 Scale + open platform

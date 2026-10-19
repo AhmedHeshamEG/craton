@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P0%20of%20P12-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P1%20of%20P12-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -48,6 +48,21 @@ Craton is that one model.
     <img alt="Anything measured becomes one token, each instrument gets an encoder, attention runs across latitude, longitude, depth and time, and the output is a probability distribution." src="docs/assets/how-it-works-dark.svg" width="100%">
   </picture>
 </p>
+
+## One token, frozen
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/token-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/token-light.svg">
+    <img alt="One token, exploded into its slots: Montecassino Abbey in 1349 next to the GNSS station ARQT in 2016. Same slots; the uncertainty slot says plus or minus half a degree of intensity for the monks and under a millimetre for the receiver." src="docs/assets/token-dark.svg" width="100%">
+  </picture>
+</p>
+
+Token Spec 1.0.0 is out and frozen: 11 instruments, from earthquakes and GNSS to porosity, lithology and
+friction. A validator refuses anything malformed with a named reason, and the spec can only grow: removing or
+redefining anything fails the check. Read it in [`docs/token-spec.md`](docs/token-spec.md), the rules in
+[`SPEC_POLICY.md`](SPEC_POLICY.md), or run `uv run craton spec`.
 
 ## What it will never tell you
 
@@ -106,7 +121,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    foundation → a model that knows when it doesn't know
+CORE       █████████░░░░░░░░░░░░░░░░░░░░░   2/7    foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -114,7 +129,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | | Phase | Borrowed from the LLM world |
 |---|---|---|
 | ✅ | **P0** Foundation: repo, checks, the ratchet | the training-infra repo every lab builds first |
-| ◻️ | **P1** The universal token, frozen | the tokenizer |
+| ✅ | **P1** The universal token, frozen | the tokenizer |
 | ◻️ | **P2** First data: INGV catalogue, GNSS, tides | the data pipeline |
 | ◻️ | **P3** CratonBench + baselines, before any model | the eval harness |
 | ◻️ | **P4** Craton-mini v0 | the GPT-2 small run |
@@ -136,6 +151,7 @@ git clone https://github.com/AhmedHeshamEG/craton && cd craton
 uv sync --extra cu126      # NVIDIA GPU   (no NVIDIA: uv sync --extra cpu)
 uv run craton doctor       # what this machine can run, and how
 uv run craton check        # everything that has to pass before a change lands
+uv run craton spec example montecassino_1349   # the monk's diary, as a token
 ```
 
 On the laptop it was built on, `craton doctor --smoke` says:

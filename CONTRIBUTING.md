@@ -28,13 +28,16 @@ Plain `uv sync` without an extra removes PyTorch; always pass one.
 
 ## What's useful right now
 
-The project is at phase P0 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful things today:
+The project is at phase P1 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful things today:
 
 - **Data you know.** A public catalogue, GNSS network, borehole record or historical archive that should become
   tokens. Open an issue with the *new data source* template: what it is, its licence, how to fetch it.
 - **Science checks.** If something in the roadmap is wrong or outdated (a method, a dataset, a claim), open an
   issue. The real world wins over the plan.
 - **Benchmarks.** A test Craton should face, with frozen data and a metric.
+
+- **Instruments.** The token spec only grows: a new instrument is a few lines and a new example. See
+  [`SPEC_POLICY.md`](SPEC_POLICY.md) for how, and what can never change.
 
 The full guide to writing an adapter, a force, a property or a benchmark arrives with the extension points
 themselves (P1, P2, P3, P8), and the complete version in P12.

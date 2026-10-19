@@ -4,4 +4,4 @@ A foundation model for geology, built the way LLMs are built: one token format f
 measurement, one objective, one operation, and a benchmark suite that only lets it get better.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
