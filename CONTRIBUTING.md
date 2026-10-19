@@ -54,11 +54,11 @@ from craton.adapters.base import Adapter, BuildContext, DataCard, FetchReport
 
 @register
 class MyNetwork(Adapter):
-    name = "my_network"              # snake_case, unique
-    version = "1.0.0"                # written into every token it makes
-    instruments = ("gnss_daily",)    # registered instruments only (add one first if needed)
+    name = "my_network"  # snake_case, unique
+    version = "1.0.0"  # written into every token it makes
+    instruments = ("gnss_daily",)  # registered instruments only (add one first if needed)
 
-    def card(self) -> DataCard: ...           # provider, licence, citation, mapping, known issues
+    def card(self) -> DataCard: ...  # provider, licence, citation, mapping, known issues
     def fetch(self, region, raw, http, refresh, log) -> FetchReport: ...  # download into `raw`
     def tokens(self, ctx: BuildContext): ...  # yield one list of tokens per year
 ```

@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P1%20of%20P12-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P2%20of%20P12-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -63,6 +63,32 @@ Token Spec 1.0.0 is out and frozen: 11 instruments, from earthquakes and GNSS to
 friction. A validator refuses anything malformed with a named reason, and the spec can only grow: removing or
 redefining anything fails the check. Read it in [`docs/token-spec.md`](docs/token-spec.md), the rules in
 [`SPEC_POLICY.md`](SPEC_POLICY.md), or run `uv run craton spec`.
+
+## First data
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/coverage-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/coverage-light.png">
+    <img alt="Central Italy from 1985 to 2026: 320,757 earthquakes trace the Apennines on a map with no coastlines, 293 GNSS stations around them; timelines of earthquakes per month, stations reporting, and the smallest magnitude the catalogue catches, falling from about 2.6 to 1.1." src="docs/assets/coverage-dark.png" width="100%">
+  </picture>
+</p>
+
+Central Italy, January 1985 to September 2026, is now **1,758,860 tokens**: 320,757 earthquakes from INGV,
+751,394 days of position from 293 GNSS stations, and 686,709 solid-Earth tides that Craton computes itself
+with the IERS 2010 model, one at the moment of every earthquake. Every token points back to the exact bytes
+its provider served, and building twice from the same downloads gives the same files, byte for byte.
+
+The bottom timeline is why this matters. In 1985 the catalogue was only complete above magnitude 2.6; today
+it is complete down to 1.1. It recorded 718 earthquakes in 1990 and 10,273 in 2023. A model that doesn't
+know about the network would conclude Italy got fourteen times more active. It didn't. The ears got better.
+
+```console
+uv run craton data fetch central_italy    # once: ~185 MB, one polite request a second
+uv run craton data build central_italy    # offline, ~8 minutes, same snapshot id every time
+```
+
+Who made each dataset, its licence and how to cite it: [`docs/data/`](docs/data/).
 
 ## What it will never tell you
 
@@ -121,7 +147,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       █████████░░░░░░░░░░░░░░░░░░░░░   2/7    foundation → a model that knows when it doesn't know
+CORE       █████████████░░░░░░░░░░░░░░░░░   3/7    foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -130,7 +156,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 |---|---|---|
 | ✅ | **P0** Foundation: repo, checks, the ratchet | the training-infra repo every lab builds first |
 | ✅ | **P1** The universal token, frozen | the tokenizer |
-| ◻️ | **P2** First data: INGV catalogue, GNSS, tides | the data pipeline |
+| ✅ | **P2** First data: INGV catalogue, GNSS, tides | the data pipeline |
 | ◻️ | **P3** CratonBench + baselines, before any model | the eval harness |
 | ◻️ | **P4** Craton-mini v0 | the GPT-2 small run |
 | ◻️ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
@@ -188,7 +214,9 @@ core, and the ratchet guards the rest. Start with [`CONTRIBUTING.md`](CONTRIBUTI
 ## Credits
 
 Hero data: [USGS ComCat](https://earthquake.usgs.gov/earthquakes/search/) (public domain), drawn by
-[`scripts/figures/banner.py`](scripts/figures/banner.py). Type: [Inter](https://rsms.me/inter/) (SIL OFL).
+[`scripts/figures/banner.py`](scripts/figures/banner.py). Central Italy: [INGV ISIDe](https://doi.org/10.13127/ISIDE)
+(CC-BY-4.0) and the [Nevada Geodetic Laboratory](https://geodesy.unr.edu/) (Blewitt et al. 2018); the tide
+follows the IERS Conventions (2010). Type: [Inter](https://rsms.me/inter/) (SIL OFL).
 Craton stands on SeisLM, ETAS, CSEP and pyCSEP, GraphCast's lesson about reanalysis, and decades of open
 catalogues from INGV and the Nevada Geodetic Laboratory. Full sources per phase in the lessons.
 

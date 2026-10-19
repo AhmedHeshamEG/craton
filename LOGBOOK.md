@@ -73,3 +73,56 @@ Decisions: D-011 … D-020.
 
 Next: P2, the first adapters. Start with the INGV catalogue through FDSN, then choose how to compute
 solid-Earth tides on Windows.
+
+## 2026-10-20 — P2 — First data: adapters and an immutable store
+
+TLDR: Real data flows. Central Italy, 1985 to September 2026, is 1,758,860 valid tokens: 320,757
+earthquakes from INGV, 751,394 station-days from 293 GNSS stations, and 686,709 solid-Earth tide values
+computed by Craton's own port of the IERS 2010 model. Built twice from the same downloads, the snapshot is
+the same, byte for byte.
+
+Built:
+- `craton/adapters/`: the adapter interface (`fetch` → `tokens` → `card`), a registry, regions, a polite
+  HTTP client, the build pipeline, health collectors, generated data cards
+- three adapters: `ingv_catalog` (FDSN event service, month by month), `ngl_gnss` (NGL IGS20 daily
+  positions), `iers_tides` (body tide at every earthquake plus an hourly series)
+- `craton/geo/`: frames, leap seconds and TT, the Sun and the Moon, the IERS 2010 body tide in NumPy
+- `craton/store/raw.py`: raw downloads by sha256 with an append-only manifest; every token's
+  `content_hash` points at its raw file
+- `craton data list | fetch | build | cards`; data health on the scoreboard; `docs/data/`
+- the coverage figure (`scripts/figures/coverage.py`), `lessons/P2.md`, an adapter guide in CONTRIBUTING
+- tests: 200 → 231
+
+Scores: no CratonBench task yet (P3). Data health, from `results/data_health.json`:
+- INGV: 320,757 events, 126 refused (120 with the generic magnitude type `M`, 5 controlled explosions,
+  1 anthropogenic event). The `M` events: 114 from 2009-2012 by author `UNKNOWN`, 6 from 1986-1990. Md 29,466, ML 290,892, Mw 399. Largest: Norcia Mw 6.5, 30 October 2016.
+  Longest stretch with no event in the box: 10.9 days.
+- NGL: 293 stations, the first from June 1995; median 1,927 days per station, median coverage 83%,
+  964 gaps over 30 days. Nothing refused.
+- Tides: 320,757 at earthquakes + 365,952 hourly; peak displacement 0.319 m up, 0.080 m north.
+- Reproducibility: snapshot `96a163f798d8f9cc`. Every full build from the same 795 raw files gave the
+  same 115 token files, byte for byte, and the same snapshot id.
+- The catalogue jumps in 2005 (about 60 events a month in 2004, about 250 in 2006): INGV's modern
+  processing starts, and so does ML. P3's splits have to respect it.
+- Fetch: 501 INGV requests (35.9 MiB) and 294 NGL requests (148.9 MiB), one per second, each once.
+
+Surprises / problems:
+- PySolid is GPL-3 and Milbert's Fortran has no licence, so neither could be vendored. The tide is a
+  port of the IERS routines instead (D-021). It matches the IERS test cases to 1e-12 m, PySolid to 0.4 mm
+  and the JPL DE440 ephemeris to 0.71 mm. The fourth test case published in the IERS routine's header is
+  broken (its Sun is 8.4 million km away; its expected output repeats the third case).
+- pyTMD calls its northward component "N" but it points south (colatitude). Caught by comparing with
+  PySolid; the reference script flips it.
+- The Nevada Geodetic Laboratory states no licence. P1's GNSS example said CC-BY-4.0; corrected (D-024).
+- INGV's FDSN service refuses requests over 20,000 events (HTTP 413). No central-Italy month reaches it
+  (November 2016 is the busiest, 13,209), but the adapter splits such months anyway; a test covers it.
+- INGV reports Md until 2004 and ML from 2005. The first health report estimated completeness for ML only
+  and showed nothing before 2005. It now estimates each type separately, never across types (D-027).
+- The first snapshot id hashed the health numbers too, so a better statistic would have renamed
+  unchanged data. The id now hashes only region, files and raw inputs.
+- `.gitignore` had `data/`, which also hid `docs/data/`; it is now `/data/`.
+
+Decisions: D-021 … D-028.
+
+Next: P3, CratonBench v1. Freeze the splits against this snapshot (Apennines 2016–17, L'Aquila 2009,
+held-out GNSS stations), then score climatology, ETAS and IDW + trend before any model exists.
