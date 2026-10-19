@@ -5,11 +5,13 @@ craton config NAME   a model size, with its parameter count
 craton check         everything that must pass before a change lands
 craton ratchet       judge pending benchmark runs (``--accept`` to put them on the board)
 craton scoreboard    regenerate SCOREBOARD.md from results/scoreboard.json
+craton spec          the token spec: slots, instruments, examples, validation
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
@@ -20,6 +22,7 @@ from pathlib import Path
 
 from rich import box
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 
@@ -31,6 +34,10 @@ from craton.config import CratonConfig, available_configs, config_hash, load_con
 from craton.hardware import HardwareReport, plan_precision, probe, smoke_test
 from craton.paths import find_root, pending_dir, runs_dir, scoreboard_json
 from craton.records import append_only_problems
+from craton.spec import REGISTRY, SPEC_VERSION, Token, TokenError, sequence_problems, validate_token
+from craton.spec import docs as spec_docs
+from craton.spec.examples import EXAMPLES, example
+from craton.spec.policy import spec_problems
 
 ACCENT = "#ff6b35"
 console = Console(highlight=False)
@@ -262,6 +269,97 @@ def cmd_ratchet(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+# ---------------------------------------------------------------- spec
+
+
+def cmd_spec(args: argparse.Namespace) -> int:
+    action = args.action or "show"
+    if action == "show":
+        return _spec_show()
+    if action == "example":
+        return _spec_example(args.target)
+    if action == "validate":
+        if not args.target:
+            console.print("usage: craton spec validate FILE (.json, .jsonl or .parquet)")
+            return 2
+        return _spec_validate(Path(args.target))
+    out = spec_docs.write(find_root())
+    console.print(f"wrote {out.relative_to(find_root()).as_posix()}")
+    return 0
+
+
+def _spec_show() -> int:
+    _title(f"spec {SPEC_VERSION}")
+    console.print(
+        "[dim]kind · instrument · lat, lon, depth · time · value · uncertainty · provenance · "
+        "resolution[/]"
+    )
+    console.print()
+    t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
+    for col in ("instrument", "kinds", "channels", "qualifiers"):
+        t.add_column(col)
+    for inst in REGISTRY:
+        chans = escape(", ".join(f"{c.name} [{c.unit}]" for c in inst.channels))
+        if len(inst.channels) > 3:
+            chans = f"{len(inst.channels)} class probabilities"
+        quals = ", ".join(q.name + ("*" if q.required else "") for q in inst.qualifiers)
+        t.add_row(inst.name, ", ".join(inst.kinds), chans, quals or "·")
+    console.print(t)
+    console.print(f"[dim]* required · examples: {', '.join(EXAMPLES)}[/]")
+    console.print()
+    return 0
+
+
+def _spec_example(name: str | None) -> int:
+    if name is None or name not in EXAMPLES:
+        if name is not None:
+            console.print(f"[red]no example {name!r}[/]")
+        console.print("examples: " + ", ".join(EXAMPLES))
+        return 0 if name is None else 1
+    print(json.dumps(example(name).to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _load_any(path: Path) -> list[object]:
+    if path.suffix == ".parquet":
+        from craton.store import read_tokens
+
+        return list(read_tokens(path))
+    text = path.read_text(encoding="utf-8")
+    if path.suffix == ".jsonl":
+        return [json.loads(line) for line in text.splitlines() if line.strip()]
+    data = json.loads(text)
+    return data if isinstance(data, list) else [data]
+
+
+def _spec_validate(path: Path) -> int:
+    _title("spec validate")
+    try:
+        items = _load_any(path)
+    except (OSError, ValueError, TokenError) as exc:
+        console.print(f"[red]✗[/] {path.name}: {exc}")
+        return 1
+    good: list[Token] = []
+    bad = 0
+    for i, item in enumerate(items):
+        if isinstance(item, Token):
+            good.append(item)
+            continue
+        try:
+            good.append(validate_token(item))  # type: ignore[arg-type]
+        except TokenError as exc:
+            bad += 1
+            for p in exc.problems:
+                console.print(f"[red]✗[/] token {i} · [bold]{p.code}[/] · {p.field}: {p.message}")
+    seq = sequence_problems(good)
+    for p in seq:
+        console.print(f"[yellow]![/] {p.code} · {p.field}: {p.message}")
+    ok = bad == 0 and not seq
+    mark = "[green]✓[/]" if ok else "[red]✗[/]"
+    console.print(f"{mark} {len(good)} valid, {bad} invalid · {path.name}")
+    return 0 if ok else 1
+
+
 # ---------------------------------------------------------------- check
 
 
@@ -299,6 +397,13 @@ def cmd_check(args: argparse.Namespace) -> int:
         problems = append_only_problems(root, args.base)
         return not problems, "\n".join(problems)
 
+    def spec_step() -> tuple[bool, str]:
+        problems = spec_problems()
+        drift = spec_docs.drift_problem(root)
+        if drift:
+            problems.append(drift)
+        return not problems, "\n".join(problems)
+
     def ratchet_step() -> tuple[bool, str]:
         board = Scoreboard.load(scoreboard_json(root))
         msgs, ok = [], True
@@ -315,6 +420,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         Step("tests", _tool("pytest", "-q", "-p", "no:cacheprovider")),
         Step("scoreboard is generated", scoreboard_step),
         Step(f"records append-only vs {args.base}", records_step),
+        Step(f"token spec {SPEC_VERSION} add-only, docs generated", spec_step),
         Step("ratchet", ratchet_step),
     ]
 
@@ -364,6 +470,11 @@ def build_parser() -> argparse.ArgumentParser:
     r.set_defaults(func=cmd_ratchet)
 
     sub.add_parser("scoreboard", help="regenerate SCOREBOARD.md").set_defaults(func=cmd_scoreboard)
+
+    s = sub.add_parser("spec", help="the token spec: show, example NAME, validate FILE, docs")
+    s.add_argument("action", nargs="?", choices=("show", "example", "validate", "docs"))
+    s.add_argument("target", nargs="?", help="example name or file to validate")
+    s.set_defaults(func=cmd_spec)
     return p
 
 

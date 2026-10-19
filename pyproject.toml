@@ -1,6 +1,6 @@
 [project]
 name = "craton-earth"
-version = "0.1.0"
+version = "0.2.0"
 description = "One model for the solid Earth: a foundation model for geology, built the way LLMs are built."
 readme = "README.md"
 license = "Apache-2.0"
@@ -27,6 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=2.1",
+    "pyarrow>=26",
     "pydantic>=2.9",
     "pyyaml>=6.0.2",
     "rich>=13.9",
@@ -112,3 +113,8 @@ addopts = "-q"
 # The smoke test drives PyTorch, whose autograd calls are untyped.
 module = ["craton.hardware"]
 disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
+# PyArrow ships no type information.
+module = ["pyarrow", "pyarrow.*"]
+ignore_missing_imports = true

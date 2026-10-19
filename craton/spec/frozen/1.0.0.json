@@ -1,0 +1,790 @@
+{
+ "instruments": {
+  "friction_coefficient": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Coefficient of friction.",
+     "maximum": 2,
+     "minimum": 0,
+     "name": "friction",
+     "unit": "1"
+    }
+   ],
+   "constraint": "none",
+   "description": "How hard it is to slide one side of a fault over the other.",
+   "kinds": [
+    "property"
+   ],
+   "name": "friction_coefficient",
+   "qualifiers": [
+    {
+     "description": "Which friction.",
+     "name": "friction_kind",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "static",
+      "steady_state",
+      "dynamic"
+     ]
+    },
+    {
+     "description": "How it was measured or inferred.",
+     "name": "method",
+     "pattern": ".{1,64}",
+     "required": false,
+     "vocabulary": null
+    }
+   ],
+   "references": []
+  },
+  "gnss_daily": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Eastward position.",
+     "maximum": 21000000.0,
+     "minimum": -21000000.0,
+     "name": "east",
+     "unit": "m"
+    },
+    {
+     "description": "Northward position.",
+     "maximum": 21000000.0,
+     "minimum": -21000000.0,
+     "name": "north",
+     "unit": "m"
+    },
+    {
+     "description": "Vertical position.",
+     "maximum": 12000.0,
+     "minimum": -12000.0,
+     "name": "up",
+     "unit": "m"
+    }
+   ],
+   "constraint": "none",
+   "description": "One day of a GNSS station's position: east, north and up in metres, from the provider's daily solution, relative to the series origin named in its provenance.",
+   "kinds": [
+    "observation"
+   ],
+   "name": "gnss_daily",
+   "qualifiers": [
+    {
+     "description": "Four-character station code.",
+     "name": "station",
+     "pattern": "[A-Z0-9]{4}",
+     "required": true,
+     "vocabulary": null
+    },
+    {
+     "description": "Frame the positions are expressed in.",
+     "name": "reference_frame",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "IGS14",
+      "IGS20",
+      "ITRF2014",
+      "ITRF2020",
+      "ETRF2000",
+      "ETRF2014",
+      "ETRF2020"
+     ]
+    }
+   ],
+   "references": [
+    "Blewitt, Hammond & Kreemer (2018), Eos 99, doi:10.1029/2018EO104623"
+   ]
+  },
+  "grain_size": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "log10 of median grain size in mm.",
+     "maximum": 4,
+     "minimum": -5,
+     "name": "log10_median_diameter",
+     "unit": "log10(mm)"
+    }
+   ],
+   "constraint": "none",
+   "description": "Granularity: how coarse the grains of a rock or sediment are (median diameter).",
+   "kinds": [
+    "property"
+   ],
+   "name": "grain_size",
+   "qualifiers": [
+    {
+     "description": "How it was measured or inferred.",
+     "name": "method",
+     "pattern": ".{1,64}",
+     "required": false,
+     "vocabulary": null
+    }
+   ],
+   "references": []
+  },
+  "gutenberg_richter_b": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Gutenberg-Richter b-value.",
+     "maximum": 4,
+     "minimum": 0.1,
+     "name": "b_value",
+     "unit": "1"
+    }
+   ],
+   "constraint": "none",
+   "description": "The b-value of a set of earthquakes: how fast the number of quakes falls as the magnitude rises. Computed from other tokens, so it is derived.",
+   "kinds": [
+    "derived"
+   ],
+   "name": "gutenberg_richter_b",
+   "qualifiers": [
+    {
+     "description": "Estimator.",
+     "name": "method",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "aki_utsu_mle",
+      "b_positive",
+      "least_squares"
+     ]
+    },
+    {
+     "description": "Magnitude scale of the input events.",
+     "name": "magnitude_type",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "ML",
+      "Mw",
+      "Md",
+      "mb",
+      "mB",
+      "Ms",
+      "Mwp",
+      "MwL",
+      "Mwpd",
+      "Mc",
+      "Mmacro"
+     ]
+    }
+   ],
+   "references": [
+    "Aki (1965); Utsu (1966); van der Elst (2021), b-positive"
+   ]
+  },
+  "lithology": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Probability the rock is unconsolidated sediments.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "unconsolidated_sediments",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is siliciclastic sedimentary.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "siliciclastic_sedimentary",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is mixed sedimentary.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "mixed_sedimentary",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is carbonate sedimentary.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "carbonate_sedimentary",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is pyroclastics.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "pyroclastics",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is evaporites.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "evaporites",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is metamorphics.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "metamorphics",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is acid plutonic.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "acid_plutonic",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is intermediate plutonic.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "intermediate_plutonic",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is basic plutonic.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "basic_plutonic",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is acid volcanic.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "acid_volcanic",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is intermediate volcanic.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "intermediate_volcanic",
+     "unit": "1"
+    },
+    {
+     "description": "Probability the rock is basic volcanic.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "basic_volcanic",
+     "unit": "1"
+    }
+   ],
+   "constraint": "simplex",
+   "description": "What the rock is, as probabilities over the 13 rock classes of the Global Lithological Map. A certain answer is a one-hot vector; a geologist's 'probably limestone, maybe marl' is a spread.",
+   "kinds": [
+    "property"
+   ],
+   "name": "lithology",
+   "qualifiers": [],
+   "references": [
+    "Hartmann & Moosdorf (2012), G-cubed 13, doi:10.1029/2012GC004370"
+   ]
+  },
+  "macroseismic_report": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Macroseismic intensity on the named scale.",
+     "maximum": 12,
+     "minimum": 1,
+     "name": "intensity",
+     "unit": "1"
+    }
+   ],
+   "constraint": "none",
+   "description": "What an earthquake did at one place, read from written accounts: chronicles, letters, questionnaires, damage surveys. The monk's diary lives here.",
+   "kinds": [
+    "observation"
+   ],
+   "name": "macroseismic_report",
+   "qualifiers": [
+    {
+     "description": "Intensity scale.",
+     "name": "scale",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "MCS",
+      "EMS-98",
+      "MMI",
+      "MSK-64"
+     ]
+    },
+    {
+     "description": "Locality name as the study gives it.",
+     "name": "place",
+     "pattern": ".{1,128}",
+     "required": false,
+     "vocabulary": null
+    },
+    {
+     "description": "The archive's ID for the earthquake.",
+     "name": "event_id",
+     "pattern": "[A-Za-z0-9_.:/-]{1,128}",
+     "required": false,
+     "vocabulary": null
+    },
+    {
+     "description": "The study that assessed the intensity.",
+     "name": "study",
+     "pattern": "[A-Za-z0-9_.:/-]{1,128}",
+     "required": false,
+     "vocabulary": null
+    }
+   ],
+   "references": [
+    "ASMI, https://emidius.mi.ingv.it/ASMI/",
+    "Gr\u00fcnthal (1998), EMS-98"
+   ]
+  },
+  "rock_permeability": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "log10 of permeability in m\u00b2.",
+     "maximum": -5,
+     "minimum": -25,
+     "name": "log10_permeability",
+     "unit": "log10(m2)"
+    }
+   ],
+   "constraint": "none",
+   "description": "How easily fluid flows through a rock. It spans twenty orders of magnitude, so the channel is its base-10 logarithm.",
+   "kinds": [
+    "property"
+   ],
+   "name": "rock_permeability",
+   "qualifiers": [
+    {
+     "description": "How it was measured or inferred.",
+     "name": "method",
+     "pattern": ".{1,64}",
+     "required": false,
+     "vocabulary": null
+    }
+   ],
+   "references": []
+  },
+  "rock_porosity": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Pore volume / total volume.",
+     "maximum": 1,
+     "minimum": 0,
+     "name": "porosity",
+     "unit": "1"
+    }
+   ],
+   "constraint": "none",
+   "description": "Fraction of a rock's volume that is empty space.",
+   "kinds": [
+    "property"
+   ],
+   "name": "rock_porosity",
+   "qualifiers": [
+    {
+     "description": "How it was measured or inferred.",
+     "name": "method",
+     "pattern": ".{1,64}",
+     "required": false,
+     "vocabulary": null
+    }
+   ],
+   "references": []
+  },
+  "rock_temperature": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Temperature.",
+     "maximum": 7000,
+     "minimum": -90,
+     "name": "temperature",
+     "unit": "Cel"
+    }
+   ],
+   "constraint": "none",
+   "description": "Temperature of the rock at a point, from a borehole or a thermal model.",
+   "kinds": [
+    "property"
+   ],
+   "name": "rock_temperature",
+   "qualifiers": [
+    {
+     "description": "How it was measured or inferred.",
+     "name": "method",
+     "pattern": ".{1,64}",
+     "required": false,
+     "vocabulary": null
+    }
+   ],
+   "references": []
+  },
+  "seismic_catalog": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Magnitude on the scale named by magnitude_type.",
+     "maximum": 10,
+     "minimum": -3,
+     "name": "magnitude",
+     "unit": "1"
+    }
+   ],
+   "constraint": "none",
+   "description": "An earthquake from a seismic catalogue: where and when it began, and its size.",
+   "kinds": [
+    "event"
+   ],
+   "name": "seismic_catalog",
+   "qualifiers": [
+    {
+     "description": "Which magnitude scale.",
+     "name": "magnitude_type",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "ML",
+      "Mw",
+      "Md",
+      "mb",
+      "mB",
+      "Ms",
+      "Mwp",
+      "MwL",
+      "Mwpd",
+      "Mc",
+      "Mmacro"
+     ]
+    },
+    {
+     "description": "The catalogue's own ID for the event.",
+     "name": "event_id",
+     "pattern": "[A-Za-z0-9_.:/-]{1,128}",
+     "required": false,
+     "vocabulary": null
+    },
+    {
+     "description": "QuakeML event type.",
+     "name": "event_type",
+     "pattern": null,
+     "required": false,
+     "vocabulary": [
+      "earthquake",
+      "induced or triggered event",
+      "quarry blast",
+      "explosion"
+     ]
+    }
+   ],
+   "references": [
+    "QuakeML 1.2, https://quake.ethz.ch/quakeml"
+   ]
+  },
+  "solid_earth_tide": {
+   "added_in": "1.0.0",
+   "channels": [
+    {
+     "description": "Eastward tidal displacement.",
+     "maximum": 1,
+     "minimum": -1,
+     "name": "east",
+     "unit": "m"
+    },
+    {
+     "description": "Northward tidal displacement.",
+     "maximum": 1,
+     "minimum": -1,
+     "name": "north",
+     "unit": "m"
+    },
+    {
+     "description": "Vertical tidal displacement.",
+     "maximum": 1,
+     "minimum": -1,
+     "name": "up",
+     "unit": "m"
+    }
+   ],
+   "constraint": "none",
+   "description": "How far the Sun and the Moon stretch the solid Earth at a point: the body tide's displacement, computed from a tide model.",
+   "kinds": [
+    "forcing"
+   ],
+   "name": "solid_earth_tide",
+   "qualifiers": [
+    {
+     "description": "Tide model.",
+     "name": "model",
+     "pattern": null,
+     "required": true,
+     "vocabulary": [
+      "IERS2010"
+     ]
+    }
+   ],
+   "references": [
+    "IERS Conventions (2010), Technical Note 36, chapter 7"
+   ]
+  }
+ },
+ "spec": "1.0.0",
+ "token": {
+  "defs": {
+   "LocationUncertainty": {
+    "additionalProperties": false,
+    "description": "1\u03c3 uncertainty of *where and when*; ``uncertainty`` is about the value.",
+    "properties": {
+     "horizontal_km": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "title": "Horizontal Km"
+     },
+     "time_s": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "title": "Time S"
+     },
+     "vertical_km": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "title": "Vertical Km"
+     }
+    },
+    "title": "LocationUncertainty",
+    "type": "object"
+   },
+   "Provenance": {
+    "additionalProperties": false,
+    "description": "Where a token came from, precisely enough to fetch the same bytes again.",
+    "properties": {
+     "adapter_version": {
+      "description": "Semantic version of the code that made the token.",
+      "title": "Adapter Version",
+      "type": "string"
+     },
+     "content_hash": {
+      "description": "sha256 of the raw file or record it was read from.",
+      "title": "Content Hash",
+      "type": "string"
+     },
+     "dataset_version": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Dataset Version",
+      "type": "string"
+     },
+     "license": {
+      "description": "SPDX identifier, e.g. CC-BY-4.0.",
+      "title": "License",
+      "type": "string"
+     },
+     "record": {
+      "anyOf": [
+       {
+        "maxLength": 256,
+        "minLength": 1,
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "title": "Record"
+     },
+     "source": {
+      "description": "Who published the data.",
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+     },
+     "synthetic": {
+      "description": "True for anything a simulator made. Never mixed silently.",
+      "title": "Synthetic",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "source",
+     "dataset_version",
+     "license",
+     "adapter_version",
+     "content_hash",
+     "synthetic"
+    ],
+    "title": "Provenance",
+    "type": "object"
+   },
+   "Resolution": {
+    "additionalProperties": false,
+    "description": "The support of the measurement: how big a patch of space and time one value describes.",
+    "properties": {
+     "spatial_km": {
+      "description": "Size of the area the value stands for.",
+      "title": "Spatial Km",
+      "type": "number"
+     },
+     "temporal_s": {
+      "description": "Length of the time window the value stands for.",
+      "title": "Temporal S",
+      "type": "number"
+     }
+    },
+    "required": [
+     "spatial_km",
+     "temporal_s"
+    ],
+    "title": "Resolution",
+    "type": "object"
+   }
+  },
+  "properties": {
+   "depth_km": {
+    "description": "Below the WGS84 ellipsoid, km; negative is above it.",
+    "title": "Depth Km",
+    "type": "number"
+   },
+   "instrument": {
+    "title": "Instrument",
+    "type": "string"
+   },
+   "kind": {
+    "enum": [
+     "observation",
+     "forcing",
+     "property",
+     "event",
+     "derived"
+    ],
+    "title": "Kind",
+    "type": "string"
+   },
+   "lat": {
+    "description": "WGS84 latitude, degrees, [-90, 90].",
+    "title": "Lat",
+    "type": "number"
+   },
+   "location_uncertainty": {
+    "anyOf": [
+     {
+      "$ref": "#/$defs/LocationUncertainty"
+     },
+     {
+      "type": "null"
+     }
+    ],
+    "default": null
+   },
+   "lon": {
+    "description": "WGS84 longitude, degrees, [-180, 180).",
+    "title": "Lon",
+    "type": "number"
+   },
+   "provenance": {
+    "$ref": "#/$defs/Provenance"
+   },
+   "qualifiers": {
+    "additionalProperties": {
+     "type": "string"
+    },
+    "title": "Qualifiers",
+    "type": "object"
+   },
+   "resolution": {
+    "$ref": "#/$defs/Resolution"
+   },
+   "spec": {
+    "default": "1.0.0",
+    "description": "Token Spec version it was written under.",
+    "title": "Spec",
+    "type": "string"
+   },
+   "time": {
+    "description": "Seconds since 1970-01-01T00:00:00Z, proleptic Gregorian.",
+    "title": "Time",
+    "type": "number"
+   },
+   "time_iso": {
+    "anyOf": [
+     {
+      "type": "string"
+     },
+     {
+      "type": "null"
+     }
+    ],
+    "default": null,
+    "description": "The same moment in ISO 8601, if any.",
+    "title": "Time Iso"
+   },
+   "uncertainty": {
+    "description": "1\u03c3 per value channel, > 0.",
+    "items": {
+     "type": "number"
+    },
+    "minItems": 1,
+    "title": "Uncertainty",
+    "type": "array"
+   },
+   "uncertainty_basis": {
+    "enum": [
+     "reported",
+     "derived",
+     "assumed"
+    ],
+    "title": "Uncertainty Basis",
+    "type": "string"
+   },
+   "value": {
+    "items": {
+     "type": "number"
+    },
+    "minItems": 1,
+    "title": "Value",
+    "type": "array"
+   }
+  },
+  "required": [
+   "depth_km",
+   "instrument",
+   "kind",
+   "lat",
+   "lon",
+   "provenance",
+   "resolution",
+   "time",
+   "uncertainty",
+   "uncertainty_basis",
+   "value"
+  ]
+ }
+}

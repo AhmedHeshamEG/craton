@@ -93,3 +93,104 @@ Every figure in the repo is drawn by a script in `scripts/figures/` from real or
 one style (near-black ground, one accent, Inter), with light and dark variants. No generated imagery.
 
 **Why.** A figure you can't regenerate is a claim you can't check.
+
+### D-011 · 2026-10-20 · P1 — One clock: seconds since 1970, proleptic Gregorian
+
+Every token's `time` is one float: seconds since 1970-01-01T00:00:00 UTC, leap seconds not counted (POSIX).
+Dates from before 15 October 1582 are converted from the Julian calendar first, so the Montecassino report of
+9 September 1349 sits on 17 September. `time_iso` is an optional readable copy, checked against `time` and
+left out of the token's identity hash.
+
+**Why.** One float runs from a 2016 seismogram (sub-microsecond) to a billion years ago (about a minute), so
+the same axis serves P4 and P11. A `datetime` stops at year 1.
+
+**Rejected.** `datetime64` (no deep time), a separate field for geological time (two clocks to keep in sync),
+TAI (leap seconds matter to nobody at Craton's resolution, and every data provider speaks UTC).
+
+### D-012 · 2026-10-20 · P1 — Depth is measured from the WGS84 ellipsoid
+
+`depth_km` is positive down from the WGS84 ellipsoid; negative is above it. The plan said "sea level".
+
+**Why.** The ellipsoid is one exact surface everywhere, and it is what GNSS measures natively. Sea level (the
+geoid) depends on which geoid model you pick. Catalogue depths given below sea level differ by under 0.11 km
+anywhere on Earth, which is inside the depth uncertainty of every hypocentre, and adapters record it as such.
+
+**Rejected.** Sea level (model-dependent), depth below the local surface (a moving target on a volcano).
+
+### D-013 · 2026-10-20 · P1 — Longitude lives in [-180, 180), and only there
+
+Providers write 0–360 and even −346.8 (the Nevada Geodetic Laboratory's files do). `wrap_lon` converts; the
+validator refuses anything else.
+
+**Why.** One spelling per place, or the same measurement gets two identities and dedup breaks.
+
+### D-014 · 2026-10-20 · P1 — Units belong to the instrument, as UCUM codes
+
+A token carries numbers; its instrument's registry entry says each channel's name, unit and allowed range.
+
+**Why.** Units written into every token bloat the files and let two tokens of one instrument disagree. UCUM
+codes are an existing standard. Permeability and grain size span many orders of magnitude, so their channels
+are base-10 logs (`log10(m2)`, `log10(mm)`).
+
+**Rejected.** Per-token units. A units library dependency (the registry only needs to name units, not convert
+them).
+
+### D-015 · 2026-10-20 · P1 — Uncertainty is required, positive, and says where it came from
+
+`uncertainty` (1σ per channel, never zero) is required, and so is `uncertainty_basis`: `reported` by the
+source, `derived` by a computation, or `assumed` by the adapter. Where and when are uncertain too, so an
+optional `location_uncertainty` (horizontal, vertical, time) sits next to `resolution`, which is the size of
+the patch a value describes, a different thing.
+
+**Why.** A model that weighs a monk against a GPS receiver needs to know how far to trust each, and whether
+anyone measured that trust. INGV publishes no magnitude uncertainty for the Norcia main shock: the token says
+`assumed` instead of pretending.
+
+**Rejected.** Allowing zero (nothing is measured perfectly). Folding location error into `resolution`.
+
+### D-016 · 2026-10-20 · P1 — Text labels are qualifiers, declared per instrument
+
+Magnitude type, station code, intensity scale, reference frame: each instrument declares its qualifiers,
+which ones are required, and a closed vocabulary or a pattern for each.
+
+**Why.** An ML 4.0 and an Mw 4.0 are different numbers; the magnitude type is required on every catalogue
+token, so they can never mix silently.
+
+**Rejected.** One channel per magnitude type (mostly empty vectors). Free-form metadata (unvalidated).
+
+### D-017 · 2026-10-20 · P1 — Categories are probabilities over a published class list
+
+`lithology` is 13 channels, one per class of the Global Lithological Map (Hartmann & Moosdorf 2012), and the
+channels must sum to 1. A sure answer is one-hot; "probably limestone" is a spread.
+
+**Why.** Keeps `value` numeric for every instrument, carries the geologist's doubt, and borrows a class list
+the field already uses.
+
+### D-018 · 2026-10-20 · P1 — Add-only is checked against frozen snapshots
+
+Each spec release writes `craton/spec/frozen/<version>.json` (token schema + registry). `craton check` fails
+if the code removes or redefines anything in any snapshot of the current major version. Closed vocabularies
+may grow. Descriptions are frozen with everything else. Details in `SPEC_POLICY.md`.
+
+**Why.** "Add-only" only holds if a machine refuses the alternative, same as D-008.
+
+### D-019 · 2026-10-20 · P1 — Token files are Parquet, named by their own hash
+
+One file per (instrument, year) per write, under `instrument=<name>/year=<year>/`, named by the first 16 hex
+characters of its sha256. Tokens are sorted (time, then token hash) and duplicates refused; the writer settings
+are fixed, so the same tokens always give the same bytes. An existing name is never rewritten.
+
+**Why.** Content-addressed names make files immutable and self-checking for free. Parquet is columnar,
+compressed and readable from any language.
+
+**Rejected.** Appending to a file in place (breaks immutability). HDF5 / Zarr (P1's data is tables; gridded
+data can arrive as its own store later).
+
+### D-020 · 2026-10-20 · P1 — Examples are real where the data is reachable, and labelled where not
+
+Three examples are built from raw records quoted in the code and hashed: the Norcia Mw 6.5 (INGV), the GNSS
+station ARQT the day after (Nevada Geodetic Laboratory), and Montecassino Abbey in 1349 (INGV ASMI). The
+forcing, property and derived examples carry `source: "Craton spec examples (illustrative values, not
+measurements)"`.
+
+**Why.** Examples teach, and teaching with made-up numbers that look real is how wrong facts spread.

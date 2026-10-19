@@ -35,3 +35,41 @@ Decisions: D-001 … D-010.
 
 Next: P1, the universal token. Write Token Spec v1.0.0 and its validator, with an example token for every
 `kind`, including the monk's diary from 1349.
+
+## 2026-10-20 — P1 — The universal token
+
+TLDR: Token Spec 1.0.0 shipped and frozen. Ten slots fit an earthquake, a GNSS day, a tidal forcing, six rock
+properties, a derived b-value and a monk's account from 1349. The validator refuses 72 kinds of malformed
+token, each with its own error code, and `craton check` now fails on any change that removes or redefines
+part of the spec.
+
+Built:
+- `craton/spec/`: the token model, the instrument registry (11 instruments), the clock, sequence checks, the
+  frozen snapshot `frozen/1.0.0.json` and the add-only check
+- `craton/store/`: Parquet token files by instrument and year, named by their own hash
+- `craton spec` (show, example, validate, docs); `docs/token-spec.md` generated from the code
+- 11 example tokens; three from real records (INGV event 8863681, NGL station ARQT, ASMI Montecassino)
+- `SPEC_POLICY.md`, the token figure (`scripts/figures/token_slots.py`), `lessons/P1.md`
+- tests: 54 → 200
+
+Scores: no CratonBench task moves in P1. Validator suite: 72 malformed cases refused with the expected code,
+11 / 11 examples valid; two writes of the same tokens give byte-identical files.
+
+Surprises / problems:
+- The plan put depth relative to sea level; the spec uses the WGS84 ellipsoid instead (D-012).
+- The Montecassino date is Julian. 9 September 1349 is 17 September on a Gregorian axis; the spec converts
+  once, in one tested function.
+- The Nevada Geodetic Laboratory writes ARQT's longitude as −346.80. The validator refuses it until it's
+  wrapped to 13.20 (D-013).
+- ARQT, 10 km from the epicentre, dropped 0.447 m between its 29 and 30 October 2016 daily solutions. The
+  Norcia station NRCI has no daily solutions from mid-October 2016, so the example uses ARQT.
+- INGV gives no uncertainty for the Norcia Mw 6.5 magnitude; the token says `assumed` (D-015).
+- PySolid, the planned solid-Earth tide library, has no Windows wheels (Linux and macOS only). P2 needs
+  another route to tides on the laptop.
+- A figure script called `token.py` shadowed Python's own `token` module and broke matplotlib's import.
+  Renamed to `token_slots.py`.
+
+Decisions: D-011 … D-020.
+
+Next: P2, the first adapters. Start with the INGV catalogue through FDSN, then choose how to compute
+solid-Earth tides on Windows.
