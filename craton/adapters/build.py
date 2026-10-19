@@ -141,7 +141,7 @@ def build(
         "spec": SPEC_VERSION,
         "adapters": {n: results[n].as_dict(tokens_root) for n in sorted(results)},
     }
-    snap_id = hashlib.sha256(canonical(body).encode("utf-8")).hexdigest()[:16]
+    snap_id = snapshot_id(body)
     folder = snapshots_root / region.name
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / f"{snap_id}.json"
@@ -149,6 +149,18 @@ def build(
         path.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     (folder / "LATEST").write_text(snap_id + "\n", encoding="utf-8")
     return Snapshot(snap_id, path, body)
+
+
+def snapshot_id(body: dict[str, Any]) -> str:
+    """The hash of what a build *is*: region, files and raw inputs. Health numbers are left out,
+    so a better statistic never renames unchanged data."""
+    data = {
+        **body,
+        "adapters": {
+            n: {k: v for k, v in a.items() if k != "health"} for n, a in body["adapters"].items()
+        },
+    }
+    return hashlib.sha256(canonical(data).encode("utf-8")).hexdigest()[:16]
 
 
 def latest_snapshot(snapshots_root: Path, region: str) -> Snapshot | None:

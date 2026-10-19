@@ -22,6 +22,9 @@ MC_BIN = 0.1
 MC_CORRECTION = 0.2
 """Maximum curvature underestimates completeness; +0.2 is the usual fix (Woessner & Wiemer 2005)."""
 MC_MIN_EVENTS = 50
+MC_TYPES = ("Md", "ML")
+"""Completeness is estimated per magnitude type, never across types: INGV reported Md until 2004
+and ML from 2005."""
 
 
 def _day(t: float) -> str:
@@ -90,13 +93,18 @@ class CatalogCollector(Collector):
     def extra(self) -> dict[str, Any]:
         times = np.sort(np.array(self.times))
         gap = float(np.diff(times).max() / SECONDS_PER_DAY) if len(times) > 1 else None
-        ml = self.mags.get("ML", [])
-        years = sorted({y for y, _ in ml})
-        mc = {}
-        for y in years:
-            value = max_curvature_mc(np.array([m for yy, m in ml if yy == y]))
-            if value is not None:
-                mc[str(y)] = value
+        mc: dict[str, dict[str, float]] = {}
+        for mt in MC_TYPES:
+            by_year: dict[int, list[float]] = defaultdict(list)
+            for y, m in self.mags.get(mt, []):
+                by_year[y].append(m)
+            per_year = {}
+            for y in sorted(by_year):
+                value = max_curvature_mc(np.array(by_year[y]))
+                if value is not None:
+                    per_year[str(y)] = value
+            if per_year:
+                mc[mt] = per_year
         largest = None
         if self.largest is not None:
             m, mt, day, eid = self.largest
@@ -105,7 +113,7 @@ class CatalogCollector(Collector):
             "magnitude_types": dict(sorted(self.types.items())),
             "largest": largest,
             "longest_gap_days": round(gap, 2) if gap is not None else None,
-            "mc_ml_per_year": mc,
+            "mc_per_year": mc,
         }
 
 

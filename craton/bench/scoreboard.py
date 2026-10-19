@@ -45,13 +45,15 @@ def _says(name: str, health: dict[str, Any]) -> str:
         h = health["seismic_catalog"]
         big = h["largest"]
         types = ", ".join(f"{k} {_n(v)}" for k, v in h["magnitude_types"].items())
-        mc = h["mc_ml_per_year"]
-        years = sorted(mc)
-        picks = [y for y in years if int(y) % 10 == 5] or years[:: max(1, len(years) // 4)]
-        mc_text = " · ".join(f"{y} {mc[y]:.1f}" for y in picks)
+        mc_bits = []
+        for mt, per_year in h["mc_per_year"].items():
+            years = sorted(per_year)
+            picks = [y for y in years if int(y) % 10 == 5] or years[:1]
+            mc_bits.append(f"{mt} " + ", ".join(f"{per_year[y]:.1f} in {y}" for y in picks))
+        mc_text = "; ".join(mc_bits)
         parts = [f"largest {big['type']} {big['magnitude']:g} on {big['day']}", types]
         if mc_text:
-            parts.append(f"completeness Mc(ML) {mc_text}")
+            parts.append(f"completeness {mc_text}")
         if h["longest_gap_days"] is not None:
             parts.append(f"longest quiet spell {h['longest_gap_days']:g} days")
         return "; ".join(parts)

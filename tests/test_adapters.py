@@ -387,3 +387,20 @@ def test_a_stranger_adds_a_source_without_touching_the_core(tmp_path: Path) -> N
         assert snap.body["adapters"]["test_borehole"]["tokens"] == 1
     finally:
         ADAPTERS.pop("test_borehole")
+
+
+def test_health_numbers_never_rename_a_snapshot(tmp_path: Path) -> None:
+    import copy
+
+    from craton.adapters.build import snapshot_id
+
+    raw = RawStore(tmp_path / "raw")
+    fetch(QUAKE, raw, _quake_http())
+    snap = build(QUAKE, raw, tmp_path / "t", tmp_path / "s")
+    assert snapshot_id(snap.body) == snap.id
+    better = copy.deepcopy(snap.body)
+    better["adapters"]["ingv_catalog"]["health"] = {"a new statistic": 1}
+    assert snapshot_id(better) == snap.id
+    moved = copy.deepcopy(snap.body)
+    moved["adapters"]["ingv_catalog"]["files"][0]["sha256"] = "0" * 64
+    assert snapshot_id(moved) != snap.id

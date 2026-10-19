@@ -2,8 +2,9 @@
 
 Every located earthquake in the region since 1985, all magnitudes, one ``seismic_catalog`` token
 each. Requests go month by month in the FDSN text format; the service refuses any request over
-20,000 events (HTTP 413), so a month that busy (October 2016 came close) is fetched in halves
-and the pieces are joined into the month's one raw file.
+20,000 events (HTTP 413), so a month that busy is fetched in halves and the pieces are joined into
+the month's one raw file. Central Italy's busiest month, November 2016, has 13,209; a bigger
+region will need the split.
 """
 
 from __future__ import annotations
@@ -154,7 +155,13 @@ class IngvCatalog(Adapter):
                 "INGV revises recent months. A refresh brings new bytes, a new hash and new "
                 "tokens; the old version stays in the raw store.",
                 "Event types other than earthquake, induced event, quarry blast and explosion are "
-                "refused and counted, never guessed.",
+                "refused and counted, never guessed. In central Italy that is five controlled "
+                "explosions and one anthropogenic event.",
+                "120 events from 2009-2012 (and six from 1986-1990) carry the generic magnitude type "
+                "`M` and author `UNKNOWN`. Spec 1.0.0 has no `M`, so they are refused and counted; "
+                "a later minor version can add it to the vocabulary.",
+                "The catalogue reports duration magnitude Md until 2004 and local magnitude ML from "
+                "2005. Completeness is estimated for each type separately.",
             ),
             adapter_version=self.version,
         )
