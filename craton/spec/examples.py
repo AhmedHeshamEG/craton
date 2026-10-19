@@ -118,7 +118,8 @@ def arquata_gnss() -> dict[str, Any]:
         "provenance": {
             "source": "Nevada Geodetic Laboratory (geodesy.unr.edu)",
             "dataset_version": "IGS20 tenv3, retrieved 2026-10-20",
-            "license": "CC-BY-4.0",
+            # NGL states no licence: data as-is, cite Blewitt et al. (2018). See D-024.
+            "license": "LicenseRef-NGL-as-is",
             "adapter_version": "1.0.0",
             "content_hash": sha256_text(RAW_ARQT),
             "record": f"{f[0]}.tenv3 {f[1]}",

@@ -1,0 +1,12 @@
+# Craton-mini's patch of the Earth: the central Apennines and their surroundings.
+# Holds L'Aquila 2009, the Amatrice-Visso-Norcia sequence of 2016-17 and Campotosto 2017.
+name: central_italy
+description: Central Italy, from Tuscany to Molise, coast to coast. Craton-mini's region.
+box:
+  lat_min: 41.0
+  lat_max: 44.0
+  lon_min: 11.5
+  lon_max: 15.0
+start: "1985-01-01T00:00:00Z"   # the INGV instrumental catalogue starts here
+end: "2026-10-01T00:00:00Z"     # fixed; moving it is a new snapshot
+adapters: [ingv_catalog, ngl_gnss, iers_tides]

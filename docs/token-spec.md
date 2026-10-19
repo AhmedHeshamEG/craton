@@ -307,7 +307,7 @@ One per kind, plus the monk. Tokens marked *Craton spec examples (illustrative v
   "provenance": {
     "source": "Nevada Geodetic Laboratory (geodesy.unr.edu)",
     "dataset_version": "IGS20 tenv3, retrieved 2026-10-20",
-    "license": "CC-BY-4.0",
+    "license": "LicenseRef-NGL-as-is",
     "adapter_version": "1.0.0",
     "content_hash": "sha256:10582813560d77322c853bc6ee1478a9716606977f7da53ad630d721168e051c",
     "record": "ARQT.tenv3 16OCT31",

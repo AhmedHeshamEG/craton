@@ -212,6 +212,19 @@ def fingerprint_problem(path: Path) -> str | None:
     return None
 
 
+def read_columns(path: Path, columns: Sequence[str]) -> dict[str, list[Any]]:
+    """A few columns of a token file as plain lists, fingerprint checked, no re-validation.
+
+    For code that needs where and when of many tokens fast (tides at every catalogue event,
+    health reports). Anything that trusts the full token should use :func:`read_tokens`.
+    """
+    problem = fingerprint_problem(path)
+    if problem:
+        raise ValueError(problem)
+    table = pq.read_table(path, columns=list(columns))
+    return {c: table.column(c).to_pylist() for c in columns}
+
+
 def read_tokens(path: Path, registry: Registry | None = None) -> list[Token]:
     """Read a token file back, checking its fingerprint and re-validating every token."""
     problem = fingerprint_problem(path)
