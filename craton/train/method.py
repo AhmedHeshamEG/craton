@@ -166,6 +166,16 @@ class CratonMini:
         mag = mag / mag.sum(axis=1, keepdims=True)
         return GriddedForecast(np.concatenate(rates), mag[:, None, :])
 
+    def write_cards(self, root: Any) -> Any:
+        """docs/models/<config>.md: the cards of every checkpoint this method has loaded."""
+        folders = [self.key_from_meta(meta).folder(root) for meta in self._meta.values()]
+        return checkpoint.write_index(
+            root, folders, root / "docs" / "models" / f"craton-{self.config_name}.md"
+        )
+
+    def key_from_meta(self, meta: dict[str, Any]) -> checkpoint.CheckpointKey:
+        return checkpoint.CheckpointKey(meta["split"], meta["split_id"], self.config, meta["seed"])
+
     # ------------------------------------------------------------ CB-15
 
     def efficiency(self, ctx: BenchContext, seed: int) -> dict[str, Any]:

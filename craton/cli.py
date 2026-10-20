@@ -539,6 +539,9 @@ def cmd_bench(args: argparse.Namespace) -> int:
         config_hash=getattr(method, "config_hash", "baseline"),
     )
     path = harness.save_pending(root, results)
+    if hasattr(method, "write_cards"):
+        cards = method.write_cards(root)
+        console.print(f"[dim]model cards: {cards.relative_to(root).as_posix()}[/]")
     t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
     for col in ("task", "score", "metric"):
         t.add_column(col)

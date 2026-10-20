@@ -133,3 +133,22 @@ def render_card(meta: dict[str, Any]) -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def write_index(root: Path, folders: list[Path], out: Path) -> Path:
+    """One public page holding the model card of every checkpoint behind a benchmark run."""
+    cards = [(f / "card.md").read_text(encoding="utf-8").strip() for f in sorted(folders)]
+    head = [
+        "<!-- Written by `craton bench run craton-mini` from the model cards next to each "
+        "checkpoint. -->",
+        "",
+        "# Model cards",
+        "",
+        "One card per checkpoint: three seeds for each split a CratonBench task trains on. "
+        "The checkpoints themselves stay out of git; `craton train SPLIT` rebuilds any of them.",
+        "",
+    ]
+    body = [c.replace("# Model card · ", "## ", 1) + "\n" for c in cards]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(head + body), encoding="utf-8", newline="\n")
+    return out
