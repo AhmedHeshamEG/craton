@@ -501,6 +501,21 @@ def cmd_bench(args: argparse.Namespace) -> int:
 
     ctx = BenchContext(root)
     log = lambda m: console.print(f"[dim]{m}[/]")  # noqa: E731
+    if action == "ablate":
+        from craton.bench import ablation
+
+        variants = args.variants or list(ablation.VARIANTS)
+        unknown = [v for v in variants if v not in ablation.VARIANTS]
+        if unknown:
+            console.print("variants: " + ", ".join(ablation.VARIANTS))
+            return 2
+        _title(f"bench ablate · {', '.join(variants)}")
+        seeds = tuple(args.seeds) if args.seeds else load_config("mini", root).train.seeds
+        ablation.run(ctx, variants, seeds, log)
+        doc = ablation.write_doc(root)
+        console.print(f"wrote {doc.relative_to(root).as_posix()}")
+        console.print()
+        return 0
     if action == "prepare":
         _title(f"bench prepare · snapshot {ctx.snapshot_id}")
         problems = harness.prepare(ctx, freeze=args.freeze, log=log)
@@ -733,16 +748,17 @@ def build_parser() -> argparse.ArgumentParser:
     dd.add_argument("--refresh", action="store_true", help="fetch again even if cached")
     dd.set_defaults(func=cmd_data)
 
-    b = sub.add_parser("bench", help="CratonBench: list, prepare, leaks, run METHOD, cards")
-    b.add_argument("action", choices=("list", "prepare", "leaks", "run", "cards"))
+    b = sub.add_parser("bench", help="CratonBench: list, prepare, leaks, run METHOD, cards, ablate")
+    b.add_argument("action", choices=("list", "prepare", "leaks", "run", "cards", "ablate"))
     b.add_argument("method", nargs="?", help="baseline to run (see `craton bench list`)")
     b.add_argument("--freeze", action="store_true", help="freeze the record, or its new tasks")
     b.add_argument("--tasks", nargs="*", help="only these task IDs")
     b.add_argument("--seeds", nargs="*", type=int, help="default: the mini config's seeds")
+    b.add_argument("--variants", nargs="*", help="ablate: which variants (default: all four)")
     b.set_defaults(func=cmd_bench)
 
     t = sub.add_parser("train", help="train Craton-mini on a split (checkpoint + model card)")
-    t.add_argument("split", choices=("pretrain", "cb02_fit", "cb03_fit"))
+    t.add_argument("split", choices=("pretrain", "cb02_fit", "cb03_fit", "cb17_fit"))
     t.add_argument("--config", default="mini")
     t.add_argument("--seeds", nargs="*", type=int, help="default: the config's seeds")
     t.add_argument("--again", action="store_true", help="retrain even if a checkpoint exists")

@@ -117,16 +117,18 @@ def _fill_quakes(src: Sources, w: Window, t: float, share: float, rng: np.random
 class Masked:
     """Masked windows of every kind, a fresh mask every time."""
 
-    def __init__(self, src: Sources, mask_share: float) -> None:
+    def __init__(
+        self, src: Sources, mask_share: float, kinds: dict[str, float] | None = None
+    ) -> None:
         if src.quakes and len(src.cat) < src.length:
             raise ValueError(f"{len(src.cat)} quakes is fewer than one window of {src.length}")
         self.src, self.share = src, mask_share
-        kinds = dict(KINDS)
+        kinds = {k: w for k, w in (kinds or KINDS).items() if w > 0}
         if src.gnss is None:
-            kinds.pop("gnss")
+            kinds.pop("gnss", None)
         if not src.quakes:
-            kinds.pop("quake")
-            kinds.pop("region")
+            kinds.pop("quake", None)
+            kinds.pop("region", None)
         total = sum(kinds.values())
         self.kinds = {k: v / total for k, v in kinds.items()}
         self.quake_rows = np.arange(len(src.cat)) if src.quakes else np.zeros(0, np.int64)

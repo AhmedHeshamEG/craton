@@ -121,7 +121,7 @@ def train(
         weights.pop("gnss", None)
     if not src.quakes:
         weights.pop("masked", None)
-    masked = Masked(src, t.mask_share) if {"masked", "gnss"} & set(weights) else None
+    masked = Masked(src, t.mask_share, t.windows) if {"masked", "gnss"} & set(weights) else None
     nextday = None
     if "next_day" in weights and next_day_window is not None:
         from craton.model.heads import forecast_grid

@@ -93,25 +93,35 @@ def render_card(meta: dict[str, Any]) -> str:
     s, cfg, data = meta["stats"], meta["config"], meta["data"]
     p = s["params"]
     objectives = ", ".join(f"{k} x{v:g}" for k, v in s["objectives"].items() if v > 0)
+    inputs = cfg["model"].get("inputs", ["seismic_catalog"])
+    reads = ", ".join(READS.get(i, i) for i in inputs)
+    heads = p["masked_head"] + p["next_day_head"] + p.get("gnss_head", 0)
+    seen = f"{data['quakes']:,} quakes"
+    if data.get("gnss_days"):
+        seen += f", {data['gnss_days']:,} GNSS station-days"
+    if data.get("tide_hours"):
+        seen += f", {data['tide_hours']:,} hourly tide samples"
     lines = [
         f"# Model card · {meta['name']}",
         "",
-        "Craton-mini v0: a transformer over the INGV earthquake catalogue of central Italy. "
-        "It answers with probability distributions only: bins of place and size for a hidden "
-        "quake, and an expected number of quakes per cell and magnitude bin for the next day. "
-        "It forecasts; it does not predict earthquakes.",
+        f"Craton-mini: a transformer over central Italy that reads {reads}. It answers with "
+        "probability distributions only: bins of place and size for a hidden quake, a "
+        "millimetre-scale distribution for a hidden GNSS day, and an expected number of quakes "
+        "per cell and magnitude bin for the next day. It forecasts; it does not predict "
+        "earthquakes.",
         "",
         "| | |",
         "|---|---|",
         f"| Trained on | split `{meta['split']}` (manifest `{meta['split_id'][:16]}`), "
-        f"{data['quakes']:,} quakes, {data['first']} → {data['last']} |",
+        f"{seen}, {data['first']} → {data['last']} |",
+        f"| Reads | {', '.join(f'`{i}`' for i in inputs)} |",
         f"| Snapshot | `{data['snapshot']}` |",
         f"| Objectives | {objectives} |",
         f"| Shape | d = {cfg['model']['d_model']}, {cfg['model']['n_layers']} layers, "
         f"{cfg['model']['n_heads']} heads, context {cfg['model']['context_tokens']} tokens, "
         f"{cfg['model']['positional']} |",
-        f"| Parameters | {p['total']:,} (trunk {p['trunk']:,}, encoder {p['encoder']:,}, "
-        f"heads {p['masked_head'] + p['next_day_head']:,}) |",
+        f"| Parameters | {p['total']:,} (trunk {p['trunk']:,}, encoders {p['encoder']:,}, "
+        f"heads {heads:,}) |",
         f"| Seed | {meta['seed']} |",
         f"| Training | {s['steps']} steps, best at {s['best_step']}, {s['tokens_seen']:,} tokens, "
         f"{s['train_seconds'] / 60:.1f} min on {s['device']} ({s['precision']}) |",
@@ -124,20 +134,31 @@ def render_card(meta: dict[str, Any]) -> str:
         "**Intended use.** Research and teaching: benchmark runs on CratonBench, and a "
         "first point on Craton's learning curve.",
         "",
-        "**Not for.** Any decision about safety. The model has seen one region and one "
-        "instrument, and it has not been calibrated (that is P6).",
+        "**Not for.** Any decision about safety. The model has seen one region, and it has "
+        "not been calibrated (that is P6).",
         "",
-        "**Known limits.** Catalogue only (no GNSS, no tides). Magnitudes are the catalogue's "
-        "preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the "
-        "CB-02 grid.",
+        "**Known limits.** Magnitudes are the catalogue's preferred value of any type (Md "
+        "before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's "
+        "daily solutions, which already have the solid-Earth tide modelled out. The tide it "
+        "reads is one hourly series at the region's centre.",
         "",
     ]
     return "\n".join(lines)
 
 
+READS = {
+    "seismic_catalog": "the INGV earthquake catalogue",
+    "gnss_daily": "daily GNSS positions (NGL)",
+    "solid_earth_tide": "the solid-Earth tide (IERS 2010)",
+}
+
+
 def write_index(root: Path, folders: list[Path], out: Path) -> Path:
     """One public page holding the model card of every checkpoint behind a benchmark run."""
-    cards = [(f / "card.md").read_text(encoding="utf-8").strip() for f in sorted(folders)]
+    cards = []
+    for f in sorted(folders):  # re-rendered from the metadata, so no card is ever stale
+        meta = json.loads((f / "card.json").read_text(encoding="utf-8"))
+        cards.append(render_card(meta).strip())
     head = [
         "<!-- Written by `craton bench run craton-mini` from the model cards next to each "
         "checkpoint. -->",

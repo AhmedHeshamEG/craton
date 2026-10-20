@@ -85,6 +85,10 @@ class TrainSettings(_Strict):
     eval_every: int = Field(default=100, gt=0, description="Steps between validation passes.")
     patience: int = Field(default=4, gt=0, description="Validations without progress, then stop.")
     mask_share: float = Field(default=0.15, gt=0, lt=1, description="Share of quakes hidden.")
+    windows: dict[str, float] = Field(
+        default_factory=lambda: {"quake": 0.45, "gnss": 0.40, "region": 0.15},
+        description="How often each kind of masked window is drawn (craton.train.data).",
+    )
     objectives: dict[str, float] = Field(
         default_factory=lambda: {"masked": 1.0, "next_day": 1.0},
         description="Training objectives and their weights.",
