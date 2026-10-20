@@ -1,6 +1,6 @@
 [project]
 name = "craton-earth"
-version = "0.3.0"
+version = "0.4.0"
 description = "One model for the solid Earth: a foundation model for geology, built the way LLMs are built."
 readme = "README.md"
 license = "Apache-2.0"
@@ -31,6 +31,7 @@ dependencies = [
     "pydantic>=2.9",
     "pyyaml>=6.0.2",
     "rich>=13.9",
+    "scipy>=1.14",
 ]
 
 [project.optional-dependencies]
@@ -115,6 +116,11 @@ module = ["craton.hardware"]
 disallow_untyped_calls = false
 
 [[tool.mypy.overrides]]
-# PyArrow ships no type information.
-module = ["pyarrow", "pyarrow.*"]
+# PyArrow and SciPy ship no type information.
+module = ["pyarrow", "pyarrow.*", "scipy", "scipy.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# ETAS gets its likelihood gradient from PyTorch's autograd, whose calls are untyped.
+module = ["craton.bench.etas"]
+disallow_untyped_calls = false

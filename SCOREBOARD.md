@@ -4,42 +4,60 @@
 
 # Scoreboard
 
-Every number here comes from a script and is a mean ± std over 3 seeds. The ratchet only lets a number in if no other task gets worse beyond noise, so this table can only improve.
+Every number here comes from a script and is a mean ± std over 3 seeds. The ratchet only lets a number in if no other task gets worse beyond noise, so this table can only improve. The **floor** is the best simple method on each task: what a Craton model has to beat before it means anything.
 
 ## Headline
 
-| | Task | Now | Arrives |
-|---|---|---|---|
-| **Geo-perplexity** | CB-01 · bits per masked token on held-out regions and eras | not measured yet | P3 |
-| **Apennines 2016-17 forecast** | CB-02 · information gain over ETAS, CSEP tests | not measured yet | P3 |
-| **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | P6 |
+| | Task | Craton | Floor | Arrives |
+|---|---|---|---|---|
+| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | not measured yet | 22.66 ± 0 ↓ · climatology | P3 |
+| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | not measured yet | −7.118 ± 0 ↑ · etas | P3 |
+| **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P6 |
 
 ## Every task
 
-| ID | Task | Score | Model | Run | Phase |
-|---|---|---|---|---|---|
-| CB-01 | Geo-perplexity | · | · | · | P3 |
-| CB-02 | Apennines 2016-17 forecast | · | · | · | P3 |
-| CB-03 | L'Aquila 2009 era holdout | · | · | · | P3 |
-| CB-04 | GPS gap-fill | · | · | · | P3 |
-| CB-05 | Calibration | · | · | · | P6 |
-| CB-06 | Unseen region | · | · | · | P6 |
-| CB-07 | Fake-precursor attack | · | · | · | P6 |
-| CB-08 | Physics sanity | · | · | · | P6 |
-| CB-09 | Sim-to-real gap | · | · | · | P7 |
-| CB-10 | Planted discovery | · | · | · | P8 |
-| CB-11 | Predictability meter | · | · | · | P6 |
-| CB-12 | Interpreter faithfulness | · | · | · | P9 |
-| CB-13 | Microscope | · | · | · | P10 |
-| CB-14 | Deep time | · | · | · | P11 |
-| CB-15 | Efficiency | · | · | · | P4 |
-| CB-16 | Scaling-law fit | · | · | · | P12 |
-| CB-17 | In-context adaptation | · | · | · | P5 |
-| CB-18 | Ladder rung 3 | · | · | · | P12 |
+| ID | Task | Craton | Floor | Phase |
+|---|---|---|---|---|
+| CB-01 | Geo-perplexity | · | 22.66 ± 0 ↓ · climatology | P3 |
+| CB-02 | Apennines 2016-17 forecast | · | −7.118 ± 0 ↑ · etas | P3 |
+| CB-03 | L'Aquila 2009 era holdout | · | −9.396 ± 0 ↑ · etas | P3 |
+| CB-04 | GPS gap-fill | · | 17.77 ± 0 ↓ · idw_trend | P3 |
+| CB-05 | Calibration | · | · | P6 |
+| CB-06 | Unseen region | · | · | P6 |
+| CB-07 | Fake-precursor attack | · | · | P6 |
+| CB-08 | Physics sanity | · | · | P6 |
+| CB-09 | Sim-to-real gap | · | · | P7 |
+| CB-10 | Planted discovery | · | · | P8 |
+| CB-11 | Predictability meter | · | · | P6 |
+| CB-12 | Interpreter faithfulness | · | · | P9 |
+| CB-13 | Microscope | · | · | P10 |
+| CB-14 | Deep time | · | · | P11 |
+| CB-15 | Efficiency | · | · | P4 |
+| CB-16 | Scaling-law fit | · | · | P12 |
+| CB-17 | In-context adaptation | · | · | P5 |
+| CB-18 | Ladder rung 3 | · | · | P12 |
+
+## The floor
+
+Simple methods, scored before any model exists. Each is ratcheted against itself.
+
+| Task | Method | Score | Metric | What else it says |
+|---|---|---|---|---|
+| CB-01 | climatology | 22.66 ± 0 ↓ | bits per masked token, mean over instruments | gnss_daily 22.8 bits · seismic_catalog 22.5 bits |
+| CB-02 | etas | −7.118 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 583 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 4% |
+| CB-02 | poisson | −14.64 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 75 expected; M≥1.5: −9.69 bits/quake; days with too few M≥3: 21% |
+| CB-03 | etas | −9.396 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
+| CB-03 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
+| CB-04 | idw_trend | 17.77 ± 0 ↓ | RMSE (mm), hidden stations, offset per station and component removed | east 24.2 · north 15.2 · up 11.4 mm over 29 stations, 86,373 days |
 
 ## History
 
-No runs yet. The first real numbers are the simple baselines in P3, scored before any model exists, so the first model has something honest to beat.
+| Accepted (UTC) | Run | Model | Ratchet |
+|---|---|---|---|
+| 2026-10-20 02:18 | `20261020-021726-etas` | etas (baseline) | 2 new |
+| 2026-10-20 02:18 | `20261020-020924-poisson` | poisson (baseline) | 2 new |
+| 2026-10-20 02:18 | `20261020-020852-idw-trend` | idw_trend (baseline) | 1 new |
+| 2026-10-20 02:18 | `20261020-020818-climatology` | climatology (baseline) | 1 new |
 
 ## Data
 

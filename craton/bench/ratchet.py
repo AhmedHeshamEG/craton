@@ -11,6 +11,7 @@ small losses can't stack up into a big one.
 
 from __future__ import annotations
 
+import statistics
 from dataclasses import dataclass
 from typing import Literal
 
@@ -74,9 +75,10 @@ def judge(board: Scoreboard, run: RunResults) -> Report:
     """Compare a run with the scoreboard, task by task."""
     verdicts: list[Verdict] = []
     candidates = {r.task_id: r for r in run.results}
+    lane = board.lane(run)
 
-    for task_id in sorted(set(board.entries) | set(candidates)):
-        champ = board.entries.get(task_id)
+    for task_id in sorted(set(lane) | set(candidates)):
+        champ = lane.get(task_id)
         cand = candidates.get(task_id)
 
         if cand is None:
@@ -137,11 +139,12 @@ def accept(board: Scoreboard, run: RunResults, report: Report) -> Scoreboard:
 
     when = now()
     entries = dict(board.entries)
+    baselines = {t: dict(by) for t, by in board.baselines.items()}
     by_id = {r.task_id: r for r in run.results}
     for v in report.verdicts:
         if v.status in ("new", "improved"):
             r = by_id[v.task_id]
-            entries[v.task_id] = ScoreEntry(
+            entry = ScoreEntry(
                 task_id=r.task_id,
                 metric=r.metric,
                 direction=r.direction,
@@ -152,8 +155,18 @@ def accept(board: Scoreboard, run: RunResults, report: Report) -> Scoreboard:
                 run_id=run.run_id,
                 model=run.model,
                 accepted=when,
+                extras={k: statistics.fmean(vs) for k, vs in sorted(r.extras.items())},
             )
-    item = HistoryItem(run_id=run.run_id, model=run.model, accepted=when, summary=report.summary)
+            if run.kind == "model":
+                entries[v.task_id] = entry
+            else:
+                baselines.setdefault(v.task_id, {})[run.model] = entry
+    item = HistoryItem(
+        run_id=run.run_id, model=run.model, kind=run.kind, accepted=when, summary=report.summary
+    )
     return Scoreboard(
-        schema_version=board.schema_version, entries=entries, history=(*board.history, item)
+        schema_version=board.schema_version,
+        entries=entries,
+        baselines=baselines,
+        history=(*board.history, item),
     )

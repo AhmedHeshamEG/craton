@@ -131,3 +131,58 @@ def test_accept_refuses_same_run_twice() -> None:
 def test_duplicate_task_in_one_run_rejected() -> None:
     with pytest.raises(ValueError, match="only once"):
         run(task(), task())
+
+
+def baseline_run(*results: TaskResult, name: str = "etas", run_id: str = "b1") -> RunResults:
+    return RunResults(
+        run_id=run_id,
+        model=name,
+        kind="baseline",
+        config_hash="baseline",
+        git_commit="deadbeef",
+        created=datetime(2026, 10, 20, tzinfo=UTC),
+        results=results,
+    )
+
+
+def test_baselines_have_their_own_lane() -> None:
+    b = baseline_run(task("CB-02", (-7.1, -7.1, -7.1), direction="higher"))
+    board = accept(Scoreboard(), b, judge(Scoreboard(), b))
+    assert board.entries == {}
+    assert board.baselines["CB-02"]["etas"].mean == pytest.approx(-7.1)
+    # A Craton model that loses to ETAS still lands: negative results go on the board.
+    model = run(task("CB-02", (-9.0, -9.1, -8.9), direction="higher"))
+    report = judge(board, model)
+    assert report.passed
+    assert status(board, model, "CB-02") == "new"
+    board = accept(board, model, report)
+    assert board.entries["CB-02"].mean == pytest.approx(-9.0)
+    assert board.baselines["CB-02"]["etas"].mean == pytest.approx(-7.1)
+
+
+def test_a_baseline_is_ratcheted_against_itself() -> None:
+    first = baseline_run(task("CB-02", (-7.1, -7.1, -7.1), direction="higher"))
+    board = accept(Scoreboard(), first, judge(Scoreboard(), first))
+    worse = baseline_run(task("CB-02", (-8.0, -8.0, -8.0), direction="higher"), run_id="b2")
+    assert status(board, worse, "CB-02") == "regressed"
+    other = baseline_run(
+        task("CB-02", (-12.0, -12.0, -12.0), direction="higher"), name="poisson", run_id="b3"
+    )
+    assert status(board, other, "CB-02") == "new"
+    missing = baseline_run(task("CB-03", (-9.0, -9.0, -9.0), direction="higher"), run_id="b4")
+    assert status(board, missing, "CB-02") == "missing"
+
+
+def test_extras_are_kept_as_means() -> None:
+    r = TaskResult(
+        task_id="CB-04",
+        metric="mm",
+        direction="lower",
+        fingerprint=FP,
+        seeds=(0, 1, 2),
+        values=(1.0, 1.0, 1.0),
+        extras={"rmse_up_mm": (2.0, 4.0, 6.0)},
+    )
+    b = baseline_run(r, name="idw_trend")
+    board = accept(Scoreboard(), b, judge(Scoreboard(), b))
+    assert board.baselines["CB-04"]["idw_trend"].extras == {"rmse_up_mm": 4.0}

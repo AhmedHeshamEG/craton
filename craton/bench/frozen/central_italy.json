@@ -1,0 +1,182 @@
+{
+  "region": "central_italy",
+  "snapshot": "96a163f798d8f9cc",
+  "definition": {
+    "version": "1",
+    "eras": [
+      {
+        "name": "era_a",
+        "start": "2016-08-24T00:00:00Z",
+        "end": "2018-01-01T00:00:00Z"
+      },
+      {
+        "name": "era_b",
+        "start": "2009-01-01T00:00:00Z",
+        "end": "2010-01-01T00:00:00Z"
+      }
+    ],
+    "heldout": {
+      "share": 0.1,
+      "min_days": 730,
+      "neighbours": 3,
+      "neighbour_km": 50.0,
+      "salt": "craton-heldout-stations-v1",
+      "max_jump_m": 1.0
+    },
+    "splits": {
+      "pretrain": {
+        "name": "pretrain",
+        "purpose": "general training; CB-01 and CB-04 baselines",
+        "excluded": [
+          {
+            "name": "era_a",
+            "start": "2016-08-24T00:00:00Z",
+            "end": "2018-01-01T00:00:00Z"
+          },
+          {
+            "name": "era_b",
+            "start": "2009-01-01T00:00:00Z",
+            "end": "2010-01-01T00:00:00Z"
+          }
+        ],
+        "before": null,
+        "heldout_stations_excluded": true
+      },
+      "cb02_fit": {
+        "name": "cb02_fit",
+        "purpose": "fitting for CB-02 (pseudo-prospective)",
+        "excluded": [],
+        "before": "2016-08-24T00:00:00Z",
+        "heldout_stations_excluded": true
+      },
+      "cb03_fit": {
+        "name": "cb03_fit",
+        "purpose": "fitting for CB-03 (pseudo-prospective)",
+        "excluded": [],
+        "before": "2009-01-01T00:00:00Z",
+        "heldout_stations_excluded": true
+      }
+    }
+  },
+  "heldout_stations": [
+    "AT03",
+    "AT08",
+    "AT10",
+    "ATMI",
+    "AZRA",
+    "BAR2",
+    "BENE",
+    "CADG",
+    "CAMU",
+    "CIPV",
+    "FRES",
+    "MRRA",
+    "MUR1",
+    "OVRA",
+    "PAVO",
+    "PESR",
+    "PIET",
+    "PIG3",
+    "RETO",
+    "ROU3",
+    "RSM1",
+    "SGRE",
+    "SUBL",
+    "SULM",
+    "TRIV",
+    "UNOV",
+    "VCAH",
+    "VCRA",
+    "VTRA"
+  ],
+  "splits": {
+    "pretrain": {
+      "id": "348835f470820aac",
+      "tokens": 1350241,
+      "left_out": 408619
+    },
+    "cb02_fit": {
+      "id": "bcf9ffb66b6f8951",
+      "tokens": 865700,
+      "left_out": 893160
+    },
+    "cb03_fit": {
+      "id": "7f4e735423f10c53",
+      "tokens": 333103,
+      "left_out": 1425757
+    }
+  },
+  "tasks": {
+    "CB-01": {
+      "name": "Geo-perplexity",
+      "metric": "bits per masked token, mean over instruments",
+      "direction": "lower",
+      "fingerprint": "faa360aee280f00136ec7b9ef49a6eda9b979c8cc0acda317b9a5d70763a8ef6",
+      "files": {
+        "answers.parquet": "9214301e3caad383a7599bbce836f7077c347b00d1433aabf43d3633f41f88b5",
+        "hidden.parquet": "33b355a35bde31237c87def1c6e37158f375ff7fe1134d55d31a7ee3764fb867",
+        "queries.parquet": "0f50b03f1a9f61cd38a34f3c37730d7050f57b4609cd245f3a6d495f08b719a3"
+      },
+      "summary": {
+        "queries": 28000,
+        "seismic_catalog": 17310,
+        "gnss_daily": 10690,
+        "hidden_tides": 17310
+      }
+    },
+    "CB-02": {
+      "name": "Apennines 2016-17 forecast",
+      "metric": "log-likelihood per earthquake (bits), M\u22653, daily 0.1\u00b0 forecasts",
+      "direction": "higher",
+      "fingerprint": "4186dd5479fe61632c7a4e1ca036f6edd2d68491a080f3c8ebf8fbc9e6503a10",
+      "files": {
+        "observed.parquet": "d160a0916717b9b2b31c7a5b1a5c3e3b16c2e99f99cd18172d9241ece98e53d3"
+      },
+      "summary": {
+        "days": 494,
+        "M>=3": 1065,
+        "M>=1.5": 42807,
+        "magnitude_types": {
+          "ML": 42381,
+          "Md": 291,
+          "Mw": 135
+        },
+        "largest": 6.5
+      }
+    },
+    "CB-03": {
+      "name": "L'Aquila 2009 era holdout",
+      "metric": "log-likelihood per earthquake (bits), M\u22653, daily 0.1\u00b0 forecasts",
+      "direction": "higher",
+      "fingerprint": "a12a2e1ceb896ad14b006e26f66a6fd7991ae28c65339783ab16536c65d4b82c",
+      "files": {
+        "observed.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f"
+      },
+      "summary": {
+        "days": 365,
+        "M>=3": 315,
+        "M>=1.5": 11070,
+        "magnitude_types": {
+          "ML": 10492,
+          "Md": 510,
+          "Mw": 68
+        },
+        "largest": 6.1
+      }
+    },
+    "CB-04": {
+      "name": "GPS gap-fill",
+      "metric": "RMSE (mm), hidden stations, offset per station and component removed",
+      "direction": "lower",
+      "fingerprint": "9449170471e9295c5e4e486a3d34865425ade1be81c86a1ee28fe5131da429fb",
+      "files": {
+        "answers.parquet": "2a6cec7bf1b2a060963cc7e5dbc776fd837169ae73ba9a351f2fe7af9daacc3b",
+        "queries.parquet": "83c839b610ff890d78111b1bccce58bf7a23817836c044defd9dce057fc43e31"
+      },
+      "summary": {
+        "stations": 29,
+        "station_days": 86373
+      }
+    }
+  }
+}
