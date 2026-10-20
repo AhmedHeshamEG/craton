@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P2%20of%20P12-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P3%20of%20P12-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -108,8 +108,36 @@ predictability meter. Every version has to shrink it, or it doesn't count as pro
 | **Predictability meter** | How wide is the 90% window, in days, kilometres and magnitude? | Calibrated uncertainty |
 | **Information gain over ETAS** | Does it beat the standard statistical model on a real sequence (Amatrice–Norcia, 2016–17)? | Beating the strong baseline |
 
-Today all three read *not measured yet*, on purpose. The simple baselines get scored first (phase P3), so the
-first model has something honest to beat. Live numbers: [`SCOREBOARD.md`](SCOREBOARD.md).
+Craton's own column still reads *not measured yet*, on purpose: the simple methods were scored first, so
+the first model has something honest to beat. Live numbers: [`SCOREBOARD.md`](SCOREBOARD.md).
+
+## The test before the model
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/apennines-forecast-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/apennines-forecast-light.png">
+    <img alt="M3+ earthquakes per day in central Italy from August 2016 to December 2017, the number the ETAS model expected each morning, and the flat long-run Poisson rate." src="docs/assets/apennines-forecast-dark.png" width="100%">
+  </picture>
+</p>
+
+Four tests, **CratonBench v1**, frozen before any model exists. The 2016-17 Apennines sequence and 2009
+(L'Aquila) are held out of training forever, and so is one GNSS station in ten. The training data is cut
+into files, and `craton bench leaks` reads all 2.5 million training tokens back to prove no answer got in.
+
+The floor every Craton model has to clear:
+
+| Test | Best simple method | Score |
+|---|---|---|
+| **CB-01** Geo-perplexity: guess hidden measurements back | climatology | 22.7 bits per token |
+| **CB-02** Forecast the Apennines, every day for 494 days | ETAS | −7.12 bits per M3+ quake |
+| **CB-03** Forecast 2009, fitted only on the years before | ETAS | −9.40 bits per M3+ quake |
+| **CB-04** Rebuild a GPS station nobody let you see | its neighbours, weighted | 17.8 mm |
+
+ETAS, the standard aftershock model, beats a flat long-run rate by 7.5 bits per quake on the Apennines:
+it gives what actually happened about 180 times more probability. It is still surprised. It expected 583
+M3+ quakes and 1,065 came, most of them in the days after Visso and Norcia. That gap is what Craton is for.
+How every test works: [`docs/bench.md`](docs/bench.md).
 
 ## Built like a building
 
@@ -128,7 +156,8 @@ All of it is one command, the same on a laptop and on CI:
 
 ```console
 $ uv run craton check
-✓ lint · ✓ format · ✓ types · ✓ tests · ✓ scoreboard is generated · ✓ records append-only · ✓ ratchet
+✓ lint · ✓ format · ✓ types · ✓ tests · ✓ scoreboard is generated · ✓ records append-only
+✓ benchmarks frozen, no leaks · ✓ ratchet
 all green. The foundation holds.
 ```
 
@@ -147,7 +176,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       █████████████░░░░░░░░░░░░░░░░░   3/7    foundation → a model that knows when it doesn't know
+CORE       █████████████████░░░░░░░░░░░░░   4/7    foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -157,7 +186,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P0** Foundation: repo, checks, the ratchet | the training-infra repo every lab builds first |
 | ✅ | **P1** The universal token, frozen | the tokenizer |
 | ✅ | **P2** First data: INGV catalogue, GNSS, tides | the data pipeline |
-| ◻️ | **P3** CratonBench + baselines, before any model | the eval harness |
+| ✅ | **P3** CratonBench + baselines, before any model | the eval harness |
 | ◻️ | **P4** Craton-mini v0 | the GPT-2 small run |
 | ◻️ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ◻️ | **P6** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |

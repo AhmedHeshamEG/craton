@@ -7,6 +7,7 @@ craton ratchet       judge pending benchmark runs (``--accept`` to put them on t
 craton scoreboard    regenerate SCOREBOARD.md from results/scoreboard.json
 craton spec          the token spec: slots, instruments, examples, validation
 craton data          adapters and regions: list, fetch, build, cards
+craton bench         CratonBench: list, prepare, leaks, run METHOD, cards
 """
 
 from __future__ import annotations
@@ -465,6 +466,82 @@ def cmd_data(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- bench
+
+
+def cmd_bench(args: argparse.Namespace) -> int:
+    from craton.bench import harness
+    from craton.bench.baselines import METHODS
+    from craton.bench.tasks import TASKS, BenchContext, load_frozen
+
+    root = find_root()
+    action = args.action
+    if action == "cards":
+        from craton.bench import cards as bench_cards
+
+        out = bench_cards.write(root)
+        console.print(f"wrote {out.relative_to(root).as_posix()}")
+        return 0
+    if action == "list":
+        _title("bench")
+        frozen = load_frozen() or {"tasks": {}}
+        t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
+        for col in ("task", "name", "metric", "better", "fingerprint", "methods"):
+            t.add_column(col)
+        for tid, task in TASKS.items():
+            fp = frozen["tasks"].get(tid, {}).get("fingerprint", "")
+            methods = ", ".join(n for n, m in METHODS.items() if task.supports(m))
+            better = "↓ lower" if task.direction == "lower" else "↑ higher"
+            t.add_row(tid, task.name, task.metric, better, fp[:12] or "·", methods)
+        console.print(t)
+        console.print()
+        return 0
+
+    ctx = BenchContext(root)
+    log = lambda m: console.print(f"[dim]{m}[/]")  # noqa: E731
+    if action == "prepare":
+        _title(f"bench prepare · snapshot {ctx.snapshot_id}")
+        problems = harness.prepare(ctx, freeze=args.freeze, log=log)
+        for p in problems:
+            console.print(f"[red]✗[/] {p}")
+        if not problems:
+            console.print("[green]✓[/] splits and test files match the frozen record")
+        console.print()
+        return 1 if problems else 0
+    if action == "leaks":
+        _title("bench leaks")
+        problems, depth = harness.verify(ctx, root)
+        for p in problems:
+            console.print(f"[red]✗[/] {p}")
+        mark = "[red]✗[/]" if problems else "[green]✓[/]"
+        console.print(f"{mark} {len(problems)} problem(s) · {depth}")
+        console.print()
+        return 1 if problems else 0
+
+    # run
+    if not args.method or args.method not in METHODS:
+        console.print("methods: " + ", ".join(METHODS))
+        return 2
+    method = METHODS[args.method]
+    _title(f"bench run {method.name}")
+    seeds = tuple(args.seeds) if args.seeds else load_config("mini", root).train.seeds
+    start = time.perf_counter()
+    results = harness.run(method, ctx, seeds, args.tasks or None, log=log)
+    path = harness.save_pending(root, results)
+    t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
+    for col in ("task", "score", "metric"):
+        t.add_column(col)
+    for r in results.results:
+        t.add_row(r.task_id, f"{r.mean:.4g} ± {r.std:.2g}", r.metric)
+    console.print(t)
+    console.print(
+        f"wrote {path.relative_to(root).as_posix()} · {time.perf_counter() - start:.0f}s · "
+        "[dim]`craton ratchet --accept` puts it on the board[/]"
+    )
+    console.print()
+    return 0
+
+
 # ---------------------------------------------------------------- check
 
 
@@ -515,6 +592,24 @@ def cmd_check(args: argparse.Namespace) -> int:
         problems = cards_mod.drift_problems(root)
         return not problems, "\n".join(problems)
 
+    def bench_step() -> tuple[bool, str]:
+        from craton.bench import harness
+        from craton.bench.tasks import BenchContext
+
+        try:
+            ctx: BenchContext | None = BenchContext(root)
+        except FileNotFoundError:
+            ctx = None
+        if ctx is not None and not ctx.has_data:
+            ctx = None
+        from craton.bench import cards as bench_cards
+
+        problems, depth = harness.verify(ctx, root)
+        drift = bench_cards.drift_problem(root)
+        if drift:
+            problems.append(drift)
+        return not problems, "\n".join(problems) or depth
+
     def ratchet_step() -> tuple[bool, str]:
         board = Scoreboard.load(scoreboard_json(root))
         msgs, ok = [], True
@@ -533,6 +628,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         Step(f"records append-only vs {args.base}", records_step),
         Step(f"token spec {SPEC_VERSION} add-only, docs generated", spec_step),
         Step("data cards generated", cards_step),
+        Step("benchmarks frozen, no leaks", bench_step),
         Step("ratchet", ratchet_step),
     ]
 
@@ -593,6 +689,14 @@ def build_parser() -> argparse.ArgumentParser:
     dd.add_argument("region", nargs="?", help="region name (default: central_italy)")
     dd.add_argument("--refresh", action="store_true", help="fetch again even if cached")
     dd.set_defaults(func=cmd_data)
+
+    b = sub.add_parser("bench", help="CratonBench: list, prepare, leaks, run METHOD, cards")
+    b.add_argument("action", choices=("list", "prepare", "leaks", "run", "cards"))
+    b.add_argument("method", nargs="?", help="baseline to run (see `craton bench list`)")
+    b.add_argument("--freeze", action="store_true", help="write the frozen record (first time)")
+    b.add_argument("--tasks", nargs="*", help="only these task IDs")
+    b.add_argument("--seeds", nargs="*", type=int, help="default: the mini config's seeds")
+    b.set_defaults(func=cmd_bench)
     return p
 
 

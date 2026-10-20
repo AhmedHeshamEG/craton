@@ -1,5 +1,200 @@
 {
   "schema_version": 1,
   "entries": {},
-  "history": []
+  "baselines": {
+    "CB-01": {
+      "climatology": {
+        "task_id": "CB-01",
+        "metric": "bits per masked token, mean over instruments",
+        "direction": "lower",
+        "fingerprint": "faa360aee280f00136ec7b9ef49a6eda9b979c8cc0acda317b9a5d70763a8ef6",
+        "mean": 22.65853791133198,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261020-020818-climatology",
+        "model": "climatology",
+        "accepted": "2026-10-20T02:18:17Z",
+        "extras": {
+          "gnss_daily.east_bits": 8.738760526386866,
+          "gnss_daily.north_bits": 8.364195590407126,
+          "gnss_daily.up_bits": 5.729163867247092,
+          "gnss_daily_bits_per_token": 22.832119984041082,
+          "gnss_daily_queries": 10690.0,
+          "seismic_catalog.depth_km_bits": 3.371703827672586,
+          "seismic_catalog.lat_bits": 7.420296744455853,
+          "seismic_catalog.lon_bits": 7.0225429505433254,
+          "seismic_catalog.magnitude_bits": 4.670412315951113,
+          "seismic_catalog_bits_per_token": 22.484955838622877,
+          "seismic_catalog_queries": 17310.0
+        }
+      }
+    },
+    "CB-04": {
+      "idw_trend": {
+        "task_id": "CB-04",
+        "metric": "RMSE (mm), hidden stations, offset per station and component removed",
+        "direction": "lower",
+        "fingerprint": "9449170471e9295c5e4e486a3d34865425ade1be81c86a1ee28fe5131da429fb",
+        "mean": 17.766112748844304,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261020-020852-idw-trend",
+        "model": "idw_trend",
+        "accepted": "2026-10-20T02:18:17Z",
+        "extras": {
+          "rmse_east_mm": 24.222646894207667,
+          "rmse_north_mm": 15.161205046246812,
+          "rmse_up_mm": 11.415144571933217,
+          "station_days": 86373.0,
+          "stations": 29.0
+        }
+      }
+    },
+    "CB-02": {
+      "poisson": {
+        "task_id": "CB-02",
+        "metric": "log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "4186dd5479fe61632c7a4e1ca036f6edd2d68491a080f3c8ebf8fbc9e6503a10",
+        "mean": -14.639499584120353,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261020-020924-poisson",
+        "model": "poisson",
+        "accepted": "2026-10-20T02:18:17Z",
+        "extras": {
+          "M1.5.bits_per_eq": -9.685432730758375,
+          "M1.5.days_too_few": 0.7611336032388664,
+          "M1.5.days_too_many": 0.0020242914979757085,
+          "M1.5.expected": 4135.486205546553,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 42807.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M3.bits_per_eq": -14.639499584120353,
+          "M3.days_too_few": 0.2145748987854251,
+          "M3.days_too_many": 0.0,
+          "M3.expected": 74.5631204244405,
+          "M3.m_test_quantile": 0.083,
+          "M3.observed": 1065.0,
+          "M3.s_test_quantile": 0.0
+        }
+      },
+      "etas": {
+        "task_id": "CB-02",
+        "metric": "log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "4186dd5479fe61632c7a4e1ca036f6edd2d68491a080f3c8ebf8fbc9e6503a10",
+        "mean": -7.117963535416536,
+        "std": 7.887558845860218e-9,
+        "n_seeds": 3,
+        "run_id": "20261020-021726-etas",
+        "model": "etas",
+        "accepted": "2026-10-20T02:18:17Z",
+        "extras": {
+          "M1.5.bits_per_eq": -2.7615064002354934,
+          "M1.5.days_too_few": 0.34210526315789475,
+          "M1.5.days_too_many": 0.10323886639676112,
+          "M1.5.expected": 32323.53144844829,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 42807.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M3.bits_per_eq": -7.117963535416536,
+          "M3.days_too_few": 0.04048582995951417,
+          "M3.days_too_many": 0.0,
+          "M3.expected": 582.7956492035524,
+          "M3.m_test_quantile": 0.083,
+          "M3.observed": 1065.0,
+          "M3.s_test_quantile": 1.0
+        }
+      }
+    },
+    "CB-03": {
+      "poisson": {
+        "task_id": "CB-03",
+        "metric": "log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "a12a2e1ceb896ad14b006e26f66a6fd7991ae28c65339783ab16536c65d4b82c",
+        "mean": -16.935124175057556,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261020-020924-poisson",
+        "model": "poisson",
+        "accepted": "2026-10-20T02:18:17Z",
+        "extras": {
+          "M1.5.bits_per_eq": -11.48916551321004,
+          "M1.5.days_too_few": 0.4876712328767123,
+          "M1.5.days_too_many": 0.0027397260273972607,
+          "M1.5.expected": 1840.4667918914931,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 11070.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M3.bits_per_eq": -16.935124175057556,
+          "M3.days_too_few": 0.10684931506849316,
+          "M3.days_too_many": 0.0,
+          "M3.expected": 19.89918213123723,
+          "M3.m_test_quantile": 0.0023333333333333335,
+          "M3.observed": 315.0,
+          "M3.s_test_quantile": 0.0
+        }
+      },
+      "etas": {
+        "task_id": "CB-03",
+        "metric": "log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "a12a2e1ceb896ad14b006e26f66a6fd7991ae28c65339783ab16536c65d4b82c",
+        "mean": -9.396095412448823,
+        "std": 1.103559043068074e-7,
+        "n_seeds": 3,
+        "run_id": "20261020-021726-etas",
+        "model": "etas",
+        "accepted": "2026-10-20T02:18:17Z",
+        "extras": {
+          "M1.5.bits_per_eq": -4.432115883379832,
+          "M1.5.days_too_few": 0.20000000000000004,
+          "M1.5.days_too_many": 0.03561643835616438,
+          "M1.5.expected": 6428.87624922672,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 11070.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M3.bits_per_eq": -9.396095412448823,
+          "M3.days_too_few": 0.0684931506849315,
+          "M3.days_too_many": 0.0,
+          "M3.expected": 69.50920274474043,
+          "M3.m_test_quantile": 0.0023333333333333335,
+          "M3.observed": 315.0,
+          "M3.s_test_quantile": 1.0
+        }
+      }
+    }
+  },
+  "history": [
+    {
+      "run_id": "20261020-020818-climatology",
+      "model": "climatology",
+      "kind": "baseline",
+      "accepted": "2026-10-20T02:18:17Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261020-020852-idw-trend",
+      "model": "idw_trend",
+      "kind": "baseline",
+      "accepted": "2026-10-20T02:18:17Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261020-020924-poisson",
+      "model": "poisson",
+      "kind": "baseline",
+      "accepted": "2026-10-20T02:18:17Z",
+      "summary": "2 new"
+    },
+    {
+      "run_id": "20261020-021726-etas",
+      "model": "etas",
+      "kind": "baseline",
+      "accepted": "2026-10-20T02:18:17Z",
+      "summary": "2 new"
+    }
+  ]
 }

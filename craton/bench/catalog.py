@@ -24,10 +24,14 @@ class PlannedTask:
 
 CATALOG: tuple[PlannedTask, ...] = (
     PlannedTask(
-        "CB-01", "Geo-perplexity", "bits per masked token on held-out regions and eras", "P3", True
+        "CB-01", "Geo-perplexity", "bits per masked token in the held-out eras", "P3", True
     ),
     PlannedTask(
-        "CB-02", "Apennines 2016-17 forecast", "information gain over ETAS, CSEP tests", "P3", True
+        "CB-02",
+        "Apennines 2016-17 forecast",
+        "bits per M3+ quake, daily CSEP-style forecasts",
+        "P3",
+        True,
     ),
     PlannedTask(
         "CB-03", "L'Aquila 2009 era holdout", "forecast skill trained only on data up to 2008", "P3"

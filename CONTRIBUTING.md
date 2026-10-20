@@ -28,7 +28,7 @@ Plain `uv sync` without an extra removes PyTorch; always pass one.
 
 ## What's useful right now
 
-The project is at phase P2 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful things today:
+The project is at phase P3 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful things today:
 
 - **Data you know.** A public catalogue, GNSS network, borehole record or historical archive that should become
   tokens. Open an issue with the *new data source* template: what it is, its licence, how to fetch it.
@@ -39,8 +39,8 @@ The project is at phase P2 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful
 - **Instruments.** The token spec only grows: a new instrument is a few lines and a new example. See
   [`SPEC_POLICY.md`](SPEC_POLICY.md) for how, and what can never change.
 
-The guides to a force, a property and a benchmark arrive with their extension points (P3, P8); the complete
-version lands in P12.
+Adding a method to CratonBench is below; the guides to a force and a property arrive with their extension
+point (P8); the complete version lands in P12.
 
 ## Add a data source
 
@@ -88,3 +88,34 @@ Then add it to a region in `configs/regions/`, run `craton data cards` (the card
 - New data comes with a data card (source, licence, coverage, known issues). New tasks come with their
   fingerprint and baseline.
 - `LOGBOOK.md` and `DECISIONS.md` are append-only: add entries, never edit old ones.
+
+## Add a method to CratonBench
+
+A method is any object with a `name` that implements a task's protocol from `craton/bench/tasks.py`:
+
+| Protocol | Tasks | Returns |
+|---|---|---|
+| `MaskedPredictor.predict_masked` | CB-01 | a distribution per hidden channel (anything with `mass(lo, hi)`) |
+| `Forecaster.forecast` | CB-02, CB-03 | expected quakes per (day, cell), and how they split over magnitudes |
+| `GapFiller.fill` | CB-04 | daily east, north, up of each hidden station |
+
+```python
+from craton.bench.baselines import register_method
+
+
+class MyForecaster:
+    name = "my_forecaster"
+    kind = "baseline"  # or "model" for a Craton model
+
+    def forecast(self, spec, ctx, seed):
+        train = ctx.train_events(spec.fit_split)  # only the split; never the snapshot
+        ...
+
+
+register_method(MyForecaster())
+```
+
+Fit only on `ctx.train_*` (the leak-checked split shards). A forecast for a day may read quakes before
+that day from `ctx.events`, nothing later. Then `uv run craton bench run my_forecaster` writes a run to
+`results/pending/`, and `uv run craton ratchet --accept` puts it on the board if nothing got worse. A new
+*task* is `register_task(...)` with a new ID; existing IDs never change ([`docs/bench.md`](docs/bench.md)).

@@ -1,0 +1,53 @@
+{
+  "run_id": "20261020-020852-idw-trend",
+  "model": "idw_trend",
+  "kind": "baseline",
+  "config_hash": "baseline",
+  "git_commit": "afb2df5f2ede",
+  "created": "2026-10-20T02:08:52Z",
+  "results": [
+    {
+      "task_id": "CB-04",
+      "metric": "RMSE (mm), hidden stations, offset per station and component removed",
+      "direction": "lower",
+      "fingerprint": "9449170471e9295c5e4e486a3d34865425ade1be81c86a1ee28fe5131da429fb",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "values": [
+        17.766112748844304,
+        17.766112748844304,
+        17.766112748844304
+      ],
+      "extras": {
+        "rmse_east_mm": [
+          24.222646894207667,
+          24.222646894207667,
+          24.222646894207667
+        ],
+        "rmse_north_mm": [
+          15.16120504624681,
+          15.16120504624681,
+          15.16120504624681
+        ],
+        "rmse_up_mm": [
+          11.415144571933217,
+          11.415144571933217,
+          11.415144571933217
+        ],
+        "station_days": [
+          86373.0,
+          86373.0,
+          86373.0
+        ],
+        "stations": [
+          29.0,
+          29.0,
+          29.0
+        ]
+      }
+    }
+  ]
+}

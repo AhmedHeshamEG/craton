@@ -126,3 +126,57 @@ Decisions: D-021 … D-028.
 
 Next: P3, CratonBench v1. Freeze the splits against this snapshot (Apennines 2016–17, L'Aquila 2009,
 held-out GNSS stations), then score climatology, ETAS and IDW + trend before any model exists.
+
+## 2026-10-20 — P3 — CratonBench v1: the test before the model
+
+TLDR: Four tests are frozen and the simple methods are scored, before any model exists. ETAS forecasts
+the 2016-17 Apennines at −7.12 bits per M3+ quake, 7.5 bits better than a flat Poisson rate. A hidden
+GNSS station is rebuilt to 17.8 mm, and a masked measurement costs climatology 22.7 bits. The training
+splits are written to disk and read back token by token: no held-out token in 2.5 million.
+
+Built:
+- `craton/bench/`: splits and leak checks, the four tasks with fingerprints and protocols, distributions,
+  CSEP tests, ETAS, four baselines, the harness, the frozen record `frozen/central_italy.json`, the
+  benchmark card `docs/bench.md`
+- `craton bench list | prepare | leaks | run | cards`; a "benchmarks frozen, no leaks" step in `craton check`
+- two ratchet lanes (Craton and the floor) and the floor on the scoreboard
+- the Apennines forecast figure (`scripts/figures/apennines_forecast.py`), `lessons/P3.md`, a method guide
+  in CONTRIBUTING, the pyCSEP reference script and fixture
+- tests: 231 → 270
+
+Scores (mean ± std over seeds 0, 1, 2; the floor, from `results/scoreboard.json`):
+- CB-01 climatology 22.66 bits per masked token (quakes 22.5, GNSS days 22.8; 28,000 queries)
+- CB-02 ETAS −7.118 bits per M3+ quake, Poisson −14.64. 1,065 M3+ quakes over 494 days; ETAS expected 583,
+  Poisson 75. At M1.5+: ETAS −2.76, Poisson −9.69.
+- CB-03 ETAS −9.396, Poisson −16.94. 315 M3+ quakes in 2009; ETAS expected 70.
+- CB-04 IDW + trend 17.77 mm (east 24.2, north 15.2, up 11.4) over 29 stations and 86,373 station-days
+- The three ETAS restarts land on the same optimum (spread 1e-8 bits). The other baselines have no
+  randomness; their std is 0.
+
+Surprises / problems:
+- The first CB-01 design hid only values. A GNSS token's lat/lon are that day's position to 1e-10°, so
+  the answer was still in the coordinates. Position is hidden now, and so is the tide token at each
+  masked quake, which sits at its epicentre (D-031).
+- The first CB-04 run gave 22 m. NGL reuses station codes for different sites: MIR2 jumps 595 km north
+  in a day, PES4 2.3 km, PERU 1.2 km, VITE 0.9 km, SMRA 0.6 km, REGU 351 m, BLRA 116 m, TOD3 3.8 m.
+  Eight codes jump more than 1 m between two days; the largest real jump is ARQT's 0.447 m (Norcia). A
+  station is now one monument only below 1 m (D-030). None of the eight was held out; TOD3, 0.6 km from
+  held-out RETO, had wrecked its rebuild through the neighbour weights.
+- P2 said INGV reports Md until 2004 and ML from 2005. Md continues after 2005: 7,157 events from 2005 to
+  August 2016, 291 of CB-02's 42,807 test quakes. The forecast tasks keep the catalogue's preferred
+  magnitude of any type and count them (D-032).
+- CB-03's ETAS fit (four mostly quiet years, 1,484 quakes) is supercritical: branching ratio 1.26. The
+  daily forecasts stay finite, but the parameters are poorly pinned (D-034).
+- ETAS underestimates the branching ratio by about 0.1 on synthetic catalogues, because aftershocks that
+  land outside the box are never seen. Known and tested.
+- pyCSEP installs on Windows, but brings cartopy, rasterio and obspy; it is the referee in a throwaway
+  environment. Craton's numbers match it exactly for the likelihoods and within simulation noise for the
+  S and M quantiles (D-033).
+- Two heredoc edits turned a `"\n"` into a real line break and broke a file; caught by the tests.
+- The plan's neural point process baseline (arXiv 2301.09948) waits for P4: it is a neural model, and
+  its headline catalogue isn't public in Craton's form (D-038).
+
+Decisions: D-029 … D-038.
+
+Next: P4, Craton-mini v0. A transformer on the catalogue alone, implementing `Forecaster` and
+`MaskedPredictor`, trained on the `pretrain` and `cb02_fit` splits, scored against this floor.

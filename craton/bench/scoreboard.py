@@ -23,8 +23,15 @@ HEADER = (
 ARROW = {"lower": "↓", "higher": "↑"}
 
 
+def _num(x: float, fmt: str) -> str:
+    return format(x, fmt).replace("-", "−")
+
+
 def _fmt(entry: ScoreEntry) -> str:
-    return f"{entry.mean:.4g} ± {entry.std:.2g} {ARROW[entry.direction]}"
+    # Spread below a millionth of the score is floating-point noise, not a result.
+    tiny = entry.std <= 1e-6 * max(1.0, abs(entry.mean))
+    std = "0" if tiny else _num(entry.std, ".2g")
+    return f"{_num(entry.mean, '.4g')} ± {std} {ARROW[entry.direction]}"
 
 
 def _n(x: int) -> str:
@@ -110,50 +117,113 @@ def render_data(report: dict[str, Any] | None) -> list[str]:
     return lines
 
 
+def best_baseline(board: Scoreboard, task_id: str) -> ScoreEntry | None:
+    """The strongest simple method on a task: the floor a Craton model has to clear."""
+    entries = list(board.baselines.get(task_id, {}).values())
+    if not entries:
+        return None
+    sign = 1 if entries[0].direction == "higher" else -1
+    return max(entries, key=lambda e: sign * e.mean)
+
+
+def _floor(board: Scoreboard, task_id: str) -> str:
+    entry = best_baseline(board, task_id)
+    return f"{_fmt(entry)} · {entry.model}" if entry else "·"
+
+
+def _gain(board: Scoreboard, task_id: str) -> str:
+    """Craton vs the floor, in the task's own units (positive = Craton is better)."""
+    entry, floor = board.entries.get(task_id), best_baseline(board, task_id)
+    if not entry or not floor:
+        return ""
+    gain = entry.mean - floor.mean if entry.direction == "higher" else floor.mean - entry.mean
+    return f" ({_num(gain, '+.3g')} vs {floor.model})"
+
+
+def _notes(entry: ScoreEntry) -> str:
+    """A task's telling secondary numbers, from the run's extras."""
+    x = entry.extras
+    if "M3.observed" in x:
+        parts = [
+            f"M≥3: {x['M3.observed']:,.0f} quakes, {x['M3.expected']:,.0f} expected",
+            f"M≥1.5: {_num(x.get('M1.5.bits_per_eq', float('nan')), '.3g')} bits/quake",
+            f"days with too few M≥3: {x['M3.days_too_few']:.0%}",
+        ]
+        return "; ".join(parts)
+    if "rmse_east_mm" in x:
+        return (
+            f"east {x['rmse_east_mm']:.1f} · north {x['rmse_north_mm']:.1f} · up "
+            f"{x['rmse_up_mm']:.1f} mm over {x['stations']:.0f} stations, "
+            f"{x['station_days']:,.0f} days"
+        )
+    bits = [
+        (k.split("_bits_per_token")[0], v) for k, v in x.items() if k.endswith("_bits_per_token")
+    ]
+    if bits:
+        return " · ".join(f"{name} {v:.3g} bits" for name, v in sorted(bits))
+    return ""
+
+
 def render(board: Scoreboard, data: dict[str, Any] | None = None) -> str:
     lines: list[str] = [HEADER, "# Scoreboard", ""]
     lines += [
         "Every number here comes from a script and is a mean ± std over 3 seeds. "
         "The ratchet only lets a number in if no other task gets worse beyond noise, "
-        "so this table can only improve.",
+        "so this table can only improve. The **floor** is the best simple method on each "
+        "task: what a Craton model has to beat before it means anything.",
         "",
         "## Headline",
         "",
-        "| | Task | Now | Arrives |",
-        "|---|---|---|---|",
+        "| | Task | Craton | Floor | Arrives |",
+        "|---|---|---|---|---|",
     ]
     for task in (t for t in CATALOG if t.headline):
         entry = board.entries.get(task.task_id)
-        now = _fmt(entry) if entry else "not measured yet"
+        now = _fmt(entry) + _gain(board, task.task_id) if entry else "not measured yet"
         lines.append(
-            f"| **{task.name}** | {task.task_id} · {task.measures} | {now} | {task.phase} |"
+            f"| **{task.name}** | {task.task_id} · {task.measures} | {now} | "
+            f"{_floor(board, task.task_id)} | {task.phase} |"
         )
 
     lines += [
         "",
         "## Every task",
         "",
-        "| ID | Task | Score | Model | Run | Phase |",
-        "|---|---|---|---|---|---|",
+        "| ID | Task | Craton | Floor | Phase |",
+        "|---|---|---|---|---|",
     ]
     known = {t.task_id for t in CATALOG}
-    for task_id in sorted(known | set(board.entries)):
+    for task_id in sorted(known | set(board.entries) | set(board.baselines)):
         planned = BY_ID.get(task_id)
         entry = board.entries.get(task_id)
         name = planned.name if planned else task_id
         phase = planned.phase if planned else "—"
-        if entry:
-            score, run = _fmt(entry), f"`{entry.run_id}`"
-            lines.append(f"| {task_id} | {name} | {score} | {entry.model} | {run} | {phase} |")
-        else:
-            lines.append(f"| {task_id} | {name} | · | · | · | {phase} |")
+        score = f"{_fmt(entry)} · {entry.model}" if entry else "·"
+        lines.append(f"| {task_id} | {name} | {score} | {_floor(board, task_id)} | {phase} |")
+
+    if board.baselines:
+        lines += [
+            "",
+            "## The floor",
+            "",
+            "Simple methods, scored before any model exists. Each is ratcheted against itself.",
+            "",
+            "| Task | Method | Score | Metric | What else it says |",
+            "|---|---|---|---|---|",
+        ]
+        for task_id in sorted(board.baselines):
+            by = board.baselines[task_id]
+            sign = 1 if next(iter(by.values())).direction == "higher" else -1
+            for e in sorted(by.values(), key=lambda e: -sign * e.mean):
+                lines.append(f"| {task_id} | {e.model} | {_fmt(e)} | {e.metric} | {_notes(e)} |")
 
     lines += ["", "## History", ""]
     if board.history:
         lines += ["| Accepted (UTC) | Run | Model | Ratchet |", "|---|---|---|---|"]
         for h in reversed(board.history):
             when = h.accepted.strftime("%Y-%m-%d %H:%M")
-            lines.append(f"| {when} | `{h.run_id}` | {h.model} | {h.summary} |")
+            who = f"{h.model} (baseline)" if h.kind == "baseline" else h.model
+            lines.append(f"| {when} | `{h.run_id}` | {who} | {h.summary} |")
     else:
         lines.append(
             "No runs yet. The first real numbers are the simple baselines in P3, scored before "
