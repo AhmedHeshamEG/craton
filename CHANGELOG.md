@@ -3,6 +3,25 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [0.4.0] — 2026-10-20 · P3 CratonBench v1
+
+### Added
+- **CratonBench v1** (`craton.bench`): four frozen tests, each fingerprinted by its definition, metric and
+  test files. CB-01 geo-perplexity (bits per masked token), CB-02 the 2016-17 Apennines and CB-03 2009
+  (daily CSEP-style forecasts, log-likelihood per M3+ quake), CB-04 GPS gap-fill (RMSE in mm).
+- **Frozen splits**: eras A (2016-08-24 → 2018) and B (2009) and 29 GNSS stations held out forever; three
+  training splits cut to hash-named files. The frozen record is `craton/bench/frozen/central_italy.json`.
+- **Leak checks** (`craton bench leaks`, and in `craton check`): every training shard read back; no
+  held-out era, station or benchmark answer may appear.
+- **Baselines**: climatology, Poisson, space-time ETAS (own implementation, exact likelihood, tested on
+  synthetic catalogues) and inverse-distance weighting + trend.
+- **CSEP tests** in NumPy (joint Poisson log-likelihood, N, S and M tests), matched against pyCSEP 0.8.0
+  (`scripts/reference/csep_reference.py`).
+- `craton bench list | prepare | leaks | run | cards`; the benchmark card `docs/bench.md`, generated.
+- **The floor** on the scoreboard: baselines have their own ratchet lane, shown next to Craton's.
+- `register_task` and `register_method`; a guide to adding a method in `CONTRIBUTING.md`.
+- The Apennines forecast figure, `lessons/P3.md`, decisions D-029 … D-038. SciPy is a dependency.
+
 ## [0.3.0] — 2026-10-20 · P2 First data
 
 ### Added

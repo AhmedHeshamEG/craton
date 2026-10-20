@@ -293,3 +293,138 @@ Each adapter returns a `DataCard`; `craton data cards` renders `docs/data/`, and
 files drift from the code.
 
 **Why.** Same reason as D-008: a card someone has to remember to update will be wrong within a month.
+
+### D-029 · 2026-10-20 · P3 — Two eras and one station in ten are held out, forever
+
+Era A is 2016-08-24 → 2018-01-01 (Amatrice, Visso, Norcia, Campotosto); era B is the whole of 2009
+(L'Aquila); 29 of 293 GNSS stations are held out. Three training splits are cut from the snapshot and
+written to disk: `pretrain` (everything except the eras and the held-out stations), `cb02_fit`
+(everything before 2016-08-24) and `cb03_fit` (everything before 2009). The forecast tasks fit only on
+the past of their test window, and their forecasts may read quakes inside the window day by day, as a
+real forecaster would.
+
+**Why.** A forecast fitted on data from after its test window has seen the answer's aftermath. Fitting
+only on the past makes CB-02 and CB-03 pseudo-prospective, the strongest test possible without waiting
+for the future. Writing the splits to disk, instead of filtering on the fly, gives the leak check real
+files to read back.
+
+**Rejected.** One split for everything (a model trained on 2018-2026 would know how 2016's aftershocks
+ended). Excluding 2009 from the CB-02 fit (L'Aquila is the best lesson the past offers about 2016).
+
+### D-030 · 2026-10-20 · P3 — A GNSS station is one monument only if it never jumps more than 1 m in a day
+
+Held-out stations are chosen by a salted hash among stations with at least 730 days, three visible
+neighbours within 50 km, and no jump over 1 m between consecutive daily solutions. The CB-04 baseline
+uses only such stations as neighbours.
+
+**Why.** The Nevada Geodetic Laboratory reuses a few station codes for sites metres to hundreds of km
+apart: MIR2 moves 595 km north overnight, PES4 2.3 km, TOD3 3.8 m. The largest real jump in the region
+is ARQT's 0.447 m in the Norcia earthquake, so 1 m separates the two cleanly. A span limit doesn't
+work: plate motion alone moves a 30-year station about 0.75 m.
+
+**Rejected.** A span limit of 5 m (let TOD3 through; it sits 0.6 km from held-out RETO and wrecked its
+rebuild). Fixing the codes in the adapter (data is immutable; a corrected NGL adapter can come later as
+a new version and a new snapshot).
+
+### D-031 · 2026-10-20 · P3 — CB-01 hides where and how big, and scores bits on fixed bins
+
+For a masked quake the model sees its time and magnitude type; latitude, longitude, depth and magnitude
+are hidden. For a masked GNSS day it sees the station and its site to 0.01°; east, north and up are
+hidden. Each channel's answer is a distribution, scored as −log2 of the probability it gives the true
+value's bin (0.01°, 1 km, 0.1 magnitude, 1 mm), floored at 2^-64. The score is the mean over
+instruments of the mean bits per token. 15% of the era tokens are masked, chosen by a salted hash. The
+tide token computed at a masked quake is hidden as well. Tide tokens are never scored.
+
+**Why.** A GNSS token's latitude and longitude are that day's own position to 1e-10°, so hiding only
+the value would leave the answer in the coordinates. A tide token at a quake sits at the quake's
+epicentre and origin time. Bins turn a continuous answer into bits, the same unit as an LLM's
+perplexity, and fixed bins make every model comparable. Tides are computed from the Sun and the Moon;
+being surprised by them says nothing about the Earth. The mean over instruments stops the more numerous
+one from deciding the score.
+
+**Rejected.** Masking values only (leaks). Differential entropy (depends on units; no floor). Scoring
+tides.
+
+### D-032 · 2026-10-20 · P3 — CB-02 and CB-03 are scored per M3+ quake, CSEP-style
+
+Daily forecasts on 0.1° cells and 0.1 magnitude bins from M1.5 up. The score is the joint Poisson
+log-likelihood of the observed M3+ quakes divided by their number, in bits: the difference between two
+models is their information gain per earthquake (Rhoades et al. 2011). The same number at M1.5+, the
+daily N-test, and the S- and M-tests on the summed forecast are kept as extras. CB-02's first day is
+2016-08-25: Amatrice's first 22 hours are history. Magnitudes are the catalogue's preferred one, of
+whatever type (ML, Md or Mw), and the task card says so.
+
+**Why.** Log-likelihood is a proper score and the CSEP standard. M3 is where the catalogue stays
+complete even in the days after a main shock; M1.5 is where small-quake information lives and where a
+neural model may win (Stockman et al. 2023), so it is tracked, not ratcheted. Starting a day after
+Amatrice keeps one unforecastable day from deciding the whole score. INGV still reports some Md after
+2005 (291 of the 42,807 test quakes in CB-02); dropping them would punch holes in the catalogue, so they
+are kept and counted.
+
+**Rejected.** A fixed ETAS reference baked into the metric (it would tie the task to one baseline
+forever). Two task IDs for the two thresholds.
+
+### D-033 · 2026-10-20 · P3 — ETAS and the CSEP tests are Craton's own code, checked against pyCSEP
+
+`craton/bench/etas.py` and `craton/bench/csep.py` are NumPy and SciPy. pyCSEP 0.8.0 (BSD-3) runs in a
+throwaway environment in `scripts/reference/csep_reference.py`; the tests match its joint
+log-likelihood and N-test to machine precision and its S- and M-test quantiles within simulation noise.
+ETAS is tested on synthetic catalogues it generated itself: the fit recovers the planted parameters, and
+on 500 synthetic days the daily forecast expected 936 quakes where 929 happened.
+
+**Why.** pyCSEP installs on Windows but brings cartopy, rasterio and obspy, for four statistics. The
+best-known Python ETAS (lmizrahi/etas, MIT) pins its own stack and pulls a model package from a GitLab
+commit. Both are better as referees than as dependencies, the same choice as the tides (D-021).
+
+### D-034 · 2026-10-20 · P3 — The ETAS baseline
+
+Space-time ETAS with a power-law spatial kernel cut at 50 km and renormalised. Fitted on quakes at or
+above M2.0 from 2005 onwards by exact maximum likelihood: PyTorch float64 on the CPU for the gradient,
+SciPy's L-BFGS-B for the steps, three rounds of stochastic declustering for the background (Zhuang et
+al. 2002). Forecasts integrate the intensity over each day and each cell; quakes triggered inside the
+day are added by a mean-field cascade factor; magnitudes follow Gutenberg-Richter, extrapolated down to
+M1.5. The three seeds are three restarts from jittered starting points.
+
+**Why.** The standard for short-term forecasts in Italy is ETAS, and a baseline that is easy to beat
+proves nothing. M2.0 keeps the fit above the catalogue's completeness, which rises after big shocks.
+Simulating thousands of catalogues per day is the textbook forecast; the cascade factor gets the same
+expected counts at a fraction of the cost and is checked on synthetic data.
+
+**Known limits.** The spatial integral of each kernel is taken as 1 when fitting, so quakes near the
+box edge look less productive; on synthetic data the branching ratio comes out about 0.1 low. CB-03's
+fit has only four years, mostly quiet, and lands supercritical (branching ratio 1.26). Both are part of
+the floor a model has to beat.
+
+### D-035 · 2026-10-20 · P3 — CB-04 is an RMSE in millimetres, offset removed
+
+Every day of every held-out station is rebuilt; the score is the RMSE over all station-days and the
+three components, after removing each station's mean residual per component. The baseline weights the
+six nearest stable stations within 100 km by 1/d²: their velocity, plus their de-trended position that
+day.
+
+**Why.** Each station's series starts from its own arbitrary origin; no method can know it, so it must
+not count.
+
+### D-036 · 2026-10-20 · P3 — The scoreboard has two lanes: Craton and the floor
+
+A run comes from a `model` or a `baseline`. Craton's runs are ratcheted against Craton's champion; each
+baseline is ratcheted against its own earlier score. The scoreboard shows the best baseline on each task
+as the **floor** next to Craton's number, and the gap between them.
+
+**Why.** With one lane, the first model that loses to ETAS could never be scored, and the constitution
+says it must be, plainly. With two, the ratchet still stops any lane from getting worse, and the floor
+is always in view.
+
+**Rejected.** Letting baselines be Craton's champions (a losing model would be blocked forever).
+
+### D-037 · 2026-10-20 · P3 — SciPy joins the dependencies
+
+**Why.** The Poisson distribution, the normal CDF and L-BFGS-B, from a library with wheels for every
+platform. Writing these by hand would be slower and less trustworthy.
+
+### D-038 · 2026-10-20 · P3 — The neural point process baseline waits for P4
+
+The plan names the neural point process of Stockman, Lawson & Werner (arXiv 2301.09948) as a CB-02
+baseline. It is a neural model (P3 has none), it is temporal only, and its headline result uses an
+enhanced catalogue of about 900,000 events (Tan et al. 2021) that Craton doesn't have. Its paper is the
+reference P4 compares with.
