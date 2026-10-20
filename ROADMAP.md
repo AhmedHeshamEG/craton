@@ -5,10 +5,10 @@ and a release. A phase isn't done if any exit test fails. Live numbers are in [`
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
-CORE       █████████████████░░░░░░░░░░░░░   4/7    P0–P6   foundation → a model that knows when it doesn't know
+CORE       █████████████████████░░░░░░░░░   5/7    P0–P6   foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P7–P10  fake planets, the ghost, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P11–P12 any time horizon, then mini → regional → planet
-ALL        █████████░░░░░░░░░░░░░░░░░░░░░   4/13
+ALL        ████████████░░░░░░░░░░░░░░░░░░   5/13
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -50,7 +50,7 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-12 | **Interpreter faithfulness** | ~200 fixed questions: numeric agreement with tool outputs, citation coverage, hallucination rate, correct abstention | Plain LLM, no tools | P9 |
 | CB-13 | **Microscope** | SAE reconstruction + recovery of a planted hidden variable + share of features with validated labels | Random directions | P10 |
 | CB-14 | **Deep time** | Plate positions vs published GPlates reconstructions at past ages; angular error | Constant-velocity extrapolation | P11 |
-| CB-15 | **Efficiency** | Tokens/s, peak VRAM, wall-clock per run on the RTX 2060 | Must fit in 6 GB | P4 |
+| CB-15 | **Efficiency** | Model FLOPs utilisation of the pretraining run on the RTX 2060; tokens/s, peak VRAM, wall-clock alongside | Must fit in 6 GB (a hard gate) | P4 |
 | CB-16 | **Scaling-law fit** | Loss vs params and tokens over 4–5 sizes; predict the next size before training it | — | P12 |
 | CB-17 | **In-context adaptation** | Only the first N days of a new region in context, no retraining: does CB-01 improve as N grows? | Empty context | P5 |
 | CB-18 | **Ladder rung 3** | Timing of the next event on repeating-earthquake patches | Periodic / Poisson | P12 (spec only) |
@@ -490,6 +490,6 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 ## Tracker
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
-- [ ] P4 Craton-mini v0 · [ ] P5 Fusion · [ ] P6 The 8 locks
+- [x] P4 Craton-mini v0 · [ ] P5 Fusion · [ ] P6 The 8 locks
 - [ ] P7 Fake planets · [ ] P8 Ghost + atlas · [ ] P9 Translator · [ ] P10 Microscope
 - [ ] P11 Long horizons · [ ] P12 Scale + open platform

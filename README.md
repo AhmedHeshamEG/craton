@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P3%20of%20P12-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P4%20of%20P12-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -108,8 +108,8 @@ predictability meter. Every version has to shrink it, or it doesn't count as pro
 | **Predictability meter** | How wide is the 90% window, in days, kilometres and magnitude? | Calibrated uncertainty |
 | **Information gain over ETAS** | Does it beat the standard statistical model on a real sequence (Amatrice–Norcia, 2016–17)? | Beating the strong baseline |
 
-Craton's own column still reads *not measured yet*, on purpose: the simple methods were scored first, so
-the first model has something honest to beat. Live numbers: [`SCOREBOARD.md`](SCOREBOARD.md).
+The simple methods were scored first, so the first model had something honest to beat. Live numbers:
+[`SCOREBOARD.md`](SCOREBOARD.md).
 
 ## The test before the model
 
@@ -138,6 +138,33 @@ ETAS, the standard aftershock model, beats a flat long-run rate by 7.5 bits per 
 it gives what actually happened about 180 times more probability. It is still surprised. It expected 583
 M3+ quakes and 1,065 came, most of them in the days after Visso and Norcia. That gap is what Craton is for.
 How every test works: [`docs/bench.md`](docs/bench.md).
+
+## The first model
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/first-model-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/first-model-light.png">
+    <img alt="Left: the masked loss of Craton-mini falling during training for three seeds, below climatology. Right: a map of the L'Aquila 2009 aftershocks with one hidden quake and the attention of one head over the others." src="docs/assets/first-model-dark.png" width="100%">
+  </picture>
+</p>
+
+**Craton-mini v0** is a 4.7-million-parameter transformer that reads the earthquake catalogue: one
+encoder for quakes, rotary positions over time, latitude, longitude and depth, six GPT-2 layers, and two
+heads that only ever answer with probabilities. It plays two games: hide a quake and guess where it was
+and how big, and stand at midnight and forecast tomorrow. Each run trains in 8 to 16 minutes on a laptop
+RTX 2060 and peaks at 2.6 GB.
+
+| Test | Craton-mini v0 | The floor |
+|---|---|---|
+| **CB-01** Guess hidden measurements back | **21.66 bits** | climatology 22.66: beaten |
+| **CB-02** Forecast the Apennines 2016-17 | **−10.88 bits** per M3+ quake | ETAS −7.12: lost · Poisson −14.64: beaten |
+| **CB-03** Forecast 2009 | **−15.13 bits** per M3+ quake | ETAS −9.40: lost · Poisson −16.94: beaten |
+
+It loses to ETAS, and the scoreboard says so. ETAS is a theory with a handful of parameters; the model has
+to learn the same laws from thirty years of one region, with 13 truly busy days in it. GPS and tides (P5)
+and simulated planets (P7) are how that gap gets closed. How it works, step by step:
+[`lessons/P4.md`](lessons/P4.md). Model cards: [`docs/models/craton-mini.md`](docs/models/craton-mini.md).
 
 ## Built like a building
 
@@ -176,7 +203,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       █████████████████░░░░░░░░░░░░░   4/7    foundation → a model that knows when it doesn't know
+CORE       █████████████████████░░░░░░░░░   5/7    foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -187,7 +214,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P1** The universal token, frozen | the tokenizer |
 | ✅ | **P2** First data: INGV catalogue, GNSS, tides | the data pipeline |
 | ✅ | **P3** CratonBench + baselines, before any model | the eval harness |
-| ◻️ | **P4** Craton-mini v0 | the GPT-2 small run |
+| ✅ | **P4** Craton-mini v0, the first transformer | the GPT-2 small run |
 | ◻️ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ◻️ | **P6** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ◻️ | **P7** Fake planets: pretraining on simulated millennia | synthetic data |
@@ -207,6 +234,14 @@ uv sync --extra cu126      # NVIDIA GPU   (no NVIDIA: uv sync --extra cpu)
 uv run craton doctor       # what this machine can run, and how
 uv run craton check        # everything that has to pass before a change lands
 uv run craton spec example montecassino_1349   # the monk's diary, as a token
+```
+
+With the data built (`craton data fetch central_italy`, `craton data build central_italy`,
+`craton bench prepare`), train and score the first model:
+
+```console
+uv run craton train cb03_fit --seeds 0    # one model, its checkpoint and model card
+uv run craton bench run craton-mini       # all three seeds on every task it supports
 ```
 
 On the laptop it was built on, `craton doctor --smoke` says:

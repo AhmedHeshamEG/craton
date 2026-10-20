@@ -3,6 +3,28 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [0.5.0] — 2026-10-20 · P4 Craton-mini v0
+
+### Added
+- **Craton-mini v0** (`craton.model`): an event encoder (registered by instrument), 4D rotary positional
+  encoding over time, latitude, longitude and depth (sinusoidal fallback), a pre-norm transformer trunk on
+  PyTorch's fused attention, and two probabilistic heads: binned place-and-size for a hidden quake, and a
+  next-day Poisson rate × cell × magnitude forecast. Hidden coordinates are zeroed, never rotated.
+- **Training** (`craton.train`): masked windows and next-day questions cut from a split, an fp16 loop with
+  gradient scaling, warmup + cosine, validation blocks and early stopping; peak VRAM and tokens/s measured.
+- **Checkpoints with model cards**, named by split, config hash, seed and training version;
+  `docs/models/craton-mini.md` collects the cards behind the scoreboard.
+- `craton train SPLIT [--seeds …]` and the bench method `craton-mini` (CB-01, CB-02, CB-03, CB-15).
+- **CB-15 Efficiency**: model FLOPs utilisation of the pretraining run on the RTX 2060, and a hard 6 GiB
+  VRAM gate.
+- Config fields: `model.positional`, `train.max_steps`, `warmup_steps`, `eval_every`, `patience`,
+  `mask_share`, `objectives`.
+- The first-model figure, `lessons/P4.md`, decisions D-039 … D-047.
+
+### Changed
+- `craton bench prepare --freeze` on an existing record adds new tasks only, and only if every frozen
+  task rebuilds identically (D-044). CB-15 was added this way.
+
 ## [0.4.0] — 2026-10-20 · P3 CratonBench v1
 
 ### Added

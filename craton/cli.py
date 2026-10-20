@@ -8,6 +8,7 @@ craton scoreboard    regenerate SCOREBOARD.md from results/scoreboard.json
 craton spec          the token spec: slots, instruments, examples, validation
 craton data          adapters and regions: list, fetch, build, cards
 craton bench         CratonBench: list, prepare, leaks, run METHOD, cards
+craton train         train Craton-mini on a split: a checkpoint and its model card
 """
 
 from __future__ import annotations
@@ -473,6 +474,7 @@ def cmd_bench(args: argparse.Namespace) -> int:
     from craton.bench import harness
     from craton.bench.baselines import METHODS
     from craton.bench.tasks import TASKS, BenchContext, load_frozen
+    from craton.train import method as _craton_mini  # noqa: F401  registers craton-mini
 
     root = find_root()
     action = args.action
@@ -526,8 +528,20 @@ def cmd_bench(args: argparse.Namespace) -> int:
     _title(f"bench run {method.name}")
     seeds = tuple(args.seeds) if args.seeds else load_config("mini", root).train.seeds
     start = time.perf_counter()
-    results = harness.run(method, ctx, seeds, args.tasks or None, log=log)
+    if hasattr(method, "log"):
+        method.log = log
+    results = harness.run(
+        method,
+        ctx,
+        seeds,
+        args.tasks or None,
+        log=log,
+        config_hash=getattr(method, "config_hash", "baseline"),
+    )
     path = harness.save_pending(root, results)
+    if hasattr(method, "write_cards"):
+        cards = method.write_cards(root)
+        console.print(f"[dim]model cards: {cards.relative_to(root).as_posix()}[/]")
     t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
     for col in ("task", "score", "metric"):
         t.add_column(col)
@@ -538,6 +552,35 @@ def cmd_bench(args: argparse.Namespace) -> int:
         f"wrote {path.relative_to(root).as_posix()} · {time.perf_counter() - start:.0f}s · "
         "[dim]`craton ratchet --accept` puts it on the board[/]"
     )
+    console.print()
+    return 0
+
+
+# ---------------------------------------------------------------- train
+
+
+def cmd_train(args: argparse.Namespace) -> int:
+    from craton.bench.tasks import BenchContext
+    from craton.train import checkpoint
+    from craton.train.method import CratonMini
+
+    root = find_root()
+    ctx = BenchContext(root)
+    log = lambda m: console.print(f"[dim]{m}[/]")  # noqa: E731
+    mini = CratonMini(config_name=args.config, log=log)
+    for seed in args.seeds or mini.config.train.seeds:
+        key = mini.key(ctx, args.split, seed)
+        _title(f"train {key.name}")
+        if checkpoint.load(root, key) is not None and not args.again:
+            console.print("[green]✓[/] already trained (--again to retrain)")
+            continue
+        start = time.perf_counter()
+        mini.train(ctx, args.split, seed)
+        card = key.folder(root) / "card.md"
+        console.print(
+            f"[green]✓[/] {time.perf_counter() - start:.0f}s · card: "
+            f"{card.relative_to(root).as_posix()}"
+        )
     console.print()
     return 0
 
@@ -693,10 +736,17 @@ def build_parser() -> argparse.ArgumentParser:
     b = sub.add_parser("bench", help="CratonBench: list, prepare, leaks, run METHOD, cards")
     b.add_argument("action", choices=("list", "prepare", "leaks", "run", "cards"))
     b.add_argument("method", nargs="?", help="baseline to run (see `craton bench list`)")
-    b.add_argument("--freeze", action="store_true", help="write the frozen record (first time)")
+    b.add_argument("--freeze", action="store_true", help="freeze the record, or its new tasks")
     b.add_argument("--tasks", nargs="*", help="only these task IDs")
     b.add_argument("--seeds", nargs="*", type=int, help="default: the mini config's seeds")
     b.set_defaults(func=cmd_bench)
+
+    t = sub.add_parser("train", help="train Craton-mini on a split (checkpoint + model card)")
+    t.add_argument("split", choices=("pretrain", "cb02_fit", "cb03_fit"))
+    t.add_argument("--config", default="mini")
+    t.add_argument("--seeds", nargs="*", type=int, help="default: the config's seeds")
+    t.add_argument("--again", action="store_true", help="retrain even if a checkpoint exists")
+    t.set_defaults(func=cmd_train)
     return p
 
 

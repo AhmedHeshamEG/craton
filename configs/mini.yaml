@@ -12,11 +12,20 @@ model:
   n_heads: 8          # 256 / 8 = 32 features per head
   context_tokens: 1024
   dropout: 0.1
+  positional: rope4d  # 4D rotary encoding; "sinusoidal" is the fallback
 
 train:
   precision: fp16
-  micro_batch: 16
-  grad_accum: 4       # effective batch 64
-  lr: 3.0e-4
+  micro_batch: 16     # windows of 1,024 quakes per step, plus 16 next-day questions
+  grad_accum: 1
+  lr: 1.0e-3
   weight_decay: 0.05
   seeds: [0, 1, 2]
+  max_steps: 2500
+  warmup_steps: 100
+  eval_every: 100
+  patience: 3         # validation checks without progress before stopping
+  mask_share: 0.15    # as in CB-01
+  objectives:
+    masked: 1.0
+    next_day: 1.0

@@ -180,3 +180,58 @@ Decisions: D-029 … D-038.
 
 Next: P4, Craton-mini v0. A transformer on the catalogue alone, implementing `Forecaster` and
 `MaskedPredictor`, trained on the `pretrain` and `cb02_fit` splits, scored against this floor.
+
+## 2026-10-20 — P4 — Craton-mini v0: the first model
+
+TLDR: The first transformer trains on the laptop in 8 to 16 minutes a run and never passes 2.6 GB. It
+beats climatology on CB-01 by a bit per measurement (two bits on the quakes alone) and beats a flat
+Poisson rate on both forecasts, but loses to ETAS by 3.8 bits per M3+ quake on 2016-17 and 5.7 on 2009.
+Fully scored, on the board, losses included.
+
+Built:
+- `craton/model/`: the event encoder (registered by instrument), 4D rotary positions over time,
+  latitude, longitude and depth with a sinusoidal fallback, the pre-norm trunk on fused attention, the
+  binned masked head and the next-day head (Poisson rate × cell × magnitude), both losses in bits
+- `craton/train/`: masked windows and next-day questions, the fp16 loop with gradient scaling, warmup +
+  cosine and early stopping, checkpoints named by split, config, seed and code version, model cards
+- the bench method `craton-mini`, `craton train SPLIT`, `docs/models/craton-mini.md`
+- CB-15 (MFU inside a 6 GiB gate), frozen into the record by the new add-only `--freeze`
+- the first-model figure (`scripts/figures/first_model.py`), `lessons/P4.md`, an encoder guide in
+  CONTRIBUTING
+- tests: 270 → 297
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261020-105609-craton-mini`, 7,467 s for nine trainings and
+scoring):
+- CB-01 21.66 ± 0.026 bits (climatology 22.66). Quakes 20.49 (climatology 22.48): latitude 6.89 (7.42),
+  longitude 6.22 (7.02), depth 3.33 (3.37), magnitude 4.06 (4.67). GNSS answered by climatology (D-042).
+- CB-02 −10.88 ± 0.67 (ETAS −7.12, Poisson −14.64). Seeds −10.22, −10.85, −11.57. Expected 320 M3+ quakes,
+  observed 1,065 (ETAS 583). M1.5+: −6.40 (ETAS −2.76, Poisson −9.69).
+- CB-03 −15.13 ± 0.79 (ETAS −9.40, Poisson −16.94). Expected 495 M3+ quakes, observed 315: it overshoots.
+- CB-15 15.6 ± 0.1% MFU: 85,000 tokens/s, 1,347 MiB peak on the CB-01 run (8.0 min). Forecast runs peak
+  at 2.5-2.6 GB.
+
+Surprises / problems:
+- The first forecasts expected 56-63 M3+ quakes for CB-02 (Poisson territory). It reacted to L'Aquila 2009
+  (a training day) but collapsed after Amatrice: only 13 training days have over 200 quakes, attention
+  can't count, and the final layer norm squashes scale. A clock per token and a straight path from six
+  measured recent rates into the log rate fixed the count (trial: 579 expected, ETAS 583) and moved the
+  score from −14.26 to −10.16 on one seed (D-045). The final seeds land between −10.2 and −11.6: the
+  forecast is not stable across seeds yet.
+- CB-03's model has one big sequence to learn from (Colfiorito 1997, in Md) and over-forecasts 2009.
+- The loss first used log N! for the day where CB-02 uses log n! per cell and bin. A constant for
+  training, but the claim was "the loss is the score"; a test caught it and the loss now matches exactly.
+- A hidden quake's coordinates were still in the input tensor (the rotary blocks zeroed them, so the
+  model never saw them; a model-level test proved it). They are now zeroed where the batch is built.
+- The figure's first draft titled itself "looks where the aftershocks are". Measured, the median head
+  puts 54% of its attention within 10 km of the hidden quake, where 55% of the window is; the most local
+  of 48 heads puts 74%. The figure now says exactly that.
+- Most runs hit the 2,500-step limit still improving; early stopping fired once (cb02_fit seed 2, step
+  1,900). More steps are cheap and the next phase should take them.
+- The fused attention backward is not bitwise deterministic on the 2060 (D-046).
+- Twice more a shell heredoc turned `"\n"` into a real line break in Python source; caught by the parser.
+  Multi-line source edits now go through the editor.
+
+Decisions: D-039 … D-047.
+
+Next: P5, fusion. Register GNSS and tide encoders, build the context selector, add cross-modal masking,
+and run the ablation that shows each modality's share; CB-17 arrives.

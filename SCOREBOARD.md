@@ -10,17 +10,17 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 
 | | Task | Craton | Floor | Arrives |
 |---|---|---|---|---|
-| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | not measured yet | 22.66 ± 0 ↓ · climatology | P3 |
-| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | not measured yet | −7.118 ± 0 ↑ · etas | P3 |
+| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 21.66 ± 0.026 ↓ (+0.997 vs climatology) | 22.66 ± 0 ↓ · climatology | P3 |
+| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −10.88 ± 0.67 ↑ (−3.76 vs etas) | −7.118 ± 0 ↑ · etas | P3 |
 | **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P6 |
 
 ## Every task
 
 | ID | Task | Craton | Floor | Phase |
 |---|---|---|---|---|
-| CB-01 | Geo-perplexity | · | 22.66 ± 0 ↓ · climatology | P3 |
-| CB-02 | Apennines 2016-17 forecast | · | −7.118 ± 0 ↑ · etas | P3 |
-| CB-03 | L'Aquila 2009 era holdout | · | −9.396 ± 0 ↑ · etas | P3 |
+| CB-01 | Geo-perplexity | 21.66 ± 0.026 ↓ · craton-mini | 22.66 ± 0 ↓ · climatology | P3 |
+| CB-02 | Apennines 2016-17 forecast | −10.88 ± 0.67 ↑ · craton-mini | −7.118 ± 0 ↑ · etas | P3 |
+| CB-03 | L'Aquila 2009 era holdout | −15.13 ± 0.79 ↑ · craton-mini | −9.396 ± 0 ↑ · etas | P3 |
 | CB-04 | GPS gap-fill | · | 17.77 ± 0 ↓ · idw_trend | P3 |
 | CB-05 | Calibration | · | · | P6 |
 | CB-06 | Unseen region | · | · | P6 |
@@ -32,7 +32,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-12 | Interpreter faithfulness | · | · | P9 |
 | CB-13 | Microscope | · | · | P10 |
 | CB-14 | Deep time | · | · | P11 |
-| CB-15 | Efficiency | · | · | P4 |
+| CB-15 | Efficiency | 15.59 ± 0.11 ↑ · craton-mini | · | P4 |
 | CB-16 | Scaling-law fit | · | · | P12 |
 | CB-17 | In-context adaptation | · | · | P5 |
 | CB-18 | Ladder rung 3 | · | · | P12 |
@@ -54,6 +54,7 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-20 10:56 | `20261020-105609-craton-mini` | craton-mini | 4 new |
 | 2026-10-20 02:18 | `20261020-021726-etas` | etas (baseline) | 2 new |
 | 2026-10-20 02:18 | `20261020-020924-poisson` | poisson (baseline) | 2 new |
 | 2026-10-20 02:18 | `20261020-020852-idw-trend` | idw_trend (baseline) | 1 new |

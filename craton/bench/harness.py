@@ -1,7 +1,8 @@
 """CratonBench's harness: prepare and freeze the tests, check for leaks, run a method.
 
     craton bench prepare           cut the splits, write the test files, compare with the frozen
-    craton bench prepare --freeze  …and write the frozen record (first time only)
+    craton bench prepare --freeze  …and freeze it: the whole record the first time, later only
+                                   tasks it doesn't have yet (everything else must match)
     craton bench leaks             read every training shard back and look for held-out tokens
     craton bench run etas          score a method on every task it supports, 3 seeds
                                    → results/pending/<run>.json, judged by `craton ratchet`
@@ -80,6 +81,8 @@ def prepare(ctx: BenchContext, freeze: bool = False, log: Log = _quiet) -> list[
     }
     frozen = load_frozen(ctx.region)
     path = frozen_path(ctx.region)
+    if frozen is not None and freeze:
+        return _add_tasks(frozen, body, path, log)
     if frozen is None:
         if not freeze:
             return [
@@ -90,6 +93,23 @@ def prepare(ctx: BenchContext, freeze: bool = False, log: Log = _quiet) -> list[
         log(f"froze {path.name}")
         return []
     return _diff(frozen, body)
+
+
+def _add_tasks(frozen: dict[str, Any], body: dict[str, Any], path: Path, log: Log) -> list[str]:
+    """Freeze tasks the record doesn't have yet. Everything already frozen must match exactly:
+    a frozen benchmark grows, it never changes."""
+    new = {t: v for t, v in body["tasks"].items() if t not in frozen["tasks"]}
+    known = {**body, "tasks": {t: v for t, v in body["tasks"].items() if t in frozen["tasks"]}}
+    problems = _diff(frozen, known)
+    if problems:
+        return problems
+    if not new:
+        log("nothing new to freeze")
+        return []
+    out = {**frozen, "tasks": {**frozen["tasks"], **new}}
+    path.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8", newline="\n")
+    log(f"froze {', '.join(new)} into {path.name}")
+    return []
 
 
 def _diff(frozen: dict[str, Any], body: dict[str, Any], prefix: str = "") -> list[str]:

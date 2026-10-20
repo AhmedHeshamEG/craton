@@ -428,3 +428,113 @@ The plan names the neural point process of Stockman, Lawson & Werner (arXiv 2301
 baseline. It is a neural model (P3 has none), it is temporal only, and its headline result uses an
 enhanced catalogue of about 900,000 events (Tan et al. 2021) that Craton doesn't have. Its paper is the
 reference P4 compares with.
+
+### D-039 · 2026-10-20 · P4 — Craton-mini v0: one trunk, two heads, trained on the score itself
+
+The mini config's shape (d = 256, 6 layers, 8 heads, 1,024 tokens, 4.74M trunk parameters), pre-norm
+GPT-2 blocks on PyTorch's fused attention, one encoder for catalogue quakes, and two heads. The masked
+head gives a probability for every CB-01 bin of latitude, longitude, depth and magnitude; the next-day
+head gives a Poisson rate for tomorrow, a probability per 0.1° cell and a probability per 0.1 magnitude
+bin. Each bin keeps 0.1% of the probability spread evenly (no answer costs more than about 20 bits).
+The masked loss is CB-01's bits on those bins; the next-day loss is CB-02's joint Poisson log-likelihood,
+log n! included. Objectives and their weights come from the config.
+
+**Why.** The plan asks for probabilistic heads only (binned or mixture). Binned heads on the benchmark's
+own bins turn the training loss into the benchmark's score, the same move as training an LLM on the
+perplexity it is judged by.
+
+**Rejected.** Mixture density heads (they would be scored on bins anyway, and a sum of Gaussians wastes
+mass outside the region). Regression heads (a single number; banned).
+
+### D-040 · 2026-10-20 · P4 — Next-event prediction is a next-day point process
+
+At every midnight, a query token reads the 1,023 quakes before it and the head forecasts the next 24
+hours: rate × where × how big. That is the point process discretised to the day and the 0.1° cell,
+which is exactly the question CB-02 asks.
+
+**Why.** A continuous-time next-event head would need thousands of simulated futures per forecast day to
+produce daily expected counts, and some days in 2016 had over a thousand quakes. The discretised head
+answers in one forward pass and trains on the score itself.
+
+**Rejected.** A continuous-time neural point process with simulation (left for later; the
+EarthquakeNPP benchmark, Stockman et al. 2026, found none of five such models beat ETAS on California).
+
+### D-041 · 2026-10-20 · P4 — One model per split, and what each task lets the model read
+
+Craton-mini trains one model per split and seed: on `pretrain` for CB-01 (masked objective only: the
+split has holes where the eras were, so its midnights would ask about missing days), on `cb02_fit` and
+`cb03_fit` for CB-02 and CB-03 (both objectives). For CB-01 every snapshot quake except the hidden ones is
+visible; the masked quakes go back in at their times with place and size hidden, and windows of 1,024
+are read around them. For CB-02 and CB-03, each midnight reads the quakes before it.
+
+**Why.** D-029: a forecast model must never learn from after its test window, and `pretrain` contains
+2018-2026, the tail of the 2016 sequence. CB-01's definition hides only the masked tokens and their tides;
+the other 85% of the eras is context, the way BERT reads the words around a masked one.
+
+**Rejected.** One model for everything (it would have seen how 2016's aftershocks ended).
+
+### D-042 · 2026-10-20 · P4 — CB-01's GNSS queries get the climatology answer in v0
+
+Craton-mini v0 reads the catalogue only (the plan keeps GNSS and tides for P5). Its CB-01 answer for a
+GNSS day is the climatology baseline's, and the run's extras report the two instruments separately.
+
+**Why.** CB-01 is the mean over instruments, and every query needs an answer. Copying the floor for the
+half the model can't read yet keeps the headline honest: any gain comes from the quakes alone.
+
+### D-043 · 2026-10-20 · P4 — CB-15 is model FLOPs utilisation, inside 6 GiB
+
+CB-15's score is the MFU of the CB-01 model's training run, per seed: tokens per second × (6N +
+12·L·H·Q·T) FLOPs per token (PaLM, appendix B) ÷ 25.8 TFLOP/s, the RTX 2060's fp16 tensor-core peak with
+fp32 accumulation (240 tensor cores × 64 FMA × 2 × 1.68 GHz, halved for fp32 accumulation on GeForce
+Turing). A run whose peak VRAM exceeds 6 GiB cannot be scored. Tokens per second, peak VRAM and minutes
+are extras.
+
+**Why.** The ratchet never lets a task get worse and never lets a model drop one. With peak VRAM or
+tokens per second as the score, the first bigger model would be blocked forever. MFU doesn't fall just
+because a model grows; the budget is a hard gate, as the plan says ("must fit in 6 GB").
+
+**Rejected.** Peak VRAM, tokens per second, a pass/fail flag (says nothing).
+
+### D-044 · 2026-10-20 · P4 — A frozen benchmark grows; it never changes
+
+`craton bench prepare --freeze` on an existing record now adds the tasks it doesn't have yet, and only
+if everything already frozen is rebuilt identically. CB-15 entered `frozen/central_italy.json` this way.
+
+**Why.** Tasks arrive phase by phase. Re-freezing would let an old task change silently; refusing to
+grow would stop every phase after P3.
+
+### D-045 · 2026-10-20 · P4 — The model gets a clock, and the rate head a straight path from the recent rate
+
+Every token carries two clock numbers, log seconds since the window's reference moment and log seconds
+since the previous quake. The next-day head adds, to its trunk-driven log rate, a straight line from six
+recent rates measured just before midnight: k over the age of the k-th last quake for k = 1, 10, 100,
+1,000, and the same for M3+ quakes at k = 1 and 10. The line starts at the average of the four
+all-sizes rates ("tomorrow looks like now") and is not weight-decayed.
+
+**Why.** The first runs forecast 56 to 63 M3+ quakes for CB-02 where 1,065 happened, no better than the
+Poisson baseline. Attention averages, so it can't count how crowded its window is, and the trunk's final
+layer norm squashes any sense of scale; only 13 training days had more than 200 quakes, and 2016 was
+busier than any of them. With the straight path the same training gave −11.03 bits per quake instead of
+−14.26. A line in log space extrapolates like a power law, the shape of Omori's law. The M3+ rates carry
+ETAS's lesson that big quakes trigger more.
+
+**Rejected.** Oversampling busy days (biases the per-quake objective). Counting tokens inside attention
+(it can't). Waiting for synthetic catalogues (P7) before the model could react to a sequence at all.
+
+### D-046 · 2026-10-20 · P4 — Bitwise reproducibility gives way to the fast attention kernel
+
+The memory-efficient attention kernel PyTorch picks on the RTX 2060 has a non-deterministic backward
+pass. Craton keeps it: seeds fix initialisation, data order and masks, and two runs of one seed agree to
+noise, not to the bit. Every score is a mean over three seeds, which is the noise the ratchet measures.
+
+**Why.** The deterministic fallback (the plain math kernel) is several times slower and uses more memory.
+
+### D-047 · 2026-10-20 · P4 — The next-day head learns from every midnight since 1986
+
+Next-day training uses every midnight from 1 January 1986 to the end of the split with a full context,
+all magnitude types, while the masked head learns from the whole split. 10% of 30-day blocks, picked by a
+salted hash, are kept for validation and early stopping.
+
+**Why.** The ETAS baseline fits from 2005 because it can't tell Md from ML. The model sees each quake's
+magnitude type, and before 2005 lies the 1997 Colfiorito sequence: one of only three big sequences in the
+data, and the only one CB-03's model can learn from.

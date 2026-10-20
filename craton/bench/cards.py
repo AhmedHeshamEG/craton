@@ -43,6 +43,12 @@ ABOUT = {
         "positions from the other stations. A station's series starts from an arbitrary "
         "origin, so each station's mean offset per component is removed before the RMSE."
     ),
+    "CB-15": (
+        "What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, the "
+        "share of the GPU's peak the run actually used (6N + 12·L·H·Q·T FLOPs per token, "
+        "against 25.8 TFLOP/s of fp16 tensor-core math). A run that needs more than 6 GiB "
+        "of VRAM can't be scored at all. Tokens per second, peak VRAM and minutes ride along."
+    ),
 }
 
 
@@ -124,9 +130,9 @@ def render() -> str:
         "",
         "## Add a method",
         "",
-        "Implement the task's protocol (`MaskedPredictor`, `Forecaster` or `GapFiller` in "
-        "`craton/bench/tasks.py`), register it with `register_method`, and run "
-        "`craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet "
+        "Implement the task's protocol (`MaskedPredictor`, `Forecaster`, `GapFiller` or "
+        "`EfficiencyReport` in `craton/bench/tasks.py`), register it with `register_method`, "
+        "and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet "
         "--accept` puts it on the scoreboard if nothing got worse.",
         "",
     ]

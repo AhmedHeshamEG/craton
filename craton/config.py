@@ -19,6 +19,7 @@ from craton.hardware import Precision
 from craton.paths import configs_dir, find_root
 
 Status = Literal["active", "planned"]
+Positional = Literal["rope4d", "sinusoidal"]
 
 
 class _Strict(BaseModel):
@@ -32,6 +33,9 @@ class ModelShape(_Strict):
     d_ff: int | None = Field(default=None, gt=0, description="Feed-forward width; 4 x d_model.")
     context_tokens: int = Field(gt=0, description="How many tokens the model sees at once.")
     dropout: float = Field(default=0.0, ge=0.0, lt=1.0)
+    positional: Positional = Field(
+        default="rope4d", description="4D rotary encoding, or the sinusoidal fallback."
+    )
 
     @model_validator(mode="after")
     def _heads_divide_width(self) -> ModelShape:
@@ -51,11 +55,25 @@ class TrainSettings(_Strict):
     lr: float = Field(gt=0)
     weight_decay: float = Field(default=0.0, ge=0)
     seeds: tuple[int, ...] = Field(min_length=3, description="Benchmarks average over these.")
+    max_steps: int = Field(default=2000, gt=0, description="Optimiser steps at most.")
+    warmup_steps: int = Field(default=100, ge=0)
+    eval_every: int = Field(default=100, gt=0, description="Steps between validation passes.")
+    patience: int = Field(default=4, gt=0, description="Validations without progress, then stop.")
+    mask_share: float = Field(default=0.15, gt=0, lt=1, description="Share of quakes hidden.")
+    objectives: dict[str, float] = Field(
+        default_factory=lambda: {"masked": 1.0, "next_day": 1.0},
+        description="Training objectives and their weights.",
+    )
 
     @model_validator(mode="after")
     def _distinct_seeds(self) -> TrainSettings:
         if len(set(self.seeds)) != len(self.seeds):
             raise ValueError("seeds must be distinct")
+        unknown = set(self.objectives) - {"masked", "next_day"}
+        if unknown:
+            raise ValueError(f"unknown objectives: {sorted(unknown)}")
+        if not any(w > 0 for w in self.objectives.values()):
+            raise ValueError("at least one objective needs a positive weight")
         return self
 
 
