@@ -171,7 +171,9 @@ def train(
                 h = model(tok).flatten(0, 1)
                 if "masked" in weights and len(m_batch.quake_targets):
                     out["masked"] = model.masked.loss_bits(
-                        h[gpu(m_batch.quake_pos)], gpu(m_batch.quake_targets)
+                        h[gpu(m_batch.quake_pos)],
+                        gpu(m_batch.quake_targets),
+                        gpu(m_batch.quake_weight),
                     )
                 if "gnss" in weights and len(m_batch.gnss_lo):
                     out["gnss"] = model.gnss.loss_bits(
@@ -179,6 +181,7 @@ def train(
                         gpu(m_batch.gnss_years),
                         gpu(m_batch.gnss_lo),
                         gpu(m_batch.gnss_hi),
+                        gpu(m_batch.gnss_weight),
                     )
             if n_batch is not None:
                 tok = n_batch.tokens.to(device)

@@ -28,15 +28,13 @@ train:
   max_steps: 4000    # P4's runs were still improving at 2,500
   warmup_steps: 100
   eval_every: 100
-  patience: 5         # validation checks without progress before stopping
+  patience: 8         # validation checks without progress before stopping
   mask_share: 0.15    # as in CB-01
-  windows:            # the mix of masked windows (craton/train/data.py)
-    quake: 0.55
-    gnss: 0.45
+  windows:            # the mix of masked windows (craton/train/data.py); D-056
+    quake: 1.0        # GNSS-centred windows cost the quakes 1.3+ bits at this size: off
   split_windows:      # each game trained where it is tested: in-context practice for CB-17 only
     cb17_fit:
-      quake: 0.45
-      gnss: 0.40
+      quake: 0.85
       region: 0.15
   objectives:
     masked: 1.0       # hidden quakes, bits on CB-01's bins

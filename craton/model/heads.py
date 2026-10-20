@@ -77,13 +77,20 @@ class MaskedHead(nn.Module):
         """(N, d) → one (N, bins) log-probability tensor per channel."""
         return [floored(p(h)) for p in self.proj]
 
-    def loss_bits(self, h: torch.Tensor, values: torch.Tensor) -> torch.Tensor:
-        """Mean bits per masked token, summed over channels. values (N, channels)."""
-        total = torch.zeros((), device=h.device)
+    def loss_bits(
+        self, h: torch.Tensor, values: torch.Tensor, weight: torch.Tensor | None = None
+    ) -> torch.Tensor:
+        """Mean bits per masked token, summed over channels. values (N, channels).
+
+        With ``weight`` (N,), a weighted mean: training gives every window the same say,
+        however many tokens it hides (``craton.train.context.Batch``)."""
+        total = torch.zeros(len(h), device=h.device)
         for c, (logp, b) in enumerate(zip(self(h), self.bins, strict=True)):
             target = b.index(values[:, c])
-            total = total + F.nll_loss(logp, target) / LN2
-        return total
+            total = total + F.nll_loss(logp, target, reduction="none") / LN2
+        if weight is None:
+            return total.mean()
+        return (total * weight).sum() / weight.sum()
 
 
 def forecast_grid() -> csep.Grid:
@@ -244,10 +251,19 @@ class GnssHead(nn.Module):
         return torch.clamp(-logp / LN2, max=MAX_BITS)
 
     def loss_bits(
-        self, h: torch.Tensor, years: torch.Tensor, lo: torch.Tensor, hi: torch.Tensor
+        self,
+        h: torch.Tensor,
+        years: torch.Tensor,
+        lo: torch.Tensor,
+        hi: torch.Tensor,
+        weight: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        """Mean bits per hidden GNSS day, summed over the three channels."""
-        return self.bin_bits(h, years, lo, hi).sum(-1).mean()
+        """Mean bits per hidden GNSS day, summed over the three channels (weighted mean with
+        ``weight``, as for the masked head)."""
+        bits = self.bin_bits(h, years, lo, hi).sum(-1)
+        if weight is None:
+            return bits.mean()
+        return (bits * weight).sum() / weight.sum()
 
     def mean_mm(self, h: torch.Tensor, years: torch.Tensor) -> torch.Tensor:
         """(N, 3) the mixture's mean, mm from the baseline: the point answer CB-04 asks for."""

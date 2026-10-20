@@ -37,8 +37,8 @@ ALL = (QUAKES, GNSS, TIDES)
 #: Every variant: the instruments it reads, and the tasks it can answer.
 VARIANTS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "all": (ALL, ("CB-01", "CB-02", "CB-03", "CB-04")),
-    "no_tides": ((QUAKES, GNSS), ("CB-01", "CB-02", "CB-03", "CB-04")),
-    "no_gnss": ((QUAKES, TIDES), ("CB-01", "CB-02", "CB-03")),
+    "no_tides": ((QUAKES, GNSS), ("CB-01", "CB-02", "CB-04")),
+    "no_gnss": ((QUAKES, TIDES), ("CB-01", "CB-02")),
     "no_quakes": ((GNSS, TIDES), ("CB-01", "CB-04")),
 }
 #: Which variant leaves out which instrument.

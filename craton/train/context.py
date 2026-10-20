@@ -353,6 +353,11 @@ class Batch:
     tokens: Tokens
     quake_pos: torch.Tensor  # (Nq,) where each hidden quake sits: window * length + token
     gnss_pos: torch.Tensor  # (Ng,) the same for each hidden GNSS day
+    #: Each hidden token's share of its window: 1 / (hidden tokens of that instrument in the
+    #: window). A window that hides 950 quakes then counts as one example, like one that
+    #: hides 140, instead of drowning the rest of the batch.
+    quake_weight: torch.Tensor  # (Nq,)
+    gnss_weight: torch.Tensor  # (Ng,)
     quake_targets: torch.Tensor  # (Nq, 4) lat, lon, depth, magnitude
     gnss_lo: torch.Tensor  # (Ng, 3) the true 1 mm bin, mm from the baseline
     gnss_hi: torch.Tensor
@@ -365,7 +370,16 @@ class Batch:
         """Page-locked copies, so the copy to the GPU runs alongside the GPU's work."""
         out = Batch(**self.__dict__)
         out.tokens = self.tokens.pin_memory()
-        for name in ("quake_pos", "gnss_pos", "quake_targets", "gnss_lo", "gnss_hi", "gnss_years"):
+        for name in (
+            "quake_pos",
+            "gnss_pos",
+            "quake_weight",
+            "gnss_weight",
+            "quake_targets",
+            "gnss_lo",
+            "gnss_hi",
+            "gnss_years",
+        ):
             setattr(out, name, getattr(self, name).pin_memory())
         return out
 
@@ -392,6 +406,8 @@ def write(src: Sources, windows: list[Window]) -> Batch:
     q_rows: list[IntArray] = []
     q_pos: list[IntArray] = []
     g_pos: list[IntArray] = []
+    q_w: list[FloatArray] = []
+    g_w: list[FloatArray] = []
     g_lo: list[FloatArray] = []
     g_hi: list[FloatArray] = []
     g_years: list[FloatArray] = []
@@ -420,6 +436,7 @@ def write(src: Sources, windows: list[Window]) -> Batch:
             q_targets.append(cat.values[w.quakes][hid])
             q_rows.append(w.quakes[hid])
             q_pos.append(i * length + pos + np.nonzero(hid)[0])
+            q_w.append(np.full(int(hid.sum()), 1.0 / max(int(hid.sum()), 1)))
             pos += n
         # GNSS
         n = len(w.gnss)
@@ -469,6 +486,7 @@ def write(src: Sources, windows: list[Window]) -> Batch:
                 g_base.append(base)
                 g_rows.append(w.gnss[hid])
                 g_pos.append(i * length + pos + np.nonzero(hid)[0])
+                g_w.append(np.full(int(hid.sum()), 1.0 / int(hid.sum())))
             pos += n
         # tides
         n = len(w.tides)
@@ -492,10 +510,16 @@ def write(src: Sources, windows: list[Window]) -> Batch:
             known[i, pos, 0] = True
             times.append(np.array([w.query_at]))
             pos += 1
-        # the clock: age from the reference moment, and the gap since the last quake before
+        # the clock: age, and the gap since the last quake before
         every = np.concatenate(times) if times else np.zeros(0)
         qt = np.sort(cat.time[w.quakes]) if len(w.quakes) else np.zeros(0)
-        clock[i, :pos, 0] = np.abs(every - w.t_ref)
+        # A masked window counts forward from its first quake (before and after stay apart,
+        # and a week of GNSS days in the window doesn't squash every quake's age together);
+        # a next-day window counts back from midnight.
+        start = w.t_ref
+        if w.query_at is None and len(w.quakes):
+            start = float(cat.time[w.quakes].min())
+        clock[i, :pos, 0] = np.abs(every - start)
         clock[i, :pos, 1] = _gaps(every, qt)
 
     def cat_or_empty(parts: list[FloatArray], width: int) -> FloatArray:
@@ -512,6 +536,11 @@ def write(src: Sources, windows: list[Window]) -> Batch:
         padded=bool((inst == PAD).any()),
     )
 
+    def weights(parts: list[FloatArray]) -> torch.Tensor:
+        return torch.from_numpy(
+            (np.concatenate(parts) if parts else np.zeros(0)).astype(np.float32)
+        )
+
     def positions(parts: list[IntArray]) -> torch.Tensor:
         return torch.from_numpy(np.concatenate(parts) if parts else np.zeros(0, np.int64))
 
@@ -519,6 +548,8 @@ def write(src: Sources, windows: list[Window]) -> Batch:
         tokens=tokens,
         quake_pos=positions(q_pos),
         gnss_pos=positions(g_pos),
+        quake_weight=weights(q_w),
+        gnss_weight=weights(g_w),
         quake_targets=torch.from_numpy(cat_or_empty(q_targets, 4).astype(np.float32)),
         gnss_lo=torch.from_numpy(cat_or_empty(g_lo, 3).astype(np.float32)),
         gnss_hi=torch.from_numpy(cat_or_empty(g_hi, 3).astype(np.float32)),
