@@ -168,3 +168,32 @@ def test_eras_and_forecast_windows() -> None:
 def test_written_tables_are_parquet(token_root: Path) -> None:
     for p in _files(token_root):
         assert pq.read_metadata(p).num_rows > 0
+
+
+def test_a_region_left_out_is_left_out_at_every_time(token_root: Path, tmp_path: Path) -> None:
+    box = splits.Box("norcia", 42.8, 42.9, 13.0, 13.2)  # Norcia, not Arquata (42.75 N)
+    spec = splits.SplitSpec("no_norcia", "test", (), region_out=box)
+    out = tmp_path / "no_norcia"
+    m = splits.materialise(spec, _files(token_root), token_root, out, ["HELD"])
+    assert not list(out.rglob("instrument=seismic_catalog/*/*.parquet"))  # all sat at Norcia
+    assert set(load_gnss(out).station.tolist()) == {"ARQT"}
+    assert m["left_out"] == 6
+    assert splits.leak_problems(out, ["HELD"]) == []
+    assert splits.SplitSpec.of(spec.as_dict()) == spec
+    # The same shards under a manifest that claims the box: the check reads them and objects.
+    plain = tmp_path / "plain"
+    splits.materialise(
+        splits.SplitSpec("plain", "test", ()), _files(token_root), token_root, plain, ["HELD"]
+    )
+    manifest = json.loads((plain / "manifest.json").read_text(encoding="utf-8"))
+    manifest["split"]["region_out"] = box.as_dict()
+    manifest["id"] = splits.manifest_id(manifest)
+    (plain / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert any("held-out token" in p for p in splits.leak_problems(plain, ["HELD"]))
+
+
+def test_older_splits_keep_their_definition() -> None:
+    for name in ("pretrain", "cb02_fit", "cb03_fit"):
+        assert "region_out" not in splits.SPLITS[name].as_dict()
+    assert splits.CB17_REGION.contains(43.3, 12.3)
+    assert not splits.CB17_REGION.contains(42.83, 13.11)

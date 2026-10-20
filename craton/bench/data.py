@@ -176,6 +176,43 @@ def load_gnss(root: Path) -> Gnss:
     return gnss_from_table(read_table(files, GNSS_COLUMNS))
 
 
+@dataclass(frozen=True)
+class Tides:
+    """The hourly solid-Earth tide series at the region's centre, sorted by time."""
+
+    time: FloatArray
+    lat: FloatArray
+    lon: FloatArray
+    enu: FloatArray  # (n, 3) metres
+
+    def __len__(self) -> int:
+        return len(self.time)
+
+
+TIDE_COLUMNS = ("time", "lat", "lon", "value", "record")
+#: The adapter's record for the hourly series; the other tide tokens sit at earthquakes.
+HOURLY_RECORD = "hourly=centre"
+
+
+def tides_from_table(table: pa.Table) -> Tides:
+    hourly = pa.compute.equal(table.column("record"), HOURLY_RECORD)
+    table = table.filter(hourly)
+    t = Tides(
+        time=_floats(table, "time"),
+        lat=_floats(table, "lat"),
+        lon=_floats(table, "lon"),
+        enu=_first(table, "value", 3),
+    )
+    order = np.argsort(t.time, kind="stable")
+    return Tides(t.time[order], t.lat[order], t.lon[order], t.enu[order])
+
+
+def load_tides(root: Path) -> Tides:
+    """The hourly tide series under a token root (the tokens at earthquakes are left out)."""
+    files = instrument_files(root, "solid_earth_tide")
+    return tides_from_table(read_table(files, TIDE_COLUMNS))
+
+
 def snapshot_files(snapshot: dict[str, Any], tokens_root: Path) -> list[Path]:
     """Every token file a snapshot names, as paths under the token root."""
     out = []

@@ -1,4 +1,4 @@
-"""CratonBench v1: CB-01 … CB-04, their frozen test data, and how they are scored.
+"""CratonBench: CB-01 … CB-04, CB-15, CB-17, their frozen test data, and how they are scored.
 
 Each task has an ID, a metric, a direction (lower or higher is better) and a **fingerprint**:
 the hash of its definition, its metric version and every frozen test file. If any of those
@@ -6,10 +6,11 @@ changes, it's a different task and needs a new ID; the ratchet refuses a changed
 
 Methods (baselines now, Craton models later) plug in by implementing one protocol per family:
 
-    MaskedPredictor   CB-01   a distribution for every hidden channel of a masked token
-    Forecaster        CB-02/3 expected quakes per (day, cell, magnitude bin)
-    GapFiller         CB-04   daily positions of a GNSS station nobody let you see
-    EfficiencyReport  CB-15   what the model's training run cost on the GPU
+    MaskedPredictor     CB-01   a distribution for every hidden channel of a masked token
+    Forecaster          CB-02/3 expected quakes per (day, cell, magnitude bin)
+    GapFiller           CB-04   daily positions of a GNSS station nobody let you see
+    EfficiencyReport    CB-15   what the model's training run cost on the GPU
+    InContextPredictor  CB-17   a region never seen: its next year, from its first N days
 """
 
 from __future__ import annotations
@@ -32,9 +33,11 @@ from craton.bench.data import (
     DAY,
     Events,
     Gnss,
+    Tides,
     instrument_files,
     load_events,
     load_gnss,
+    load_tides,
     read_table,
 )
 from craton.bench.dists import ChannelDist
@@ -167,6 +170,17 @@ class BenchContext:
         out: Gnss = self._cache["gnss"]
         return out
 
+    @property
+    def tides(self) -> Tides:
+        """The hourly tide series of the snapshot: computed forcing, readable for any time."""
+        if "tides" not in self._cache:
+            from craton.bench.data import TIDE_COLUMNS, tides_from_table
+
+            files = self._snapshot_files("solid_earth_tide")
+            self._cache["tides"] = tides_from_table(read_table(files, TIDE_COLUMNS))
+        out: Tides = self._cache["tides"]
+        return out
+
     def tide_links(self) -> tuple[list[str], list[str], FloatArray]:
         """(token hash, content hash, time) of every tide token: content hash = its event."""
         files = self._snapshot_files("solid_earth_tide")
@@ -190,6 +204,9 @@ class BenchContext:
 
     def train_gnss(self, split: str) -> Gnss:
         return load_gnss(self.split_dir(split))
+
+    def train_tides(self, split: str) -> Tides:
+        return load_tides(self.split_dir(split))
 
     def has_split(self, split: str) -> bool:
         return (self.split_dir(split) / "manifest.json").is_file() and bool(
@@ -794,6 +811,167 @@ class Efficiency(Task):
         )
 
 
+# ---------------------------------------------------------------- CB-17 in-context adaptation
+
+
+#: CB-17: the region's history "begins" here; the context is its first N days from this moment.
+CB17_START = "2022-01-01T00:00:00Z"
+#: The test year: every quake inside the region, place and size hidden.
+CB17_TEST = Window("cb17_test", "2023-01-01T00:00:00Z", "2024-01-01T00:00:00Z")
+CB17_DAYS = (0, 7, 30, 90, 365)
+
+
+@dataclass(frozen=True)
+class RegionQueries:
+    """CB-17's question: a region's first year of quakes, and its next year's, hidden."""
+
+    context_time: FloatArray
+    context_values: FloatArray  # (n, 4) lat, lon, depth, magnitude
+    context_type: list[str]
+    time: FloatArray
+    magnitude_type: list[str]
+
+    def context(self, days: int) -> tuple[FloatArray, FloatArray, list[str]]:
+        """The quakes of the first ``days`` days, and nothing after."""
+        sel = self.context_time < to_seconds(CB17_START) + days * DAY
+        types = [t for t, k in zip(self.context_type, sel, strict=True) if k]
+        return self.context_time[sel], self.context_values[sel], types
+
+
+@runtime_checkable
+class InContextPredictor(Protocol):
+    name: str
+
+    def predict_in_context(
+        self, queries: RegionQueries, days: int, ctx: BenchContext, seed: int
+    ) -> dict[str, ChannelDist]:
+        """{channel: distribution over every test quake}, reading only ``queries.context(days)``
+        of the region (and the training split, which never saw it)."""
+        ...
+
+
+class InContextAdaptation(Task):
+    """CB-17: does a model learn a place it has never seen from context alone?
+
+    The model is trained on ``cb17_fit``, which holds nothing inside the region at any time.
+    It is then shown the region's first N days of quakes (N = 0, 7, 30, 90, 365), with no
+    retraining, and asked for every quake of the following year: where and how big, in bits
+    on CB-01's bins. The score is the bits at N = 365; the whole curve is in the extras.
+    """
+
+    task_id = "CB-17"
+    name = "In-context adaptation"
+    metric = "bits per quake in a region never trained on, with its first 365 days in context"
+    direction = "lower"
+
+    def definition(self) -> dict[str, Any]:
+        from craton.bench.splits import CB17_REGION
+
+        return {
+            "region": CB17_REGION.as_dict(),
+            "context_start": CB17_START,
+            "context_days": list(CB17_DAYS),
+            "primary_days": CB17_DAYS[-1],
+            "test": CB17_TEST.as_dict(),
+            "bins": [b.__dict__ for b in CB01_BINS["seismic_catalog"]],
+            "max_bits_per_channel": MAX_BITS,
+            "revealed": "time and magnitude type of every test quake",
+            "train_split": "cb17_fit",
+        }
+
+    def prepare(self, ctx: BenchContext) -> dict[str, Any]:
+        from craton.bench.splits import CB17_REGION
+
+        ev = ctx.events
+        ev = ev.select(CB17_REGION.contains(ev.lat, ev.lon))
+        t0 = to_seconds(CB17_START)
+        before = ev.window(t0, t0 + CB17_DAYS[-1] * DAY)
+        test = ev.window(CB17_TEST.t0, CB17_TEST.t1)
+        context = pa.table(
+            {
+                "time": before.time,
+                "lat": before.lat,
+                "lon": before.lon,
+                "depth_km": before.depth_km,
+                "magnitude": before.mag,
+                "magnitude_type": before.mag_type.tolist(),
+            }
+        )
+        queries = pa.table(
+            {
+                "token_hash": test.token_hash.tolist(),
+                "time": test.time,
+                "magnitude_type": test.mag_type.tolist(),
+            }
+        )
+        answers = pa.table(
+            {
+                "token_hash": test.token_hash.tolist(),
+                "value": np.stack([test.lat, test.lon, test.depth_km, test.mag], 1).tolist(),
+            }
+        )
+        folder = ctx.task_dir(self.task_id)
+        return {
+            "files": {
+                "answers.parquet": _write_table(folder / "answers.parquet", answers),
+                "context.parquet": _write_table(folder / "context.parquet", context),
+                "queries.parquet": _write_table(folder / "queries.parquet", queries),
+            },
+            "summary": {
+                "context_quakes": {
+                    str(d): int((before.time < t0 + d * DAY).sum()) for d in CB17_DAYS
+                },
+                "test_quakes": len(test),
+                "largest_test": float(test.mag.max()) if len(test) else None,
+            },
+        }
+
+    def load_queries(self, ctx: BenchContext) -> RegionQueries:
+        folder = ctx.task_dir(self.task_id)
+        c = pq.read_table(folder / "context.parquet")
+        q = pq.read_table(folder / "queries.parquet")
+        values = np.stack(
+            [np.asarray(c.column(k).to_numpy(), float) for k in ("lat", "lon", "depth_km")]
+            + [np.asarray(c.column("magnitude").to_numpy(), float)],
+            axis=1,
+        )
+        return RegionQueries(
+            context_time=np.asarray(c.column("time").to_numpy(), float),
+            context_values=values.reshape(-1, 4),
+            context_type=c.column("magnitude_type").to_pylist(),
+            time=np.asarray(q.column("time").to_numpy(), float),
+            magnitude_type=q.column("magnitude_type").to_pylist(),
+        )
+
+    def answer_hashes(self, ctx: BenchContext) -> set[str]:
+        t = pq.read_table(ctx.task_dir(self.task_id) / "answers.parquet", columns=["token_hash"])
+        return set(t.column("token_hash").to_pylist())
+
+    def supports(self, method: Any) -> bool:
+        return isinstance(method, InContextPredictor)
+
+    def score(self, method: Any, ctx: BenchContext, seed: int) -> Score:
+        queries = self.load_queries(ctx)
+        t = pq.read_table(ctx.task_dir(self.task_id) / "answers.parquet")
+        truth = np.asarray(t.column("value").to_pylist(), dtype=np.float64).reshape(-1, 4)
+        extras: dict[str, float] = {"test_quakes": float(len(truth))}
+        curve = {}
+        for days in CB17_DAYS:
+            dists = method.predict_in_context(queries, days, ctx, seed)
+            bits = np.zeros(len(truth))
+            for c, b in enumerate(CB01_BINS["seismic_catalog"]):
+                lo, hi = b.edges_of(truth[:, c])
+                mass = dists[b.channel].mass(lo, hi)
+                ch = np.minimum(-np.log2(np.maximum(mass, 2.0**-MAX_BITS)), MAX_BITS)
+                if days == CB17_DAYS[-1]:
+                    extras[f"{b.channel}_bits"] = float(np.mean(ch))
+                bits += ch
+            curve[days] = float(np.mean(bits))
+            extras[f"bits_{days}d"] = curve[days]
+        extras["gain_bits"] = curve[CB17_DAYS[0]] - curve[CB17_DAYS[-1]]
+        return Score(curve[CB17_DAYS[-1]], extras)
+
+
 # ---------------------------------------------------------------- the registry
 
 
@@ -827,6 +1005,7 @@ register_task(
 )
 register_task(GpsGapFill())
 register_task(Efficiency())
+register_task(InContextAdaptation())
 
 assert all(t.fit_split in SPLITS for t in TASKS.values() if isinstance(t, SequenceForecast))
 assert to_seconds(ERA_A.start) < to_seconds("2016-08-25T00:00:00Z")
