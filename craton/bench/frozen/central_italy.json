@@ -177,6 +177,16 @@
         "stations": 29,
         "station_days": 86373
       }
+    },
+    "CB-15": {
+      "name": "Efficiency",
+      "metric": "model FLOPs utilisation (%) of the pretraining run, inside 6 GiB of VRAM",
+      "direction": "higher",
+      "fingerprint": "284cb4cd3a09a0a92f8aa704f0b25972c9e8e0ee7a409a57ed4f247bb588d029",
+      "files": {},
+      "summary": {
+        "budget_gib": 6.0
+      }
     }
   }
 }

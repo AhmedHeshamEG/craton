@@ -68,6 +68,14 @@ Hide every day of 29 GNSS stations from everything, then rebuild their daily pos
 - **Fingerprint:** `9449170471e9295c`
 - **Test data:** stations 29 · station days 86,373
 
+## CB-15 · Efficiency
+
+What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, the share of the GPU's peak the run actually used (6N + 12·L·H·Q·T FLOPs per token, against 25.8 TFLOP/s of fp16 tensor-core math). A run that needs more than 6 GiB of VRAM can't be scored at all. Tokens per second, peak VRAM and minutes ride along.
+
+- **Metric:** model FLOPs utilisation (%) of the pretraining run, inside 6 GiB of VRAM (higher is better)
+- **Fingerprint:** `284cb4cd3a09a0a9`
+- **Test data:** budget gib 6.0
+
 ## Add a method
 
-Implement the task's protocol (`MaskedPredictor`, `Forecaster` or `GapFiller` in `craton/bench/tasks.py`), register it with `register_method`, and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet --accept` puts it on the scoreboard if nothing got worse.
+Implement the task's protocol (`MaskedPredictor`, `Forecaster`, `GapFiller` or `EfficiencyReport` in `craton/bench/tasks.py`), register it with `register_method`, and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet --accept` puts it on the scoreboard if nothing got worse.

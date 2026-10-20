@@ -9,6 +9,7 @@ Methods (baselines now, Craton models later) plug in by implementing one protoco
     MaskedPredictor   CB-01   a distribution for every hidden channel of a masked token
     Forecaster        CB-02/3 expected quakes per (day, cell, magnitude bin)
     GapFiller         CB-04   daily positions of a GNSS station nobody let you see
+    EfficiencyReport  CB-15   what the model's training run cost on the GPU
 """
 
 from __future__ import annotations
@@ -727,6 +728,72 @@ def score_gapfill(station: Any, truth: FloatArray, pred: FloatArray) -> Score:
     return Score(rmse, extras)
 
 
+# ---------------------------------------------------------------- CB-15 efficiency
+
+
+#: The laptop's memory. A run that needs more can't be scored on CB-15 at all.
+VRAM_BUDGET_BYTES = 6 * 2**30
+
+
+@runtime_checkable
+class EfficiencyReport(Protocol):
+    name: str
+
+    def efficiency(self, ctx: BenchContext, seed: int) -> dict[str, Any]:
+        """Measurements of the reference training run for this seed: ``device`` (name),
+        ``tokens_per_s``, ``flops_per_token``, ``peak_vram_bytes``, ``train_seconds``."""
+        ...
+
+
+class Efficiency(Task):
+    """CB-15: how much of the GPU the training run used (MFU), inside the 6 GiB budget.
+
+    Has no test files: its fingerprint is its definition, peak table included.
+    """
+
+    task_id = "CB-15"
+    name = "Efficiency"
+    metric = "model FLOPs utilisation (%) of the pretraining run, inside 6 GiB of VRAM"
+    direction = "higher"
+
+    def definition(self) -> dict[str, Any]:
+        from craton.train.flops import PEAK_FLOPS
+
+        return {
+            "reference_run": "the training run of the CB-01 model (split pretrain), per seed",
+            "flops_per_token": "6N + 12·L·H·Q·T (PaLM appendix B), N = trunk parameters",
+            "peak_flops": PEAK_FLOPS,
+            "vram_budget_bytes": VRAM_BUDGET_BYTES,
+            "rule": "a run whose peak VRAM exceeds the budget cannot be scored",
+        }
+
+    def prepare(self, ctx: BenchContext) -> dict[str, Any]:
+        return {"files": {}, "summary": {"budget_gib": VRAM_BUDGET_BYTES / 2**30}}
+
+    def supports(self, method: Any) -> bool:
+        return isinstance(method, EfficiencyReport)
+
+    def score(self, method: Any, ctx: BenchContext, seed: int) -> Score:
+        from craton.train.flops import PEAK_FLOPS
+
+        r = method.efficiency(ctx, seed)
+        if r["device"] not in PEAK_FLOPS:
+            raise ValueError(f"CB-15: no peak FLOP/s on record for {r['device']!r}")
+        if r["peak_vram_bytes"] > VRAM_BUDGET_BYTES:
+            raise ValueError(
+                f"CB-15: peak VRAM {r['peak_vram_bytes'] / 2**30:.2f} GiB is over the 6 GiB budget"
+            )
+        mfu = r["tokens_per_s"] * r["flops_per_token"] / PEAK_FLOPS[r["device"]]
+        return Score(
+            100.0 * mfu,
+            {
+                "tokens_per_s": float(r["tokens_per_s"]),
+                "peak_vram_mib": r["peak_vram_bytes"] / 2**20,
+                "train_minutes": r["train_seconds"] / 60.0,
+            },
+        )
+
+
 # ---------------------------------------------------------------- the registry
 
 
@@ -759,6 +826,7 @@ register_task(
     )
 )
 register_task(GpsGapFill())
+register_task(Efficiency())
 
 assert all(t.fit_split in SPLITS for t in TASKS.values() if isinstance(t, SequenceForecast))
 assert to_seconds(ERA_A.start) < to_seconds("2016-08-25T00:00:00Z")
