@@ -22,7 +22,7 @@ from craton.config import CratonConfig, config_hash
 from craton.paths import results_dir
 
 #: Bumped whenever the training code changes what a checkpoint would contain.
-TRAIN_VERSION = "v0.1"
+TRAIN_VERSION = "v0.2"
 
 
 def checkpoints_dir(root: Path) -> Path:

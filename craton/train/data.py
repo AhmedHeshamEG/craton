@@ -1,11 +1,25 @@
-"""Training examples cut from the catalogue: masked windows and next-day questions.
+"""Training examples: masked windows and next-day questions, cut by the context builder.
 
-Two games, both played on windows of consecutive quakes sorted by time:
+Masked windows come in three kinds, mixed in every batch:
 
-    masked    take ``T`` quakes in a row, hide where and how big 15% of them were (their time
-              and magnitude type stay visible, as in CB-01), ask for them back.
-    next_day  stand at a midnight, take the ``T − 1`` quakes before it plus a query token at
-              midnight, ask for the next 24 hours: how many, where, how big (CB-02's question).
+    quake     anchored on a quake: the quakes around it, 15% with place and size hidden (their
+              time and magnitude type stay visible, as in CB-01), plus the GNSS days and tide
+              samples the policy adds, 15% of the GNSS days hidden too
+    gnss      anchored on a GNSS day, in one of four modes:
+                random      15% of the GNSS days and quakes hidden (CB-01's game)
+                station     one station hidden whole, its line borrowed from its neighbours
+                            (CB-04's game: rebuild a station nobody has seen)
+                all_gnss    every GNSS day hidden: predict the ground's motion from quakes and
+                            tides alone (cross-modal masking)
+                all_quakes  every quake hidden: predict them from the ground and the tides
+                            (the same game, the other way round)
+    region    a box of 0.6° nobody has shown the model before this window: its quakes from a
+              year earlier (the first 0, 7, 30, 90 or 365 days of that year, at most
+              ``region_context`` of them), then its next quakes, all hidden, filling the window
+              (CB-17's game: adapt from context alone)
+
+Next-day questions stand at a midnight with the fused context before it and a query token,
+and ask for the next 24 hours: how many, where, how big (CB-02's question).
 
 A share of 30-day blocks, picked by a salted hash, is kept for validation: the loop watches
 its loss to know when to stop. Nothing here reads the benchmark answers; every example comes
@@ -20,21 +34,58 @@ from typing import Any
 
 import numpy as np
 import torch
+from scipy.special import gammaln
 
 from craton.bench import csep
-from craton.bench.data import DAY, Events
-from craton.model.craton import Tokens
-from craton.model.encoders import magnitude_type_id
+from craton.bench.data import DAY
 from craton.model.heads import RATE_SCALES
+from craton.train.context import (
+    Batch,
+    Catalog,
+    Sources,
+    Window,
+    gnss_rows,
+    quakes_around,
+    tide_rows,
+    where_now,
+    write,
+)
 
 IntArray = np.ndarray[Any, np.dtype[np.int64]]
 FloatArray = np.ndarray[Any, np.dtype[np.float64]]
+BoolArray = np.ndarray[Any, np.dtype[np.bool_]]
+
+__all__ = [
+    "Catalog",
+    "Masked",
+    "NextDay",
+    "NextDayBatch",
+    "in_validation",
+    "recent_rates",
+    "region_context",
+]
 
 BLOCK_DAYS = 30
 VAL_SHARE = 0.1
 
+#: How often each kind of masked window is drawn (renormalised over what the model reads).
+KINDS = {"quake": 0.45, "gnss": 0.40, "region": 0.15}
+#: The modes of a GNSS-anchored window.
+GNSS_MODES = {"random": 0.5, "station": 0.3, "all_gnss": 0.1, "all_quakes": 0.1}
+#: Context lengths a region window shows, in days: CB-17's grid.
+REGION_DAYS = (0, 7, 30, 90, 365)
+REGION_HALF_DEG = 0.3
+#: A region window's context holds at most this share of the window; its hidden quakes fill the
+#: rest, so a window is always full (no padding while training: the fast kernel stays on).
+REGION_CONTEXT_SHARE = 0.75
 
-def in_validation(t: FloatArray, salt: str = "craton-val") -> np.ndarray[Any, np.dtype[np.bool_]]:
+
+def region_context(length: int) -> int:
+    """How many context quakes a region window keeps at most (768 of 1,024)."""
+    return int(REGION_CONTEXT_SHARE * length)
+
+
+def in_validation(t: FloatArray, salt: str = "craton-val") -> BoolArray:
     """Whether each moment falls in a validation block (30-day blocks, 10% by salted hash)."""
     block = np.floor(t / (BLOCK_DAYS * DAY)).astype(np.int64)
     out = np.zeros(len(block), dtype=bool)
@@ -44,108 +95,140 @@ def in_validation(t: FloatArray, salt: str = "craton-val") -> np.ndarray[Any, np
     return out
 
 
-@dataclass(frozen=True)
-class Catalog:
-    """A catalogue as arrays the batch builders index into, sorted by time."""
-
-    time: FloatArray
-    values: FloatArray  # (n, 4) lat, lon, depth, magnitude
-    mag_type: IntArray
-
-    @staticmethod
-    def of(ev: Events) -> Catalog:
-        values = np.stack([ev.lat, ev.lon, ev.depth_km, ev.mag], axis=1)
-        types = np.array([magnitude_type_id(str(t)) for t in ev.mag_type], dtype=np.int64)
-        return Catalog(ev.time.astype(np.float64), values.astype(np.float64), types)
-
-    def __len__(self) -> int:
-        return len(self.time)
+def _tides_around(src: Sources, t: float) -> IntArray:
+    half = 0.5 * src.policy.tides * 3600.0
+    return tide_rows(src, t - half, t + half, src.policy.tides)
 
 
-def window_tokens(
-    cat: Catalog,
-    rows: IntArray,
-    hidden: np.ndarray[Any, np.dtype[np.bool_]],
-    t_ref: FloatArray,
-    query_at: FloatArray | None = None,
-) -> Tokens:
-    """Tokens for windows of catalogue rows. ``rows`` (B, L), ``hidden`` (B, L) marks quakes
-    whose place and size are hidden. With ``query_at`` (B,), a query token is appended to each
-    window at that moment. Times are relative to ``t_ref`` (B,)."""
-    b, n = rows.shape
-    times = cat.time[rows]
-    prev = np.where(rows[:, :1] > 0, cat.time[np.maximum(rows[:, :1] - 1, 0)], times[:, :1])
-    gaps = np.diff(times, axis=1, prepend=prev)
-    hid4 = np.repeat(hidden[..., None], 4, axis=-1)
-    values = np.where(hid4, 0.0, cat.values[rows])  # a hidden quake's numbers never leave here
-    coords = np.concatenate([(times - t_ref[:, None])[..., None], values[..., :3]], -1)
-    known = np.ones((b, n, 4), dtype=bool)
-    known[..., 1:] = ~hidden[..., None]
-    mag_type = cat.mag_type[rows]
-    query = np.zeros((b, n), dtype=bool)
-    clock = np.stack([np.abs(times - t_ref[:, None]), gaps], axis=-1)
-    if query_at is not None:
-        values = np.concatenate([values, np.zeros((b, 1, 4))], axis=1)
-        hid4 = np.concatenate([hid4, np.ones((b, 1, 4), dtype=bool)], axis=1)
-        q_coords = np.zeros((b, 1, 4))
-        q_coords[:, 0, 0] = query_at - t_ref
-        coords = np.concatenate([coords, q_coords], axis=1)
-        q_known = np.zeros((b, 1, 4), dtype=bool)
-        q_known[..., 0] = True
-        known = np.concatenate([known, q_known], axis=1)
-        mag_type = np.concatenate([mag_type, np.zeros((b, 1), dtype=np.int64)], axis=1)
-        query = np.concatenate([query, np.ones((b, 1), dtype=bool)], axis=1)
-        q_clock = np.stack([np.abs(query_at - t_ref), query_at - times[:, -1]], axis=-1)
-        clock = np.concatenate([clock, q_clock[:, None, :]], axis=1)
-    return Tokens(
-        values=torch.from_numpy(values.astype(np.float32)),
-        hidden=torch.from_numpy(hid4),
-        mag_type=torch.from_numpy(mag_type),
-        coords=torch.from_numpy(coords.astype(np.float64)),
-        known=torch.from_numpy(known),
-        query=torch.from_numpy(query),
-        clock=torch.from_numpy(np.log10(1.0 + np.maximum(clock, 0.0)).astype(np.float32)),
-    )
+def _fill_quakes(src: Sources, w: Window, t: float, share: float, rng: np.random.Generator) -> None:
+    """Fill the rest of the window with the quakes nearest ``t``, ``share`` of them hidden."""
+    if not src.quakes:
+        return
+    n = src.length - w.size
+    if n <= 0:
+        return
+    w.quakes = quakes_around(src.cat, t, n)
+    w.quake_hidden = rng.random(len(w.quakes)) < share
 
 
 # ---------------------------------------------------------------- masked windows
 
 
-@dataclass
-class MaskedBatch:
-    tokens: Tokens
-    targets: torch.Tensor  # (N, 4) true values of the hidden quakes, in window order
+class Masked:
+    """Masked windows of every kind, a fresh mask every time."""
 
+    def __init__(self, src: Sources, mask_share: float) -> None:
+        if src.quakes and len(src.cat) < src.length:
+            raise ValueError(f"{len(src.cat)} quakes is fewer than one window of {src.length}")
+        self.src, self.share = src, mask_share
+        kinds = dict(KINDS)
+        if src.gnss is None:
+            kinds.pop("gnss")
+        if not src.quakes:
+            kinds.pop("quake")
+            kinds.pop("region")
+        total = sum(kinds.values())
+        self.kinds = {k: v / total for k, v in kinds.items()}
+        self.quake_rows = np.arange(len(src.cat)) if src.quakes else np.zeros(0, np.int64)
+        q_val = in_validation(src.cat.time[self.quake_rows])
+        self.quake_train, self.quake_val = self.quake_rows[~q_val], self.quake_rows[q_val]
+        if src.gnss is not None:
+            rows = np.arange(len(src.gnss))
+            g_val = in_validation(src.gnss.time)
+            self.gnss_train, self.gnss_val = rows[~g_val], rows[g_val]
 
-class MaskedWindows:
-    """Random windows of ``length`` quakes, a fresh mask every time."""
+    # one window of each kind
 
-    def __init__(self, cat: Catalog, length: int, mask_share: float) -> None:
-        if len(cat) < length:
-            raise ValueError(f"{len(cat)} quakes is fewer than one window of {length}")
-        self.cat, self.length, self.mask_share = cat, length, mask_share
-        starts = np.arange(len(cat) - length + 1)
-        val = in_validation(cat.time[starts + length // 2])
-        self.train_starts, self.val_starts = starts[~val], starts[val]
+    def quake_window(self, row: int, rng: np.random.Generator) -> Window:
+        src, cat = self.src, self.src.cat
+        t = float(cat.time[row])
+        w = Window(t_ref=t, tides=_tides_around(src, t))
+        # The quakes come first so the GNSS stations can be picked near the visible ones.
+        budget = src.length - w.size - (src.policy.gnss if src.gnss is not None else 0)
+        rows = quakes_around(cat, t, budget)
+        hid = rng.random(len(rows)) < self.share
+        lat, lon = where_now(cat, rows, hid)
+        if src.gnss is not None:
+            day = np.floor(t / DAY) * DAY
+            span = src.policy.gnss_days * DAY
+            w.gnss = gnss_rows(src, lat, lon, day - span, day + span + DAY)
+            w.gnss_hidden = rng.random(len(w.gnss)) < self.share
+        more = quakes_around(cat, t, src.length - w.size)
+        extra = ~np.isin(more, rows)
+        hidden = np.zeros(len(more), bool)
+        hidden[~extra] = hid[np.searchsorted(rows, more[~extra])]
+        hidden[extra] = rng.random(int(extra.sum())) < self.share
+        w.quakes, w.quake_hidden = more, hidden
+        return w
 
-    def batch(self, starts: IntArray, rng: np.random.Generator) -> MaskedBatch:
-        rows = starts[:, None] + np.arange(self.length)[None, :]
-        hidden = rng.random(rows.shape) < self.mask_share
-        hidden[np.arange(len(starts)), rng.integers(0, self.length, len(starts))] = True
-        tok = window_tokens(self.cat, rows, hidden, self.cat.time[rows[:, 0]])
-        targets = torch.from_numpy(self.cat.values[rows][hidden].astype(np.float32))
-        return MaskedBatch(tok, targets)
+    def gnss_window(self, row: int, mode: str, rng: np.random.Generator) -> Window:
+        src = self.src
+        assert src.gnss is not None
+        g = src.gnss
+        t = float(g.time[row])
+        s = int(g.station[row])
+        lat, lon = g.lines.site[s]
+        w = Window(t_ref=t, tides=_tides_around(src, t))
+        day = np.floor(t / DAY) * DAY
+        span = src.policy.gnss_days * DAY
+        w.gnss = gnss_rows(src, lat, lon, day - span, day + span + DAY, first=(s,))
+        if mode == "station":
+            w.unseen = frozenset({s})
+            w.gnss_hidden = np.zeros(len(w.gnss), bool)
+        elif mode == "all_gnss":
+            w.gnss_hidden = np.ones(len(w.gnss), bool)
+        else:
+            w.gnss_hidden = rng.random(len(w.gnss)) < self.share
+            w.gnss_hidden[w.gnss == row] = True
+        _fill_quakes(src, w, t, 1.0 if mode == "all_quakes" else self.share, rng)
+        return w
 
-    def sample(self, size: int, rng: np.random.Generator) -> MaskedBatch:
-        return self.batch(rng.choice(self.train_starts, size), rng)
+    def region_window(self, row: int, rng: np.random.Generator) -> Window | None:
+        cat = self.src.cat
+        lat, lon = cat.values[row, :2] + rng.uniform(-REGION_HALF_DEG, REGION_HALF_DEG, 2)
+        inside = np.nonzero(
+            (np.abs(cat.values[:, 0] - lat) <= REGION_HALF_DEG)
+            & (np.abs(cat.values[:, 1] - lon) <= REGION_HALF_DEG)
+        )[0]
+        t0 = float(cat.time[row])
+        days = int(rng.choice(REGION_DAYS))
+        start = t0 - 365 * DAY
+        before = inside[(cat.time[inside] >= start) & (cat.time[inside] < start + days * DAY)]
+        before = before[len(before) - min(len(before), region_context(self.src.length)) :]
+        later = inside[(cat.time[inside] >= t0) & (cat.time[inside] < t0 + 365 * DAY)]
+        need = self.src.length - len(before)
+        if len(later) < need:
+            return None
+        queries = later[:need]
+        rows = np.concatenate([before, queries])
+        hidden = np.concatenate([np.zeros(len(before), bool), np.ones(len(queries), bool)])
+        return Window(t_ref=t0, quakes=rows, quake_hidden=hidden)
 
-    def validation(self, size: int, n_batches: int, seed: int = 12345) -> list[MaskedBatch]:
+    def window(self, kind: str, rng: np.random.Generator, val: bool = False) -> Window:
+        if kind == "gnss":
+            rows = self.gnss_val if val else self.gnss_train
+            mode = str(rng.choice(list(GNSS_MODES), p=list(GNSS_MODES.values())))
+            if not self.src.quakes and mode == "all_quakes":
+                mode = "random"
+            return self.gnss_window(int(rng.choice(rows)), mode, rng)
+        rows = self.quake_val if val else self.quake_train
+        if kind == "region":
+            for _ in range(50):
+                w = self.region_window(int(rng.choice(rows)), rng)
+                if w is not None:
+                    return w
+        return self.quake_window(int(rng.choice(rows)), rng)
+
+    def sample(self, size: int, rng: np.random.Generator, val: bool = False) -> Batch:
+        kinds = rng.choice(list(self.kinds), size=size, p=list(self.kinds.values()))
+        return write(self.src, [self.window(str(k), rng, val) for k in kinds])
+
+    def validation(self, size: int, n_batches: int, seed: int = 12345) -> list[Batch]:
         """A fixed set of validation windows and masks, the same at every check."""
         rng = np.random.default_rng(seed)
-        if not len(self.val_starts):
+        if self.src.quakes and not len(self.quake_val):
             return []
-        picks = rng.choice(self.val_starts, size * n_batches)
-        return [self.batch(picks[i * size : (i + 1) * size], rng) for i in range(n_batches)]
+        return [self.sample(size, rng, val=True) for _ in range(n_batches)]
 
 
 # ---------------------------------------------------------------- next-day questions
@@ -153,20 +236,28 @@ class MaskedWindows:
 
 @dataclass
 class NextDayBatch:
-    tokens: Tokens
+    batch: Batch
     counts: torch.Tensor  # (B,) quakes in each next day (in the grid, M ≥ grid minimum)
     cells: torch.Tensor  # (N,) cell of every one of those quakes
     mags: torch.Tensor  # (N,) magnitude bin
     day_of: torch.Tensor  # (N,) which row of the batch it belongs to
     recent: torch.Tensor  # (B, scales) log quakes per day just before each midnight
+    log_factorials: float  # sum of log n! over every (day, cell, bin) count
 
+    @property
+    def tokens(self) -> Any:
+        return self.batch.tokens
 
-def context_rows(cat: Catalog, day_starts: FloatArray, length: int) -> IntArray:
-    """For each midnight, the ``length`` quakes just before it. Needs enough history."""
-    first = np.searchsorted(cat.time, day_starts, side="left")
-    if np.any(first < length):
-        raise ValueError("a midnight has fewer quakes before it than the context needs")
-    return np.asarray(first[:, None] - length + np.arange(length)[None, :], dtype=np.int64)
+    def pin_memory(self) -> NextDayBatch:
+        return NextDayBatch(
+            batch=self.batch.pin_memory(),
+            counts=self.counts.pin_memory(),
+            cells=self.cells.pin_memory(),
+            mags=self.mags.pin_memory(),
+            day_of=self.day_of.pin_memory(),
+            recent=self.recent.pin_memory(),
+            log_factorials=self.log_factorials,
+        )
 
 
 def recent_rates(cat: Catalog, day_starts: FloatArray) -> torch.Tensor:
@@ -184,20 +275,37 @@ def recent_rates(cat: Catalog, day_starts: FloatArray) -> torch.Tensor:
     return torch.from_numpy(out.astype(np.float32))
 
 
-def query_tokens(cat: Catalog, day_starts: FloatArray, length: int) -> Tokens:
-    """Context of ``length − 1`` quakes, then the query at midnight. Times relative to it."""
-    rows = context_rows(cat, day_starts, length - 1)
-    return window_tokens(cat, rows, np.zeros(rows.shape, dtype=bool), day_starts, day_starts)
+def midnight_window(src: Sources, day: float) -> Window:
+    """The fused context before a midnight, and the query at it. Reads nothing after it
+    except the tide, which the Sun and the Moon fix in advance."""
+    p, cat = src.policy, src.cat
+    w = Window(t_ref=day, query_at=day)
+    w.tides = tide_rows(src, day - 0.5 * p.tides * 3600.0, day + p.tides_ahead * 3600.0, 10**6)
+    first = int(np.searchsorted(cat.time, day, "left"))
+    lat, lon = where_now(cat, np.arange(max(first - 100, 0), first))
+    if src.gnss is not None:
+        w.gnss = gnss_rows(src, lat, lon, day - p.next_day_gnss_days * DAY, day)
+        w.gnss_hidden = np.zeros(len(w.gnss), bool)
+    n = src.length - w.size
+    if n > first:
+        raise ValueError("a midnight has fewer quakes before it than the context needs")
+    recent = np.arange(first - (n - p.big_quakes), first, dtype=np.int64)
+    year = np.arange(int(np.searchsorted(cat.time, day - 365 * DAY)), recent[0], dtype=np.int64)
+    big = year[cat.values[year, 3] >= p.big_magnitude - 1e-9]
+    big = np.sort(big[np.argsort(-cat.values[big, 3], kind="stable")][: p.big_quakes])
+    recent = np.arange(first - (n - len(big)), first, dtype=np.int64)
+    w.quakes = np.concatenate([big, recent])
+    w.quake_hidden = np.zeros(len(w.quakes), bool)
+    return w
 
 
 class NextDay:
     """Every midnight with enough history and a whole next day inside ``[start, end)``."""
 
-    def __init__(
-        self, cat: Catalog, grid: csep.Grid, length: int, start: float, end: float
-    ) -> None:
-        self.cat, self.grid, self.length = cat, grid, length
-        need = max(length - 1, max(k for k, _ in RATE_SCALES))  # quakes needed behind midnight
+    def __init__(self, src: Sources, grid: csep.Grid, start: float, end: float) -> None:
+        self.src, self.grid = src, grid
+        cat = src.cat
+        need = max(src.length, max(k for k, _ in RATE_SCALES))  # quakes needed behind midnight
         t_min = cat.time[need] if len(cat) > need else np.inf
         first_day = max(np.ceil(start / DAY), np.ceil(t_min / DAY)) * DAY
         days = np.arange(first_day, end - DAY + 1e-6, DAY)
@@ -211,19 +319,22 @@ class NextDay:
         self.train_days, self.val_days = days[~val], days[val]
 
     def batch(self, days: FloatArray) -> NextDayBatch:
-        tok = query_tokens(self.cat, days, self.length)
+        batch = write(self.src, [midnight_window(self.src, float(d)) for d in days])
         lo = np.searchsorted(self.t, days, side="left")
         hi = np.searchsorted(self.t, days + DAY, side="left")
         idx = np.concatenate([np.arange(a, b) for a, b in zip(lo, hi, strict=True)])
         idx = idx.astype(np.int64)
         day_of = np.repeat(np.arange(len(days)), hi - lo)
+        key = (day_of * self.grid.n_cells + self.cell[idx]) * self.grid.n_mags + self.mbin[idx]
+        _, per_bin = np.unique(key, return_counts=True)
         return NextDayBatch(
-            tokens=tok,
+            batch=batch,
             counts=torch.from_numpy((hi - lo).astype(np.int64)),
             cells=torch.from_numpy(self.cell[idx].astype(np.int64)),
             mags=torch.from_numpy(self.mbin[idx].astype(np.int64)),
             day_of=torch.from_numpy(day_of.astype(np.int64)),
-            recent=recent_rates(self.cat, days),
+            recent=recent_rates(self.src.cat, days),
+            log_factorials=float(gammaln(per_bin + 1.0).sum()),
         )
 
     def sample(self, size: int, rng: np.random.Generator) -> NextDayBatch:

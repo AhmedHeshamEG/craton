@@ -32,7 +32,8 @@ import torch
 from craton.bench.tasks import BenchContext
 from craton.model.heads import EVENT_BINS
 from craton.spec.timeaxis import to_seconds
-from craton.train.data import Catalog, MaskedWindows, window_tokens
+from craton.train.context import Catalog, Sources, Window, write
+from craton.train.data import Masked
 from craton.train.loop import VAL_BATCHES
 from craton.train.method import CratonMini
 
@@ -44,12 +45,14 @@ NEAR_KM = 10.0
 def climatology_bits(ctx: BenchContext, mini: CratonMini) -> float:
     """Climatology's bits per hidden quake on the validation windows the curves are scored on:
     one histogram per channel over the pretrain split, plus one count per bin."""
-    cat = Catalog.of(ctx.train_events("pretrain"))
     cfg = mini.config
-    val = MaskedWindows(cat, cfg.model.context_tokens, cfg.train.mask_share).validation(
-        cfg.train.micro_batch, VAL_BATCHES
+    quakes_only = cfg.model.model_copy(update={"inputs": ("seismic_catalog",)})
+    src = Sources.build(
+        quakes_only.inputs, cfg.context, cfg.model.context_tokens, ctx.train_events("pretrain")
     )
-    targets = np.concatenate([b.targets.numpy() for b in val]).astype(np.float64)
+    cat = src.cat
+    val = Masked(src, cfg.train.mask_share).validation(cfg.train.micro_batch, VAL_BATCHES)
+    targets = np.concatenate([b.quake_targets.numpy() for b in val]).astype(np.float64)
     bits = np.zeros(len(targets))
     for c, b in enumerate(EVENT_BINS):
         counts = np.bincount(b.index(torch.tensor(cat.values[:, c])).numpy(), minlength=b.n)
@@ -82,9 +85,11 @@ def load() -> dict:
     length = mini.config.model.context_tokens
     mid = length // 2
     rows = (target - mid + np.arange(length))[None, :]
-    hidden = np.zeros((1, length), dtype=bool)
-    hidden[0, mid] = True
-    tok = window_tokens(cat, rows, hidden, cat.time[rows[:, 0]]).to(mini.device)
+    hidden = np.zeros(length, dtype=bool)
+    hidden[mid] = True
+    window = Window(t_ref=float(cat.time[rows[0, 0]]), quakes=rows[0], quake_hidden=hidden)
+    src = Sources(cat, None, None, mini.config.context, length)
+    tok = write(src, [window]).tokens.to(mini.device)
     vals = cat.values[rows[0]]
     km = np.hypot(
         (vals[:, 0] - vals[mid, 0]) * 111.2,

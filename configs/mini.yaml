@@ -13,6 +13,10 @@ model:
   context_tokens: 1024
   dropout: 0.1
   positional: rope4d  # 4D rotary encoding; "sinusoidal" is the fallback
+  inputs:             # one encoder each, into the same space
+    - seismic_catalog
+    - gnss_daily
+    - solid_earth_tide
 
 train:
   precision: fp16
@@ -27,5 +31,18 @@ train:
   patience: 3         # validation checks without progress before stopping
   mask_share: 0.15    # as in CB-01
   objectives:
-    masked: 1.0
+    masked: 1.0       # hidden quakes, bits on CB-01's bins
+    gnss: 1.0         # hidden GNSS days, bits on CB-01's 1 mm bins
     next_day: 1.0
+
+# How a window of 1,024 is filled: tides, then GNSS, then quakes (craton/train/context.py).
+context:
+  tides: 25
+  tides_ahead: 24
+  gnss: 160
+  gnss_days: 7
+  gnss_stations: 12
+  gnss_km: 100
+  next_day_gnss_days: 5
+  big_quakes: 32
+  big_magnitude: 3.5
