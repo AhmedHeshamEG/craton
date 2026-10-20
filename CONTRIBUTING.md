@@ -98,6 +98,7 @@ A method is any object with a `name` that implements a task's protocol from `cra
 | `MaskedPredictor.predict_masked` | CB-01 | a distribution per hidden channel (anything with `mass(lo, hi)`) |
 | `Forecaster.forecast` | CB-02, CB-03 | expected quakes per (day, cell), and how they split over magnitudes |
 | `GapFiller.fill` | CB-04 | daily east, north, up of each hidden station |
+| `EfficiencyReport.efficiency` | CB-15 | measurements of the method's own training run |
 
 ```python
 from craton.bench.baselines import register_method
@@ -119,3 +120,17 @@ Fit only on `ctx.train_*` (the leak-checked split shards). A forecast for a day 
 that day from `ctx.events`, nothing later. Then `uv run craton bench run my_forecaster` writes a run to
 `results/pending/`, and `uv run craton ratchet --accept` puts it on the board if nothing got worse. A new
 *task* is `register_task(...)` with a new ID; existing IDs never change ([`docs/bench.md`](docs/bench.md)).
+
+## Teach the model a new instrument
+
+The model reads an instrument through an encoder registered under the instrument's name in
+`craton/model/encoders.py`: a module that maps that instrument's channels to a `d_model` vector.
+
+```python
+from craton.model.encoders import EncoderSpec, register_encoder
+
+register_encoder(EncoderSpec("gnss_daily", ("east", "north", "up"), MyGnssEncoder))
+```
+
+Names are unique and never redefined. Time and place enter through the shared 4D positional encoding,
+so an encoder only has to understand its own measurements.
