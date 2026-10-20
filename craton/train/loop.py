@@ -105,6 +105,7 @@ def train(
     next_day_window: tuple[float, float] | None,
     log: Log = _quiet,
     device: torch.device | None = None,
+    windows: dict[str, float] | None = None,
 ) -> TrainResult:
     """Train one model on one split's sources. ``next_day_window`` = (start, end) of the
     midnights the next-day head may learn from, or None to leave that objective out."""
@@ -121,7 +122,11 @@ def train(
         weights.pop("gnss", None)
     if not src.quakes:
         weights.pop("masked", None)
-    masked = Masked(src, t.mask_share, t.windows) if {"masked", "gnss"} & set(weights) else None
+    masked = (
+        Masked(src, t.mask_share, windows or t.windows)
+        if {"masked", "gnss"} & set(weights)
+        else None
+    )
     nextday = None
     if "next_day" in weights and next_day_window is not None:
         from craton.model.heads import forecast_grid

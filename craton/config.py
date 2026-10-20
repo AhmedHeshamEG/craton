@@ -63,6 +63,9 @@ class ContextPolicy(_Strict):
         default=24, ge=0, description="Hours of tide after midnight in a next-day window."
     )
     gnss: int = Field(default=160, ge=0, description="GNSS days in a window, at most.")
+    gnss_quake_window: int = Field(
+        default=48, ge=0, description="GNSS days in a window about quakes: quakes keep the room."
+    )
     gnss_days: int = Field(default=7, ge=0, description="Days either side of the anchor day.")
     gnss_stations: int = Field(default=12, gt=0, description="Nearest stations, at most.")
     gnss_km: float = Field(default=100.0, gt=0, description="Farthest station from the anchor.")
@@ -86,9 +89,17 @@ class TrainSettings(_Strict):
     patience: int = Field(default=4, gt=0, description="Validations without progress, then stop.")
     mask_share: float = Field(default=0.15, gt=0, lt=1, description="Share of quakes hidden.")
     windows: dict[str, float] = Field(
-        default_factory=lambda: {"quake": 0.45, "gnss": 0.40, "region": 0.15},
+        default_factory=lambda: {"quake": 0.55, "gnss": 0.45},
         description="How often each kind of masked window is drawn (craton.train.data).",
     )
+    split_windows: dict[str, dict[str, float]] = Field(
+        default_factory=dict,
+        description="A different mix for some splits: each game trained where it is tested.",
+    )
+
+    def windows_for(self, split: str) -> dict[str, float]:
+        return self.split_windows.get(split, self.windows)
+
     objectives: dict[str, float] = Field(
         default_factory=lambda: {"masked": 1.0, "next_day": 1.0},
         description="Training objectives and their weights.",

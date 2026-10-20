@@ -174,7 +174,8 @@ class CratonMini:
         src = self.sources(ctx, ev, gnss, split)
         before = SPLITS[split].before
         window = (to_seconds(NEXT_DAY_FROM), to_seconds(before)) if before else None
-        result = train(self.config, src, seed, window, log=self.log)
+        mix = self.config.train.windows_for(split)
+        result = train(self.config, src, seed, window, log=self.log, windows=mix)
         key = self.key(ctx, split, seed)
         data = {
             "snapshot": ctx.snapshot_id,
@@ -271,7 +272,7 @@ class CratonMini:
 
         p, length = src.policy, src.length
         n_quakes = length - (p.tides if src.tides is not None else 0)
-        n_quakes -= p.gnss if src.gnss is not None else 0
+        n_quakes -= p.gnss_quake_window if src.gnss is not None else 0
         if len(cat) < n_quakes:
             raise ValueError("fewer quakes than one context window")
         stride = n_quakes // 2
@@ -298,7 +299,9 @@ class CratonMini:
                     lat, lon = where_now(cat, rows, is_q[rows])
                     day = np.floor(t / DAY) * DAY
                     span = p.gnss_days * DAY
-                    win.gnss = gnss_rows(src, lat, lon, day - span, day + span + DAY)
+                    win.gnss = gnss_rows(
+                        src, lat, lon, day - span, day + span + DAY, budget=p.gnss_quake_window
+                    )
                     win.gnss_hidden = np.zeros(len(win.gnss), bool)
                 windows.append(win)
             batch = write(src, windows)

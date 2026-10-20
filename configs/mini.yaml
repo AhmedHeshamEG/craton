@@ -25,11 +25,19 @@ train:
   lr: 1.0e-3
   weight_decay: 0.05
   seeds: [0, 1, 2]
-  max_steps: 2500
+  max_steps: 4000    # P4's runs were still improving at 2,500
   warmup_steps: 100
   eval_every: 100
-  patience: 3         # validation checks without progress before stopping
+  patience: 5         # validation checks without progress before stopping
   mask_share: 0.15    # as in CB-01
+  windows:            # the mix of masked windows (craton/train/data.py)
+    quake: 0.55
+    gnss: 0.45
+  split_windows:      # each game trained where it is tested: in-context practice for CB-17 only
+    cb17_fit:
+      quake: 0.45
+      gnss: 0.40
+      region: 0.15
   objectives:
     masked: 1.0       # hidden quakes, bits on CB-01's bins
     gnss: 1.0         # hidden GNSS days, bits on CB-01's 1 mm bins
@@ -40,6 +48,7 @@ context:
   tides: 25
   tides_ahead: 24
   gnss: 160
+  gnss_quake_window: 48
   gnss_days: 7
   gnss_stations: 12
   gnss_km: 100

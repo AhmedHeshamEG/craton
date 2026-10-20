@@ -146,14 +146,15 @@ class Masked:
         t = float(cat.time[row])
         w = Window(t_ref=t, tides=_tides_around(src, t))
         # The quakes come first so the GNSS stations can be picked near the visible ones.
-        budget = src.length - w.size - (src.policy.gnss if src.gnss is not None else 0)
+        gnss_budget = src.policy.gnss_quake_window if src.gnss is not None else 0
+        budget = src.length - w.size - gnss_budget
         rows = quakes_around(cat, t, budget)
         hid = rng.random(len(rows)) < self.share
         lat, lon = where_now(cat, rows, hid)
         if src.gnss is not None:
             day = np.floor(t / DAY) * DAY
             span = src.policy.gnss_days * DAY
-            w.gnss = gnss_rows(src, lat, lon, day - span, day + span + DAY)
+            w.gnss = gnss_rows(src, lat, lon, day - span, day + span + DAY, budget=gnss_budget)
             w.gnss_hidden = rng.random(len(w.gnss)) < self.share
         more = quakes_around(cat, t, src.length - w.size)
         extra = ~np.isin(more, rows)

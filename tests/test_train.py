@@ -40,7 +40,8 @@ from tests.test_model import ALL_INPUTS, tiny_config
 T0 = 1_000_000_000.0
 #: Small budgets so a 64-token window holds every kind of token.
 POLICY = ContextPolicy(
-    tides=6, tides_ahead=4, gnss=16, gnss_days=2, gnss_stations=4, next_day_gnss_days=2,
+    tides=6, tides_ahead=4, gnss=16, gnss_quake_window=8, gnss_days=2, gnss_stations=4,
+    next_day_gnss_days=2,
     big_quakes=4,
 )  # fmt: skip
 LENGTH = 64
@@ -166,7 +167,7 @@ def test_fused_windows_hold_every_instrument_under_the_budget() -> None:
     w = masked.quake_window(row, rng)
     assert w.size == LENGTH
     assert 0 < len(w.tides) <= POLICY.tides
-    assert 0 < len(w.gnss) <= POLICY.gnss
+    assert 0 < len(w.gnss) <= POLICY.gnss_quake_window  # quakes keep the room
     assert len(np.unique(src.gnss.station[w.gnss])) <= POLICY.gnss_stations  # type: ignore[union-attr]
 
 
