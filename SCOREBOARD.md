@@ -10,17 +10,17 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 
 | | Task | Craton | Floor | Arrives |
 |---|---|---|---|---|
-| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 15.12 ± 0.36 ↓ (+7.54 vs climatology) | 22.66 ± 0 ↓ · climatology | P3 |
-| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −10.88 ± 0.67 ↑ (−3.76 vs etas) | −7.118 ± 0 ↑ · etas | P3 |
+| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 15.12 ± 0.36 ↓ (+0.949 vs interpolation) | 16.07 ± 0 ↓ · interpolation | P3 |
+| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −10.88 ± 0.67 ↑ (−3.82 vs etas_incomplete) | −7.059 ± 0 ↑ · etas_incomplete | P3 |
 | **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P6 |
 
 ## Every task
 
 | ID | Task | Craton | Floor | Phase |
 |---|---|---|---|---|
-| CB-01 | Geo-perplexity | 15.12 ± 0.36 ↓ · craton-mini | 22.66 ± 0 ↓ · climatology | P3 |
-| CB-02 | Apennines 2016-17 forecast | −10.88 ± 0.67 ↑ · craton-mini | −7.118 ± 0 ↑ · etas | P3 |
-| CB-03 | L'Aquila 2009 era holdout | −15.13 ± 0.79 ↑ · craton-mini | −9.396 ± 0 ↑ · etas | P3 |
+| CB-01 | Geo-perplexity | 15.12 ± 0.36 ↓ · craton-mini | 16.07 ± 0 ↓ · interpolation | P3 |
+| CB-02 | Apennines 2016-17 forecast | −10.88 ± 0.67 ↑ · craton-mini | −7.059 ± 0 ↑ · etas_incomplete | P3 |
+| CB-03 | L'Aquila 2009 era holdout | −15.13 ± 0.79 ↑ · craton-mini | −9.295 ± 0 ↑ · etas_incomplete | P3 |
 | CB-04 | GPS gap-fill | 17.5 ± 0.043 ↓ · craton-mini | 17.77 ± 0 ↓ · idw_trend | P3 |
 | CB-05 | Calibration | · | · | P6 |
 | CB-06 | Unseen region | · | · | P6 |
@@ -47,7 +47,9 @@ Bits per M3+ quake above ETAS. A forecast on floor k gives the real quakes 2^k t
 | oracle · knowing where, to the cell | +2.11 | +2.45 |
 | oracle · knowing where, to ~10 km | +0.60 | +0.66 |
 | oracle · knowing each day's count | +2.10 | +3.55 |
+| etas_incomplete (floor) | +0.06 | +0.10 |
 | etas (floor) | +0.00 | +0.00 |
+| etas_aniso (floor) | −0.00 | −0.00 |
 | **Craton** · craton-mini | −3.76 | −5.73 |
 | poisson (floor) | −7.52 | −7.54 |
 
@@ -57,10 +59,15 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Task | Method | Score | Metric | What else it says |
 |---|---|---|---|---|
+| CB-01 | interpolation | 16.07 ± 0 ↓ | bits per masked token, mean over instruments | gnss_daily 9.65 bits · seismic_catalog 22.5 bits |
 | CB-01 | climatology | 22.66 ± 0 ↓ | bits per masked token, mean over instruments | gnss_daily 22.8 bits · seismic_catalog 22.5 bits |
+| CB-02 | etas_incomplete | −7.059 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 638 expected; M≥1.5: −2.73 bits/quake; days with too few M≥3: 4% |
 | CB-02 | etas | −7.118 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 583 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 4% |
+| CB-02 | etas_aniso | −7.119 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 583 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 4% |
 | CB-02 | poisson | −14.64 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 75 expected; M≥1.5: −9.69 bits/quake; days with too few M≥3: 21% |
+| CB-03 | etas_incomplete | −9.295 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 75 expected; M≥1.5: −4.38 bits/quake; days with too few M≥3: 6% |
 | CB-03 | etas | −9.396 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
+| CB-03 | etas_aniso | −9.401 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
 | CB-03 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
 | CB-04 | idw_trend | 17.77 ± 0 ↓ | RMSE (mm), hidden stations, offset per station and component removed | east 24.2 · north 15.2 · up 11.4 mm over 29 stations, 86,373 days |
 | CB-17 | context_kde | 19.03 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
@@ -70,6 +77,9 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-21 23:48 | `20261021-234803-etas-incomplete` | etas_incomplete (baseline) | 2 new |
+| 2026-10-21 23:48 | `20261021-232907-etas-aniso` | etas_aniso (baseline) | 2 new |
+| 2026-10-21 23:48 | `20261021-232039-interpolation` | interpolation (baseline) | 1 new |
 | 2026-10-21 12:21 | `20261021-122053-craton-mini` | craton-mini | 2 improved, 2 new, 2 same |
 | 2026-10-21 12:21 | `20261021-070848-climatology` | climatology (baseline) | 1 new, 1 same |
 | 2026-10-21 12:21 | `20261020-230434-context-kde` | context_kde (baseline) | 1 new |
