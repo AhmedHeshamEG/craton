@@ -69,6 +69,10 @@ def method(variant: str) -> object:
     if variant == "all":
         return CratonMini()
     cfg = base.model_copy(update={"model": base.model.model_copy(update={"inputs": inputs})})
+    if QUAKES not in inputs:  # no quake to centre a window on: GNSS-centred windows instead
+        cfg = cfg.model_copy(
+            update={"train": cfg.train.model_copy(update={"windows": {"gnss": 1.0}})}
+        )
     return CratonMini(name=f"craton-mini-{variant.replace('_', '-')}", override=cfg)
 
 

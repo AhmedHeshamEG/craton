@@ -112,6 +112,10 @@ RATE_SCALES: tuple[tuple[int, float], ...] = (
 )
 
 
+#: How far the trunk may move tomorrow's rate from the measured-rate path: 2x either way.
+RATE_NUDGE_LOG = math.log(2.0)
+
+
 class NextDayHead(nn.Module):
     """Reads the query token placed at midnight and forecasts the next 24 hours.
 
@@ -142,7 +146,10 @@ class NextDayHead(nn.Module):
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """h (B, d), recent (B, scales) log rates → log rate (B,), log p(cell) (B, cells),
         log p(magnitude bin) (B, mags)."""
-        log_rate = self.rate(h).float().squeeze(-1) + self.recent(recent.float()).squeeze(-1)
+        # The trunk may move the rate at most RATE_NUDGE times either way from the straight
+        # path, smoothly: in a crisis bigger than any in training, the Omori-shaped path decides.
+        nudge = RATE_NUDGE_LOG * torch.tanh(self.rate(h).float().squeeze(-1) / RATE_NUDGE_LOG)
+        log_rate = nudge + self.recent(recent.float()).squeeze(-1)
         return log_rate.clamp(-12.0, 12.0), floored(self.where(h)), floored(self.size(h))
 
     def loss_bits(
