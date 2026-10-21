@@ -668,3 +668,22 @@ Patience 8: one run stopped at step 700 on validation noise.
 
 **Rejected.** Shipping the 55/45 model: its CB-01 (15.53) beats P4's 21.66 by six bits, and the ratchet
 would have taken it, but only because the GNSS gain hid a quake loss (D-053).
+
+### D-057 · 2026-10-21 · P5 — The trunk may nudge tomorrow's rate at most 2x
+
+The next-day log rate is the measured-rate path (D-045) plus the trunk's correction, now bounded
+smoothly: ln 2 · tanh(c / ln 2). The trunk can move the forecast at most 2x either way.
+
+**Why.** CB-03's model learns from data up to 2008, which holds one big sequence. With a free
+correction its three seeds expected 287, 1,412 and 872 M3+ quakes for 2009, where 315 happened
+(−18.14 ± 4.01 bits; P4 −15.13 ± 0.79). The ratchet called it "same" only because the spread was so
+wide. A crisis bigger than any in training is exactly where a learned correction has nothing to stand
+on and the Omori-shaped path does. Capped at 4x: seed 1 −16.61 (876 expected). At 2x: −13.78, −14.39,
+−13.98 (225, 273, 210 expected): −14.05 ± 0.31.
+
+**Rejected.** Early stopping on the forecast alone (validation kept improving to step 4,000: the
+validation blocks are quiet months, the test is a crisis). Fewer steps (blind to the cause).
+
+**Note.** The ablation (`docs/ablation.md`) was measured with the uncapped head (training v0.2). Its
+quake, GNSS and CB-04 rows don't touch the rate head; its CB-02 row compares variants that all had
+the uncapped head, so the comparison holds, but its absolute CB-02 numbers are not the scoreboard's.
