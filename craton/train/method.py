@@ -99,6 +99,8 @@ class CratonMini:
     config_name: str = "mini"
     #: A config to use instead of ``config_name`` (the ablation runner's variants).
     override: CratonConfig | None = None
+    #: The Field config that answers CB-02 and CB-03 (``configs/field/``); "" = the trunk.
+    field_config: str = "mini"
     log: Log = _quiet
     _models: dict[tuple[str, int], CratonModel] = field(default_factory=dict)
     _meta: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict)
@@ -544,6 +546,15 @@ class CratonMini:
     # ------------------------------------------------------------ CB-02, CB-03
 
     def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
+        """CB-02 and CB-03: through the Field (P6) unless ``field_config`` is "", then through the
+        trunk's own next-day head (P4-P5)."""
+        if self.field_config:
+            from craton.field.forecaster import FieldForecaster
+
+            return FieldForecaster(self.field_config, log=self.log).forecast(spec, ctx, seed)
+        return self.trunk_forecast(spec, ctx, seed)
+
+    def trunk_forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
         model = self.model(ctx, spec.fit_split, seed)
         gnss = None
         if "gnss_daily" in self.inputs:

@@ -61,19 +61,24 @@ def ablation_dir(root: Path) -> Path:
 
 
 def method(variant: str) -> object:
-    """Craton-mini reading only the variant's instruments (its own checkpoints, by config)."""
+    """Craton-mini reading only the variant's instruments (its own checkpoints, by config).
+
+    Forecasts come from the trunk's own next-day head, not the Field: the ablation measures
+    what each instrument gives the trunk (the Field reads quakes only)."""
     from craton.train.method import CratonMini
 
     inputs, _ = VARIANTS[variant]
     base = CratonMini().config
     if variant == "all":
-        return CratonMini()
+        return CratonMini(field_config="")
     cfg = base.model_copy(update={"model": base.model.model_copy(update={"inputs": inputs})})
     if QUAKES not in inputs:  # no quake to centre a window on: GNSS-centred windows instead
         cfg = cfg.model_copy(
             update={"train": cfg.train.model_copy(update={"windows": {"gnss": 1.0}})}
         )
-    return CratonMini(name=f"craton-mini-{variant.replace('_', '-')}", override=cfg)
+    return CratonMini(
+        name=f"craton-mini-{variant.replace('_', '-')}", override=cfg, field_config=""
+    )
 
 
 def run(
