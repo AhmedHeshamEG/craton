@@ -44,6 +44,7 @@ def download(url: str, timeout: float = 120, tries: int = 5) -> bytes:
     """GET with polite retries: servers hiccup, and we never hammer them."""
     import time
     import urllib.error
+    import urllib.request
 
     for attempt in range(tries):
         try:

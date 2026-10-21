@@ -235,3 +235,60 @@ Decisions: D-039 … D-047.
 
 Next: P5, fusion. Register GNSS and tide encoders, build the context selector, add cross-modal masking,
 and run the ablation that shows each modality's share; CB-17 arrives.
+
+## 2026-10-21 — P5 — Fusion: quakes + GPS + the Moon
+
+TLDR: Craton-mini reads the catalogue, daily GNSS and the solid-Earth tide in one trunk. CB-01 drops
+from 21.66 to 15.12 bits: hidden GNSS days cost 9.75 bits instead of 22.8, hidden quakes tie P4. It
+rebuilds unseen GNSS stations a little better than IDW (17.50 vs 17.77 mm) and adapts to a never-seen
+region from context (CB-17, new), though counting the context still adapts better. The tide's share
+is zero within noise, everywhere. Forecasts: CB-02 the same as P4, CB-03 better and steadier; ETAS
+still ahead on both.
+
+Built:
+- encoders for `gnss_daily` and `solid_earth_tide`, dispatch by instrument id, modality vectors,
+  `model.inputs`, a padding mask in the trunk (D-048)
+- `craton/train/context.py`: station lines, the context policy, `write()`; GNSS heads in mm on CB-01's
+  bins (D-049, D-050)
+- window kinds: quake, GNSS-centred (random, whole station, all GNSS, all quakes; D-051), region
+- CB-17 and the `cb17_fit` split; floors `climatology` and `context_kde`; freezing grows by splits
+  (D-052)
+- `craton bench ablate`, `docs/ablation.md`, the ablation figure
+- a worker process for batches, pinned non-blocking copies, fused AdamW (D-055)
+- the capped rate correction (D-057); model cards that say what a checkpoint reads
+- tests: 297 → 319
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261021-122053-craton-mini`):
+- CB-01 15.12 ± 0.37 (P4 21.66): quakes 20.48 (P4 20.49), GNSS 9.75 (climatology 22.83)
+- CB-02 −10.98 ± 0.77 (P4 −10.88, ETAS −7.12): same within noise, P4 stays champion
+- CB-03 −14.05 ± 0.31 (P4 −15.13 ± 0.79, ETAS −9.40): better mean, within noise; P4 stays champion
+- CB-04 17.50 ± 0.04 mm (new; IDW + trend 17.77)
+- CB-15 16.27 ± 0.04% MFU (P4 15.59): 88,750 tokens/s, 1.4 GB peak, 12.3 min
+- CB-17 24.56 ± 0.56 bits (new): 32.4 with no context → 24.6 with a year; climatology 27.72,
+  context_kde 19.03
+- Ablation (docs/ablation.md): GNSS +13.3 bits on GNSS days, nothing on quakes or forecasts; tides
+  nothing anywhere; quakes +0.25 mm on CB-04 (within noise)
+
+Surprises / problems:
+- The first fused model scored CB-01 16.05 and would have passed the ratchet, but its quake half had
+  got worse (22.47 vs 20.49): GNSS gains hid a quake loss. The cause was the data mix: region and
+  GNSS-centred windows. Reading GNSS helps quakes (20.17 vs 20.54 without); playing GNSS games costs
+  them 1.3+ bits at every dose tried (D-053, D-056).
+- The rebuild measured each token's age from the window's middle (later from a GNSS day a week
+  earlier): before and after blurred. Back to P4's rule (D-056).
+- CB-03 swung from −14 to −22 across seeds (1,412 quakes expected where 315 came) once the model
+  trained longer: the trunk's free rate correction extrapolated wildly in a crisis bigger than any in
+  training. Capped at 2x (D-057).
+- MFU first fell to 8.9%: CPU batch-building fought the training loop for the GIL, and blocking copies
+  left the GPU idle. Fixed (D-055).
+- Two background runs were stopped by the system for low RAM (16 GB): main process + worker each hold
+  the data. Rerun with heavy apps closed.
+- The ablation was measured before the rate cap (D-057 note).
+- CB-04's floor error is two-thirds one station, VCRA (jumps of up to 315 mm a day) (D-054).
+- The GNSS half of CB-01 beats a weak floor (a station's mean). A same-station interpolation baseline
+  would be the honest bar; added to IDEAS for P6.
+
+Decisions: D-048 … D-057.
+
+Next: P6, the 8 locks. Calibration, ensembles, the OOD detector, physics budgets, locked forecasts,
+and an honest interpolation baseline for CB-01's GNSS half.

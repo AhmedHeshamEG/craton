@@ -6,23 +6,23 @@
       "metric": "bits per masked token, mean over instruments",
       "direction": "lower",
       "fingerprint": "faa360aee280f00136ec7b9ef49a6eda9b979c8cc0acda317b9a5d70763a8ef6",
-      "mean": 21.661093855205433,
-      "std": 0.025568497933608297,
+      "mean": 15.118012777969057,
+      "std": 0.3646621590959574,
       "n_seeds": 3,
-      "run_id": "20261020-105609-craton-mini",
+      "run_id": "20261021-122053-craton-mini",
       "model": "craton-mini",
-      "accepted": "2026-10-20T10:56:21Z",
+      "accepted": "2026-10-21T12:21:14Z",
       "extras": {
-        "gnss_daily.east_bits": 8.738760526386866,
-        "gnss_daily.north_bits": 8.364195590407126,
-        "gnss_daily.up_bits": 5.729163867247092,
-        "gnss_daily_bits_per_token": 22.832119984041082,
+        "gnss_daily.east_bits": 2.7005520109773253,
+        "gnss_daily.north_bits": 2.6634270426351345,
+        "gnss_daily.up_bits": 4.39024114548661,
+        "gnss_daily_bits_per_token": 9.754220199099072,
         "gnss_daily_queries": 10690.0,
-        "seismic_catalog.depth_km_bits": 3.3273491811484823,
-        "seismic_catalog.lat_bits": 6.887471348717672,
-        "seismic_catalog.lon_bits": 6.218556668157078,
-        "seismic_catalog.magnitude_bits": 4.056690528346544,
-        "seismic_catalog_bits_per_token": 20.490067726369777,
+        "seismic_catalog.depth_km_bits": 3.331940354734878,
+        "seismic_catalog.lat_bits": 6.806133210363995,
+        "seismic_catalog.lon_bits": 6.2382647473310735,
+        "seismic_catalog.magnitude_bits": 4.105467044409094,
+        "seismic_catalog_bits_per_token": 20.481805356839043,
         "seismic_catalog_queries": 17310.0
       }
     },
@@ -87,16 +87,60 @@
       "metric": "model FLOPs utilisation (%) of the pretraining run, inside 6 GiB of VRAM",
       "direction": "higher",
       "fingerprint": "284cb4cd3a09a0a92f8aa704f0b25972c9e8e0ee7a409a57ed4f247bb588d029",
-      "mean": 15.590453393348426,
-      "std": 0.1113691328595267,
+      "mean": 16.27379045780025,
+      "std": 0.04346238047513008,
       "n_seeds": 3,
-      "run_id": "20261020-105609-craton-mini",
+      "run_id": "20261021-122053-craton-mini",
       "model": "craton-mini",
-      "accepted": "2026-10-20T10:56:21Z",
+      "accepted": "2026-10-21T12:21:14Z",
       "extras": {
-        "peak_vram_mib": 1347.3308919270833,
-        "tokens_per_s": 85023.01845499978,
-        "train_minutes": 8.029470638306035
+        "peak_vram_mib": 1393.9772135416667,
+        "tokens_per_s": 88749.61821294269,
+        "train_minutes": 12.307341488888293
+      }
+    },
+    "CB-04": {
+      "task_id": "CB-04",
+      "metric": "RMSE (mm), hidden stations, offset per station and component removed",
+      "direction": "lower",
+      "fingerprint": "9449170471e9295c5e4e486a3d34865425ade1be81c86a1ee28fe5131da429fb",
+      "mean": 17.496632019636465,
+      "std": 0.04314925432581054,
+      "n_seeds": 3,
+      "run_id": "20261021-122053-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-10-21T12:21:14Z",
+      "extras": {
+        "rmse_east_mm": 23.88280047869051,
+        "rmse_north_mm": 14.62480352443774,
+        "rmse_up_mm": 11.58059798924804,
+        "station_days": 86373.0,
+        "stations": 29.0
+      }
+    },
+    "CB-17": {
+      "task_id": "CB-17",
+      "metric": "bits per quake in a region never trained on, with its first 365 days in context",
+      "direction": "lower",
+      "fingerprint": "4225fb37a25e9adb4ec87fdedd96e2f2de0263acfb9b839059a7baf0d3b529f4",
+      "mean": 24.558390261433917,
+      "std": 0.5590204933418637,
+      "n_seeds": 3,
+      "run_id": "20261021-122053-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-10-21T12:21:14Z",
+      "extras": {
+        "bits_0d": 32.41573543218624,
+        "bits_30d": 24.74500939219652,
+        "bits_365d": 24.558390261433917,
+        "bits_7d": 26.00849820328268,
+        "bits_90d": 24.349520544891718,
+        "depth_km_bits": 4.1122589561997,
+        "gain_bits": 7.857345170752321,
+        "lat_bits": 5.971963797746583,
+        "lon_bits": 10.401368743797786,
+        "magnitude_bits": 4.072798763689852,
+        "test_quakes": 1307.0
       }
     }
   },
@@ -264,6 +308,58 @@
           "M3.s_test_quantile": 1.0
         }
       }
+    },
+    "CB-17": {
+      "context_kde": {
+        "task_id": "CB-17",
+        "metric": "bits per quake in a region never trained on, with its first 365 days in context",
+        "direction": "lower",
+        "fingerprint": "4225fb37a25e9adb4ec87fdedd96e2f2de0263acfb9b839059a7baf0d3b529f4",
+        "mean": 19.026205293921677,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261020-230434-context-kde",
+        "model": "context_kde",
+        "accepted": "2026-10-21T12:21:14Z",
+        "extras": {
+          "bits_0d": 27.717176887752547,
+          "bits_30d": 19.981976748997337,
+          "bits_365d": 19.026205293921677,
+          "bits_7d": 23.29984954962923,
+          "bits_90d": 19.432673738924695,
+          "depth_km_bits": 3.4081263940576547,
+          "gain_bits": 8.69097159383087,
+          "lat_bits": 5.746096345826921,
+          "lon_bits": 5.79046187414854,
+          "magnitude_bits": 4.08152067988856,
+          "test_quakes": 1307.0
+        }
+      },
+      "climatology": {
+        "task_id": "CB-17",
+        "metric": "bits per quake in a region never trained on, with its first 365 days in context",
+        "direction": "lower",
+        "fingerprint": "4225fb37a25e9adb4ec87fdedd96e2f2de0263acfb9b839059a7baf0d3b529f4",
+        "mean": 27.717176887752547,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261021-070848-climatology",
+        "model": "climatology",
+        "accepted": "2026-10-21T12:21:14Z",
+        "extras": {
+          "bits_0d": 27.717176887752547,
+          "bits_30d": 27.717176887752547,
+          "bits_365d": 27.717176887752547,
+          "bits_7d": 27.717176887752547,
+          "bits_90d": 27.717176887752547,
+          "depth_km_bits": 3.9726650766294873,
+          "gain_bits": 0.0,
+          "lat_bits": 8.600919169937766,
+          "lon_bits": 10.825761101602396,
+          "magnitude_bits": 4.317831539582898,
+          "test_quakes": 1307.0
+        }
+      }
     }
   },
   "history": [
@@ -301,6 +397,27 @@
       "kind": "model",
       "accepted": "2026-10-20T10:56:21Z",
       "summary": "4 new"
+    },
+    {
+      "run_id": "20261020-230434-context-kde",
+      "model": "context_kde",
+      "kind": "baseline",
+      "accepted": "2026-10-21T12:21:14Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261021-070848-climatology",
+      "model": "climatology",
+      "kind": "baseline",
+      "accepted": "2026-10-21T12:21:14Z",
+      "summary": "1 new, 1 same"
+    },
+    {
+      "run_id": "20261021-122053-craton-mini",
+      "model": "craton-mini",
+      "kind": "model",
+      "accepted": "2026-10-21T12:21:14Z",
+      "summary": "2 improved, 2 new, 2 same"
     }
   ]
 }

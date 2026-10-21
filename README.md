@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P4%20of%20P12-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P5%20of%20P12-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -166,6 +166,36 @@ to learn the same laws from thirty years of one region, with 13 truly busy days 
 and simulated planets (P7) are how that gap gets closed. How it works, step by step:
 [`lessons/P4.md`](lessons/P4.md). Model cards: [`docs/models/craton-mini.md`](docs/models/craton-mini.md).
 
+## Three instruments, one model
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ablation-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/ablation-light.png">
+    <img alt="A table: Craton-mini retrained without earthquakes, without GNSS or without tides. GNSS is worth 13.3 bits on hidden GNSS days; the tides are worth nothing beyond noise anywhere." src="docs/assets/ablation-dark.png" width="100%">
+  </picture>
+</p>
+
+Craton-mini now reads the earthquake catalogue, daily GPS positions and the solid-Earth tide at once:
+one encoder per instrument, one trunk, one shared space. A GPS day is read as its distance from the
+station's own long-term line; a station nobody has seen borrows its line from its neighbours.
+
+| Test | Craton-mini (P5) | Before (P4) | The floor |
+|---|---|---|---|
+| **CB-01** Guess hidden measurements back | **15.12 bits** | 21.66 | climatology 22.66 |
+| · a hidden GPS day | **9.75 bits** | — | 22.83 |
+| · a hidden quake | 20.48 bits | 20.49 | 22.48 |
+| **CB-02** Forecast the Apennines 2016-17 | −10.98 | −10.88 | ETAS −7.12 |
+| **CB-03** Forecast 2009 | −14.05 | −15.13 | ETAS −9.40 |
+| **CB-04** Rebuild a GPS station nobody let you see | **17.50 mm** | — | its neighbours 17.77 |
+| **CB-17** Learn a region never seen, from its first year | 24.56 bits | — | counting it 19.03 |
+
+GPS is worth thirteen bits on GPS and nothing on quakes. The Moon's tide is worth nothing at all,
+within noise: tidal triggering is real but tiny, and a measured zero is a result. ETAS still wins both
+forecasts. The model learns a new region from context alone (7.9 bits from one year of it), but
+counting that year still beats it. Step by step, including the training mix that almost hid a loss:
+[`lessons/P5.md`](lessons/P5.md). Every share: [`docs/ablation.md`](docs/ablation.md).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -203,7 +233,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       █████████████████████░░░░░░░░░   5/7    foundation → a model that knows when it doesn't know
+CORE       ██████████████████████████░░░░   6/7    foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -215,7 +245,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P2** First data: INGV catalogue, GNSS, tides | the data pipeline |
 | ✅ | **P3** CratonBench + baselines, before any model | the eval harness |
 | ✅ | **P4** Craton-mini v0, the first transformer | the GPT-2 small run |
-| ◻️ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
+| ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ◻️ | **P6** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ◻️ | **P7** Fake planets: pretraining on simulated millennia | synthetic data |
 | ◻️ | **P8** The ghost channel: forces we forgot | register tokens |

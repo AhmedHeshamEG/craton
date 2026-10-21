@@ -25,6 +25,7 @@ Cut from the snapshot and written to disk, every file named by its hash. `craton
 | `pretrain` | general training; CB-01 and CB-04 baselines | 1,350,241 | 408,619 | `348835f470820aac` |
 | `cb02_fit` | fitting for CB-02 (pseudo-prospective) | 865,700 | 893,160 | `bcf9ffb66b6f8951` |
 | `cb03_fit` | fitting for CB-03 (pseudo-prospective) | 333,103 | 1,425,757 | `7f4e735423f10c53` |
+| `cb17_fit` | training for CB-17 (a region never seen) | 1,204,476 | 554,384 | `96c3880ee23e0549` |
 
 ## CB-01 · Geo-perplexity
 
@@ -75,6 +76,14 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Metric:** model FLOPs utilisation (%) of the pretraining run, inside 6 GiB of VRAM (higher is better)
 - **Fingerprint:** `284cb4cd3a09a0a9`
 - **Test data:** budget gib 6.0
+
+## CB-17 · In-context adaptation
+
+
+
+- **Metric:** bits per quake in a region never trained on, with its first 365 days in context (lower is better)
+- **Fingerprint:** `4225fb37a25e9adb`
+- **Test data:** context quakes 0 0, 7 8, 30 56, 90 148, 365 874 · test quakes 1,307 · largest test 4.5
 
 ## Add a method
 

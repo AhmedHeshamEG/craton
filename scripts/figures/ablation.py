@@ -25,7 +25,7 @@ sys.path.insert(0, str(ROOT))
 from craton.bench import ablation
 
 #: Rows drawn, as indices into ``ablation.ROWS`` (the CB-01 total is the mean of its halves).
-SHOWN = (1, 2, 3, 4, 5)
+SHOWN = (1, 2, 3, 5)  # CB-03 is not refitted per variant
 LABELS = {
     1: ("A hidden earthquake", "CB-01 · where and how big, bits"),
     2: ("A hidden GNSS day", "CB-01 · east, north, up, bits"),
@@ -33,6 +33,9 @@ LABELS = {
     4: ("Forecast: L'Aquila 2009", "CB-03 · bits per M3+ quake"),
     5: ("A GNSS station nobody saw", "CB-04 · rebuilt daily, mm"),
 }
+
+
+COLUMN = {ablation.QUAKES: "earthquakes", ablation.GNSS: "GNSS", ablation.TIDES: "tides"}
 
 
 def _fmt(x: float, unit: str) -> str:
@@ -70,7 +73,13 @@ def draw(runs: dict, theme: Theme, out: str) -> None:
     y_head, y0, dy = 0.74, 0.64, 0.115
     for x, inst in zip(x_cols, cols, strict=True):
         text(
-            x, y_head, f"without {ablation.NAMES[inst].lower()}", 10, theme.muted, 500, ha="center"
+            x,
+            y_head,
+            f"without {COLUMN[inst]}",
+            10,
+            theme.muted,
+            500,
+            ha="center",
         )
     ax.plot([0.06, 0.94], [y_head - 0.03] * 2, color=theme.faint, linewidth=0.8 * k)
 
@@ -110,9 +119,10 @@ def draw(runs: dict, theme: Theme, out: str) -> None:
     text(
         0.06,
         0.035,
-        "Positive = the model is better with it. Orange: beyond noise (2σ over 3 seeds). "
-        "Grey: within noise. ·: that variant can't answer (no GNSS, no station to rebuild; "
-        "no quakes, nothing to forecast).",
+        "Positive = better with it. Orange: beyond noise (two standard deviations, 3 seeds). "
+        "Grey: within noise. ·: that variant can't answer.\n"
+        "Without earthquakes, a hidden earthquake is answered by climatology; without GNSS, a "
+        "hidden GNSS day too.",
         8,
         theme.muted,
     )

@@ -129,9 +129,7 @@ The model reads an instrument through an encoder registered under the instrument
 ```python
 from craton.model.encoders import EncoderSpec, ScalarEncoder, register_encoder
 
-register_encoder(
-    EncoderSpec("air_pressure", ("hpa",), lambda d: ScalarEncoder(d, 1))
-)
+register_encoder(EncoderSpec("air_pressure", ("hpa",), lambda d: ScalarEncoder(d, 1)))
 ```
 
 Names are unique and never redefined, and an instrument's id is its place in the registry, so it never

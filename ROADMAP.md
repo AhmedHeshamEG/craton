@@ -5,10 +5,10 @@ and a release. A phase isn't done if any exit test fails. Live numbers are in [`
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
-CORE       █████████████████████░░░░░░░░░   5/7    P0–P6   foundation → a model that knows when it doesn't know
+CORE       ██████████████████████████░░░░   6/7    P0–P6   foundation → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P7–P10  fake planets, the ghost, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P11–P12 any time horizon, then mini → regional → planet
-ALL        ████████████░░░░░░░░░░░░░░░░░░   5/13
+ALL        ██████████████░░░░░░░░░░░░░░░░   6/13
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -269,6 +269,11 @@ learning.
 
 **Learn:** multimodal fusion, context windows, in-context learning, ablations.
 
+**Where it landed (v0.6.0):** CB-01 21.66 → 15.12 (GNSS days 9.75 bits, quakes tied at 20.48), CB-04
+17.50 mm against IDW's 17.77, CB-17 new. Step 2 (modality experts) was left for a bigger model: with
+three instruments and a 4.7M trunk there is nothing to route yet (D-048). Cross-modal masking is built
+and switched off for the general models after it measurably cost the quakes (D-056).
+
 ## P6 · The 8 locks (trustworthiness) → v0.7.0
 **Goal:** the model knows when it doesn't know.
 
@@ -490,6 +495,6 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 ## Tracker
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
-- [x] P4 Craton-mini v0 · [ ] P5 Fusion · [ ] P6 The 8 locks
+- [x] P4 Craton-mini v0 · [x] P5 Fusion · [ ] P6 The 8 locks
 - [ ] P7 Fake planets · [ ] P8 Ghost + atlas · [ ] P9 Translator · [ ] P10 Microscope
 - [ ] P11 Long horizons · [ ] P12 Scale + open platform
