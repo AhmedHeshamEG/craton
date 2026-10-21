@@ -516,6 +516,26 @@ def cmd_bench(args: argparse.Namespace) -> int:
         console.print(f"wrote {doc.relative_to(root).as_posix()}")
         console.print()
         return 0
+    if action == "ceiling":
+        from craton.bench import ceiling
+        from craton.bench.tasks import Score
+
+        _title("bench ceiling · the building above ETAS")
+        board = Scoreboard.load(root / "results" / "scoreboard.json")
+        scores = {
+            tid: Score(board.baselines[tid]["etas"].mean, {})
+            for tid in ("CB-02", "CB-03")
+            if "etas" in board.baselines.get(tid, {})
+        }
+        record = ceiling.building(ctx, scores)
+        path = root / "results" / "ceiling.json"
+        ceiling.write(path, record)
+        for tid, rec in record.items():
+            gains = " · ".join(f"{k} +{v:.2f}" for k, v in rec["above_etas_bits"].items())
+            console.print(f"{tid}  ETAS {rec['etas']:.3f}  {gains}")
+        console.print(f"wrote {path.relative_to(root).as_posix()}")
+        console.print()
+        return 0
     if action == "prepare":
         _title(f"bench prepare · snapshot {ctx.snapshot_id}")
         problems = harness.prepare(ctx, freeze=args.freeze, log=log)
@@ -748,8 +768,12 @@ def build_parser() -> argparse.ArgumentParser:
     dd.add_argument("--refresh", action="store_true", help="fetch again even if cached")
     dd.set_defaults(func=cmd_data)
 
-    b = sub.add_parser("bench", help="CratonBench: list, prepare, leaks, run METHOD, cards, ablate")
-    b.add_argument("action", choices=("list", "prepare", "leaks", "run", "cards", "ablate"))
+    b = sub.add_parser(
+        "bench", help="CratonBench: list, prepare, leaks, run METHOD, cards, ablate, ceiling"
+    )
+    b.add_argument(
+        "action", choices=("list", "prepare", "leaks", "run", "cards", "ablate", "ceiling")
+    )
     b.add_argument("method", nargs="?", help="baseline to run (see `craton bench list`)")
     b.add_argument("--freeze", action="store_true", help="freeze the record, or its new tasks")
     b.add_argument("--tasks", nargs="*", help="only these task IDs")

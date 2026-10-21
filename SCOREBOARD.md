@@ -37,6 +37,20 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
 | CB-18 | Ladder rung 3 | · | · | P12 |
 
+## The building
+
+Bits per M3+ quake above ETAS. A forecast on floor k gives the real quakes 2^k times ETAS's probability. The oracles above ETAS read the answers; no method can, so they measure the room, not a target.
+
+| | CB-02 | CB-03 |
+|---|---|---|
+| oracle · the roof: count and cell | +4.21 | +6.00 |
+| oracle · knowing where, to the cell | +2.11 | +2.45 |
+| oracle · knowing where, to ~10 km | +0.60 | +0.66 |
+| oracle · knowing each day's count | +2.10 | +3.55 |
+| etas (floor) | +0.00 | +0.00 |
+| **Craton** · craton-mini | −3.76 | −5.73 |
+| poisson (floor) | −7.52 | −7.54 |
+
 ## The floor
 
 Simple methods, scored before any model exists. Each is ratcheted against itself.
