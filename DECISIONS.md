@@ -538,3 +538,152 @@ salted hash, are kept for validation and early stopping.
 **Why.** The ETAS baseline fits from 2005 because it can't tell Md from ML. The model sees each quake's
 magnitude type, and before 2005 lies the 1997 Colfiorito sequence: one of only three big sequences in the
 data, and the only one CB-03's model can learn from.
+
+### D-048 · 2026-10-20 · P5 — One model, an encoder per instrument, dispatched by id
+
+Every token carries its instrument's registry id (0 for a query, -1 for padding), up to 12 numbers and a
+label. Each instrument the config lists (`model.inputs`) has its own encoder and a learned modality
+vector; all encoders run over every token and each token keeps its own instrument's answer. The trunk
+takes an optional padding mask. An id is a place in an add-only registry, so it never moves.
+
+**Why.** The plan's step 1 (per-instrument encoders into one space) without touching the trunk. Running
+the small encoders densely costs a few percent of arithmetic and saves the GPU syncs that picking tokens
+out by boolean masks needs; with them, a training step was 30 ms slower.
+
+**Rejected.** One encoder for everything (a GNSS day and a quake share no channels). Mixture-of-experts
+trunk blocks (the plan's optional step 2): with three instruments and a 4.7M trunk there is nothing to
+route yet; left for later behind a flag.
+
+### D-049 · 2026-10-20 · P5 — A GNSS day is read as its distance from the station's line
+
+Each station gets a line, fitted on the training split: its position in 2015 and its velocity. A day
+enters as its distance from the line, then centred on the mean of the station's visible days in the
+window (that level is a channel of its own). A hidden day is answered as a distance from line + level,
+with a mixture of four logistic distributions in millimetres sharing one straight ramp in time, scored
+on CB-01's 1 mm bins (the training loss is the benchmark's score, D-039). A station with too little
+history, or none (CB-04's held-out stations), borrows its velocity from its six nearest neighbours,
+weighted by 1/d², and has no level.
+
+**Why.** Positions are millions of millimetres from an arbitrary origin and move a few centimetres a
+year; the network needs what changes, not where the origin is. Centring a series on its own window is
+reversible instance normalisation (Kim et al. 2022), and it keeps a station that jumped (an earthquake,
+a new antenna, a reused code, D-030) readable. The ramp lets the model correct a borrowed velocity.
+
+**Rejected.** Raw positions (meaningless scale). A Gaussian head (thin tails: one jump costs hundreds
+of bits). Fitting held-out stations' lines from their own days (those are CB-04's answers).
+
+### D-050 · 2026-10-20 · P5 — The context policy
+
+A window of 1,024 is filled in order: the hourly tide nearest the anchor (25 hours; a next-day window
+reads 12 hours before midnight and 24 after), GNSS days of the 12 nearest stations within 100 km (±7
+days; 160 days at most around a GNSS day, 48 around a quake; the 5 days before a midnight), then quakes
+nearest in time, and in a next-day window the 32 largest M3.5+ of the past year even when older.
+
+**Why.** The plan asks for a documented policy over recency, distance and magnitude. The tide of the
+forecast day is computed from the Sun and the Moon and known in advance, so reading it is not peeking.
+A window about a quake keeps ~1,000 quakes because a hidden quake is found from other quakes; see
+D-053.
+
+### D-051 · 2026-10-20 · P5 — Cross-modal masking, both ways
+
+A GNSS-anchored window is played in one of four modes: 15% of everything hidden (CB-01's game), one
+station hidden whole with its line borrowed (CB-04's game), every GNSS day hidden (predict the ground
+from quakes and tides), every quake hidden (the other way).
+
+**Why.** Step 4 of the plan. The whole-station mode makes CB-04 a game the model practises instead of
+one it is asked cold.
+
+### D-052 · 2026-10-20 · P5 — CB-17 is a region left out of one split, at every time
+
+CB-17 holds out the Alto Tiberina box (43.0-43.6 N, 12.0-12.6 E) from a new split, `cb17_fit`
+(pretrain minus every token inside the box). Its model is shown the box's first N days of quakes from 1
+January 2022 (N = 0, 7, 30, 90, 365; 0 to 874 quakes) and asked for every quake of 2023 (1,307, the
+Umbertide M4.5 among them), in bits on CB-01's bins. The score is the bits at N = 365; the curve is in
+the extras. Floors: climatology from `cb17_fit` (ignores the context) and `context_kde`, a kernel
+density of the context itself. A frozen record now grows by splits as well as tasks (D-044).
+
+**Why.** "A new region" taken literally: a model that has never seen a place. The KDE floor asks the
+honest question: does the transformer learn more from the context than counting does?
+
+**Rejected.** A region outside the box (the heads' bins end at its edges). GNSS stations as "new
+regions" (an offset nobody can know makes the N = 0 point meaningless).
+
+### D-053 · 2026-10-20 · P5 — Each game is trained where it is tested; fusion may not hide a loss
+
+The first fused model (seed 0) scored CB-01 16.05 against P4's 21.66, but its hidden-quake half got
+worse: 22.47 bits against P4's 20.49. Two causes. The in-context region windows hide ~800 quakes each
+and took half of all the quake practice; and the windows held 839 quakes instead of 1,023. Region
+windows now train only the CB-17 model (`train.split_windows`), a window about a quake reads at most 48
+GNSS days, and runs take up to 4,000 steps (P4's were still improving at 2,500). Without region
+windows the quake half was already back to 21.11. P5 ships only if each half of CB-01 matches or beats
+P4, not just the mean.
+
+**Why.** Attention chooses among the tokens in a window; it can't use tokens that aren't there or
+learn a game it barely plays. The data mix decides what a model is good at, as in every LLM.
+
+**Rejected.** Letting the ratchet decide alone: it compares CB-01's mean, where 13 bits of GNSS gain
+would hide a 2-bit quake loss.
+
+### D-054 · 2026-10-20 · P5 — CB-04's bar is the floor
+
+P5's exit asks to beat P4 on CB-04, but P4 answered no GNSS question (D-042). The bar is the floor, IDW +
+trend, 17.77 mm. 67% of that error's square is one station, VCRA, whose series jumps by up to 315 mm in
+a day (2017) and 231 mm in 2018: monument or processing changes no neighbour can see.
+
+### D-055 · 2026-10-20 · P5 — Batches are cut in a worker process
+
+Training batches are cut by one worker process (a seeded stream, same order as a single loop), pinned,
+and copied without blocking; the optimiser is fused AdamW. Hidden tokens are picked by positions the CPU
+computed, and the next-day loss takes log n! from the CPU.
+
+**Why.** Fused windows take ~40 ms of Python to cut. On a thread they fought the training loop for the
+interpreter lock, and blocking copies left the GPU idle while the CPU caught up: the first fused runs
+reached 8.9% MFU against P4's 15.6% (CB-15 would have regressed). Now 16.6%.
+
+### D-056 · 2026-10-21 · P5 — Read everything, practise the quake game; a negative result kept
+
+Seed-0 tests on the `pretrain` model, CB-01's hidden-quake half (P4: 20.49 bits):
+
+| Masked windows | hidden quake, bits |
+|---|---|
+| quakes only, quake windows (the rebuilt P4) | 20.54 |
+| fused, 55% quake / 45% GNSS-centred windows | 21.68 |
+| fused, 85% / 15% | 21.51 |
+| fused, 85% / 15%, each window weighted as one example | 22.14 (stopped at step 700) |
+| **fused, 100% quake windows** | **20.17** |
+
+Reading GNSS and tides makes the model better at quakes (20.17 against 20.54 without them). Playing
+GNSS-centred games (a station hidden whole, all GNSS hidden, all quakes hidden) costs the quake half
+1.3 bits or more at this size, at every dose tried, and buys nothing measurable on CB-04 (17.52-17.67
+mm with or without them). The general models train on quake windows only; those still hide 15% of
+their GNSS days, which the model fills in from quakes, tides and the other stations. The CB-17 model
+adds region windows (15%), the game it is tested on. The GNSS-centred modes stay in the code and the
+tests, off by config (`train.windows`), to be tried again on a bigger model (P12).
+
+Also fixed on the way: the rebuilt clock counted each token's age from the middle of its window, so
+an hour before and an hour after looked the same, and in a fused window from a GNSS day a week
+earlier, which squashed every quake's age together. It counts from the window's first quake again,
+as in P4 (quakes only: 20.78 → 20.54). Each hidden token now weighs 1/(hidden tokens in its window).
+Patience 8: one run stopped at step 700 on validation noise.
+
+**Rejected.** Shipping the 55/45 model: its CB-01 (15.53) beats P4's 21.66 by six bits, and the ratchet
+would have taken it, but only because the GNSS gain hid a quake loss (D-053).
+
+### D-057 · 2026-10-21 · P5 — The trunk may nudge tomorrow's rate at most 2x
+
+The next-day log rate is the measured-rate path (D-045) plus the trunk's correction, now bounded
+smoothly: ln 2 · tanh(c / ln 2). The trunk can move the forecast at most 2x either way.
+
+**Why.** CB-03's model learns from data up to 2008, which holds one big sequence. With a free
+correction its three seeds expected 287, 1,412 and 872 M3+ quakes for 2009, where 315 happened
+(−18.14 ± 4.01 bits; P4 −15.13 ± 0.79). The ratchet called it "same" only because the spread was so
+wide. A crisis bigger than any in training is exactly where a learned correction has nothing to stand
+on and the Omori-shaped path does. Capped at 4x: seed 1 −16.61 (876 expected). At 2x: −13.78, −14.39,
+−13.98 (225, 273, 210 expected): −14.05 ± 0.31.
+
+**Rejected.** Early stopping on the forecast alone (validation kept improving to step 4,000: the
+validation blocks are quiet months, the test is a crisis). Fewer steps (blind to the cause).
+
+**Note.** The ablation (`docs/ablation.md`) was measured with the uncapped head (training v0.2). Its
+quake, GNSS and CB-04 rows don't touch the rate head; its CB-02 row compares variants that all had
+the uncapped head, so the comparison holds, but its absolute CB-02 numbers are not the scoreboard's.

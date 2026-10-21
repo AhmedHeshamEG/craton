@@ -20,6 +20,8 @@ from craton.paths import configs_dir, find_root
 
 Status = Literal["active", "planned"]
 Positional = Literal["rope4d", "sinusoidal"]
+#: Training objectives a config may weight.
+OBJECTIVES = ("masked", "gnss", "next_day")
 
 
 class _Strict(BaseModel):
@@ -36,6 +38,11 @@ class ModelShape(_Strict):
     positional: Positional = Field(
         default="rope4d", description="4D rotary encoding, or the sinusoidal fallback."
     )
+    inputs: tuple[str, ...] = Field(
+        default=("seismic_catalog",),
+        min_length=1,
+        description="Instruments the model reads, by registry name (one encoder each).",
+    )
 
     @model_validator(mode="after")
     def _heads_divide_width(self) -> ModelShape:
@@ -46,6 +53,27 @@ class ModelShape(_Strict):
     @property
     def ff_width(self) -> int:
         return self.d_ff if self.d_ff is not None else 4 * self.d_model
+
+
+class ContextPolicy(_Strict):
+    """How a window of ``context_tokens`` is filled (``craton.train.context``)."""
+
+    tides: int = Field(default=25, ge=0, description="Hourly tide samples around the anchor.")
+    tides_ahead: int = Field(
+        default=24, ge=0, description="Hours of tide after midnight in a next-day window."
+    )
+    gnss: int = Field(default=160, ge=0, description="GNSS days in a window, at most.")
+    gnss_quake_window: int = Field(
+        default=48, ge=0, description="GNSS days in a window about quakes: quakes keep the room."
+    )
+    gnss_days: int = Field(default=7, ge=0, description="Days either side of the anchor day.")
+    gnss_stations: int = Field(default=12, gt=0, description="Nearest stations, at most.")
+    gnss_km: float = Field(default=100.0, gt=0, description="Farthest station from the anchor.")
+    next_day_gnss_days: int = Field(default=5, ge=0, description="Days before midnight.")
+    big_quakes: int = Field(
+        default=32, ge=0, description="Big quakes of the past year kept in a next-day window."
+    )
+    big_magnitude: float = Field(default=3.5, description="What counts as big for that.")
 
 
 class TrainSettings(_Strict):
@@ -60,6 +88,18 @@ class TrainSettings(_Strict):
     eval_every: int = Field(default=100, gt=0, description="Steps between validation passes.")
     patience: int = Field(default=4, gt=0, description="Validations without progress, then stop.")
     mask_share: float = Field(default=0.15, gt=0, lt=1, description="Share of quakes hidden.")
+    windows: dict[str, float] = Field(
+        default_factory=lambda: {"quake": 0.55, "gnss": 0.45},
+        description="How often each kind of masked window is drawn (craton.train.data).",
+    )
+    split_windows: dict[str, dict[str, float]] = Field(
+        default_factory=dict,
+        description="A different mix for some splits: each game trained where it is tested.",
+    )
+
+    def windows_for(self, split: str) -> dict[str, float]:
+        return self.split_windows.get(split, self.windows)
+
     objectives: dict[str, float] = Field(
         default_factory=lambda: {"masked": 1.0, "next_day": 1.0},
         description="Training objectives and their weights.",
@@ -69,7 +109,7 @@ class TrainSettings(_Strict):
     def _distinct_seeds(self) -> TrainSettings:
         if len(set(self.seeds)) != len(self.seeds):
             raise ValueError("seeds must be distinct")
-        unknown = set(self.objectives) - {"masked", "next_day"}
+        unknown = set(self.objectives) - set(OBJECTIVES)
         if unknown:
             raise ValueError(f"unknown objectives: {sorted(unknown)}")
         if not any(w > 0 for w in self.objectives.values()):
@@ -85,6 +125,7 @@ class CratonConfig(_Strict):
     params_range: tuple[int, int] = Field(description="Claimed trunk size, [low, high].")
     model: ModelShape
     train: TrainSettings
+    context: ContextPolicy = Field(default_factory=ContextPolicy)
 
     @model_validator(mode="after")
     def _size_is_honest(self) -> CratonConfig:

@@ -13,6 +13,10 @@ model:
   context_tokens: 1024
   dropout: 0.1
   positional: rope4d  # 4D rotary encoding; "sinusoidal" is the fallback
+  inputs:             # one encoder each, into the same space
+    - seismic_catalog
+    - gnss_daily
+    - solid_earth_tide
 
 train:
   precision: fp16
@@ -21,11 +25,31 @@ train:
   lr: 1.0e-3
   weight_decay: 0.05
   seeds: [0, 1, 2]
-  max_steps: 2500
+  max_steps: 4000    # P4's runs were still improving at 2,500
   warmup_steps: 100
   eval_every: 100
-  patience: 3         # validation checks without progress before stopping
+  patience: 8         # validation checks without progress before stopping
   mask_share: 0.15    # as in CB-01
+  windows:            # the mix of masked windows (craton/train/data.py); D-056
+    quake: 1.0        # GNSS-centred windows cost the quakes 1.3+ bits at this size: off
+  split_windows:      # each game trained where it is tested: in-context practice for CB-17 only
+    cb17_fit:
+      quake: 0.85
+      region: 0.15
   objectives:
-    masked: 1.0
+    masked: 1.0       # hidden quakes, bits on CB-01's bins
+    gnss: 1.0         # hidden GNSS days, bits on CB-01's 1 mm bins
     next_day: 1.0
+
+# How a window of 1,024 is filled: tides, then GNSS, then quakes (craton/train/context.py).
+context:
+  tides: 25
+  tides_ahead: 24
+  gnss: 160
+  gnss_quake_window: 48
+  gnss_days: 7
+  gnss_stations: 12
+  gnss_km: 100
+  next_day_gnss_days: 5
+  big_quakes: 32
+  big_magnitude: 3.5

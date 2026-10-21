@@ -55,6 +55,35 @@
         "excluded": [],
         "before": "2009-01-01T00:00:00Z",
         "heldout_stations_excluded": true
+      },
+      "cb17_fit": {
+        "name": "cb17_fit",
+        "purpose": "training for CB-17 (a region never seen)",
+        "excluded": [
+          {
+            "name": "era_a",
+            "start": "2016-08-24T00:00:00Z",
+            "end": "2018-01-01T00:00:00Z"
+          },
+          {
+            "name": "era_b",
+            "start": "2009-01-01T00:00:00Z",
+            "end": "2010-01-01T00:00:00Z"
+          }
+        ],
+        "before": null,
+        "heldout_stations_excluded": true,
+        "region_out": {
+          "name": "alto_tiberina",
+          "lat": [
+            43.0,
+            43.6
+          ],
+          "lon": [
+            12.0,
+            12.6
+          ]
+        }
       }
     }
   },
@@ -104,6 +133,11 @@
       "id": "7f4e735423f10c53",
       "tokens": 333103,
       "left_out": 1425757
+    },
+    "cb17_fit": {
+      "id": "96c3880ee23e0549",
+      "tokens": 1204476,
+      "left_out": 554384
     }
   },
   "tasks": {
@@ -186,6 +220,28 @@
       "files": {},
       "summary": {
         "budget_gib": 6.0
+      }
+    },
+    "CB-17": {
+      "name": "In-context adaptation",
+      "metric": "bits per quake in a region never trained on, with its first 365 days in context",
+      "direction": "lower",
+      "fingerprint": "4225fb37a25e9adb4ec87fdedd96e2f2de0263acfb9b839059a7baf0d3b529f4",
+      "files": {
+        "answers.parquet": "2f1df56c8e2f81a1368a8925f41eb9a4b1cdf0be3eb9253389489177eadcb560",
+        "context.parquet": "9fba458bcec39a133eb3007679c6afa102b7cf6cb72ca8e63dbd5df03177e01e",
+        "queries.parquet": "8cf7abd509e8eff402b3171c4a5186037b838943f204653444050e6cc01f8e87"
+      },
+      "summary": {
+        "context_quakes": {
+          "0": 0,
+          "7": 8,
+          "30": 56,
+          "90": 148,
+          "365": 874
+        },
+        "test_quakes": 1307,
+        "largest_test": 4.5
       }
     }
   }

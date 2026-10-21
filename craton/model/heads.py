@@ -77,13 +77,20 @@ class MaskedHead(nn.Module):
         """(N, d) → one (N, bins) log-probability tensor per channel."""
         return [floored(p(h)) for p in self.proj]
 
-    def loss_bits(self, h: torch.Tensor, values: torch.Tensor) -> torch.Tensor:
-        """Mean bits per masked token, summed over channels. values (N, channels)."""
-        total = torch.zeros((), device=h.device)
+    def loss_bits(
+        self, h: torch.Tensor, values: torch.Tensor, weight: torch.Tensor | None = None
+    ) -> torch.Tensor:
+        """Mean bits per masked token, summed over channels. values (N, channels).
+
+        With ``weight`` (N,), a weighted mean: training gives every window the same say,
+        however many tokens it hides (``craton.train.context.Batch``)."""
+        total = torch.zeros(len(h), device=h.device)
         for c, (logp, b) in enumerate(zip(self(h), self.bins, strict=True)):
             target = b.index(values[:, c])
-            total = total + F.nll_loss(logp, target) / LN2
-        return total
+            total = total + F.nll_loss(logp, target, reduction="none") / LN2
+        if weight is None:
+            return total.mean()
+        return (total * weight).sum() / weight.sum()
 
 
 def forecast_grid() -> csep.Grid:
@@ -103,6 +110,10 @@ RATE_SCALES: tuple[tuple[int, float], ...] = (
     (1, 3.0),
     (10, 3.0),
 )
+
+
+#: How far the trunk may move tomorrow's rate from the measured-rate path: 2x either way.
+RATE_NUDGE_LOG = math.log(2.0)
 
 
 class NextDayHead(nn.Module):
@@ -135,7 +146,10 @@ class NextDayHead(nn.Module):
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """h (B, d), recent (B, scales) log rates → log rate (B,), log p(cell) (B, cells),
         log p(magnitude bin) (B, mags)."""
-        log_rate = self.rate(h).float().squeeze(-1) + self.recent(recent.float()).squeeze(-1)
+        # The trunk may move the rate at most RATE_NUDGE times either way from the straight
+        # path, smoothly: in a crisis bigger than any in training, the Omori-shaped path decides.
+        nudge = RATE_NUDGE_LOG * torch.tanh(self.rate(h).float().squeeze(-1) / RATE_NUDGE_LOG)
+        log_rate = nudge + self.recent(recent.float()).squeeze(-1)
         return log_rate.clamp(-12.0, 12.0), floored(self.where(h)), floored(self.size(h))
 
     def loss_bits(
@@ -146,6 +160,7 @@ class NextDayHead(nn.Module):
         cells: torch.Tensor,
         mags: torch.Tensor,
         day_of: torch.Tensor,
+        log_factorials: float | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Negative Poisson log-likelihood of the next days' quakes, in bits, summed.
 
@@ -153,18 +168,115 @@ class NextDayHead(nn.Module):
         The joint likelihood of a Poisson rate split over cells and bins factorises into the
         day's total (n log rate − rate) plus the log-probability of each quake's cell and bin,
         minus log n! for every (cell, bin) count, exactly as CB-02 scores it.
-        Returns (summed bits, number of quakes).
+        ``log_factorials``, the sum of log n! (a constant), can come precomputed from the CPU
+        so the GPU never has to count. Returns (summed bits, number of quakes).
         """
         log_rate, logp_cell, logp_mag = self(h, recent)
         n = counts.float()
         count_ll = n * log_rate - log_rate.exp()
         quake_ll = logp_cell[day_of, cells].sum() + logp_mag[day_of, mags].sum()
         # log n! per (day, cell, bin): a constant for training, but it makes the number exact.
-        key = (day_of * self.grid.n_cells + cells) * self.grid.n_mags + mags
-        _, per_bin = torch.unique(key, return_counts=True)
-        quake_ll = quake_ll - torch.lgamma(per_bin.float() + 1).sum()
+        if log_factorials is None:
+            key = (day_of * self.grid.n_cells + cells) * self.grid.n_mags + mags
+            _, per_bin = torch.unique(key, return_counts=True)
+            quake_ll = quake_ll - torch.lgamma(per_bin.float() + 1).sum()
+        else:
+            quake_ll = quake_ll - log_factorials
         bits = -(count_ll.sum() + quake_ll) / LN2
         return bits, n.sum()
 
 
-HEADS = ("masked", "next_day")
+#: Logistic components in a GNSS answer, per channel.
+GNSS_MIX = 4
+#: GNSS answers are in millimetres, the unit CB-01 bins them in.
+GNSS_BIN_MM = 1.0
+#: A sliver of probability on one wide logistic (1 m scale) around the baseline, so a day far
+#: from every component (a jump the model never saw coming) still costs a finite number of bits.
+GNSS_FLOOR = 1e-3
+GNSS_WIDE_MM = 1000.0
+#: No channel costs more than CB-01's cap.
+MAX_BITS = 64.0
+
+
+def log_logistic_mass(
+    lo: torch.Tensor, hi: torch.Tensor, mu: torch.Tensor, s: torch.Tensor
+) -> torch.Tensor:
+    """log P(lo ≤ x < hi) for logistic(mu, s), stable in both tails (lo < hi everywhere)."""
+    a, b = (lo - mu) / s, (hi - mu) / s
+    upper = a > 0  # both edges right of the centre: use the mirrored survival function
+    la = torch.where(upper, F.logsigmoid(-a), F.logsigmoid(b))
+    lb = torch.where(upper, F.logsigmoid(-b), F.logsigmoid(a))
+    gap = (lb - la).clamp(max=-1e-12)
+    return la + torch.log1p(-torch.exp(gap))
+
+
+class GnssHead(nn.Module):
+    """For a hidden GNSS day: a distribution over its distance from a known baseline, in mm.
+
+    The baseline is the station's long-term straight line, plus the level of its visible days
+    in the window when it has any (``craton.train.context``). The head answers, per channel
+    (east, north, up), with a mixture of ``GNSS_MIX`` logistic distributions (the output layer
+    of PixelCNN++) whose centres all share one straight ramp, ``b`` mm/yr times the years
+    since 2015. The ramp is how a station nobody has seen gets a velocity of its own: its
+    baseline is borrowed from its neighbours, and ``b`` is the model's correction.
+
+    The loss is −log2 of the probability of the true 1 mm bin, which is CB-01's score.
+    """
+
+    def __init__(self, d_model: int, k: int = GNSS_MIX) -> None:
+        super().__init__()
+        self.k = k
+        self.proj = nn.Linear(d_model, 3 * (3 * k + 1))
+
+    def _start_small(self) -> None:
+        """Start every component near the baseline, a few millimetres wide."""
+        with torch.no_grad():
+            self.proj.weight.mul_(0.1)
+            self.proj.bias.zero_()
+
+    def forward(
+        self, h: torch.Tensor, years: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """h (N, d), years (N,) since 2015 → log weights, centres (mm), scales (mm), each
+        (N, 3, K)."""
+        k = self.k
+        p = self.proj(h).float().view(-1, 3, 3 * k + 1)
+        logw = F.log_softmax(p[..., :k], dim=-1)
+        ramp = 10.0 * p[..., 3 * k : 3 * k + 1] * years.float()[:, None, None]
+        mu = 10.0 * p[..., k : 2 * k] + ramp
+        s = torch.exp(p[..., 2 * k : 3 * k] + math.log(3.0)).clamp(0.05, 1.0e4)
+        return logw, mu, s
+
+    def bin_bits(
+        self, h: torch.Tensor, years: torch.Tensor, lo: torch.Tensor, hi: torch.Tensor
+    ) -> torch.Tensor:
+        """Bits per channel (N, 3) for the true bins [lo, hi) (mm from the baseline)."""
+        logw, mu, s = self(h, years)
+        mix = torch.logsumexp(logw + log_logistic_mass(lo[..., None], hi[..., None], mu, s), -1)
+        wide = log_logistic_mass(lo, hi, torch.zeros_like(lo), torch.full_like(lo, GNSS_WIDE_MM))
+        logp = torch.logaddexp(mix + math.log1p(-GNSS_FLOOR), wide + math.log(GNSS_FLOOR))
+        return torch.clamp(-logp / LN2, max=MAX_BITS)
+
+    def loss_bits(
+        self,
+        h: torch.Tensor,
+        years: torch.Tensor,
+        lo: torch.Tensor,
+        hi: torch.Tensor,
+        weight: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Mean bits per hidden GNSS day, summed over the three channels (weighted mean with
+        ``weight``, as for the masked head)."""
+        bits = self.bin_bits(h, years, lo, hi).sum(-1)
+        if weight is None:
+            return bits.mean()
+        return (bits * weight).sum() / weight.sum()
+
+    def mean_mm(self, h: torch.Tensor, years: torch.Tensor) -> torch.Tensor:
+        """(N, 3) the mixture's mean, mm from the baseline: the point answer CB-04 asks for."""
+        logw, mu, _ = self(h, years)
+        out: torch.Tensor = (logw.exp() * mu).sum(-1)
+        return out
+
+
+HEADS = ("masked", "gnss", "next_day")

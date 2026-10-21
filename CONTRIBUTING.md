@@ -127,10 +127,20 @@ The model reads an instrument through an encoder registered under the instrument
 `craton/model/encoders.py`: a module that maps that instrument's channels to a `d_model` vector.
 
 ```python
-from craton.model.encoders import EncoderSpec, register_encoder
+from craton.model.encoders import EncoderSpec, ScalarEncoder, register_encoder
 
-register_encoder(EncoderSpec("gnss_daily", ("east", "north", "up"), MyGnssEncoder))
+register_encoder(EncoderSpec("air_pressure", ("hpa",), lambda d: ScalarEncoder(d, 1)))
 ```
 
-Names are unique and never redefined. Time and place enter through the shared 4D positional encoding,
-so an encoder only has to understand its own measurements.
+Names are unique and never redefined, and an instrument's id is its place in the registry, so it never
+moves. A token carries up to 12 numbers (`VALUE_WIDTH`); the encoder reads the first
+`len(channels)`, already scaled to about ±1, plus a per-channel "hidden" flag. Time and place enter
+through the shared 4D positional encoding, so an encoder only has to understand its own measurements.
+
+Then three small steps, none of them in the trunk:
+
+1. List it in a config's `model.inputs` (`configs/mini.yaml`).
+2. Teach the context builder (`craton/train/context.py`) where its tokens go in a window and how they
+   are written (`write`); the budget is in the config's `context` section.
+3. Run `uv run craton bench ablate` with a variant that leaves it out: the table in
+   [`docs/ablation.md`](docs/ablation.md) says what it is worth. Zero, measured, is an answer too.

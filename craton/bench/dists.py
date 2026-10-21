@@ -60,3 +60,47 @@ class Histogram:
 
     def mass(self, lo: FloatArray, hi: FloatArray) -> FloatArray:
         return np.maximum(self._cdf(hi) - self._cdf(lo), 0.0)
+
+
+def _log_sigmoid(x: FloatArray) -> FloatArray:
+    return np.asarray(-np.logaddexp(0.0, -x), dtype=np.float64)
+
+
+def log_logistic_mass(lo: FloatArray, hi: FloatArray, mu: FloatArray, s: FloatArray) -> FloatArray:
+    """log P(lo ≤ x < hi) for logistic(mu, s), stable in both tails."""
+    a, b = (lo - mu) / s, (hi - mu) / s
+    upper = a > 0
+    la = np.where(upper, _log_sigmoid(-a), _log_sigmoid(b))
+    lb = np.where(upper, _log_sigmoid(-b), _log_sigmoid(a))
+    gap = np.minimum(lb - la, -1e-12)
+    return np.asarray(la + np.log1p(-np.exp(gap)), dtype=np.float64)
+
+
+@dataclass(frozen=True)
+class LogisticMixture:
+    """A mixture of logistic distributions around a per-query baseline, plus a floor.
+
+    ``base`` (queries,) is in the channel's own unit (metres for GNSS); the mixture lives in
+    ``unit`` of that (1e-3: millimetres) relative to it. ``logw``, ``mu`` and ``s`` are
+    (queries, K). ``floor`` of the probability sits on one wide logistic of scale ``wide``
+    centred on the baseline. The same arithmetic as the GNSS head, so the training loss and
+    the benchmark agree to the bit.
+    """
+
+    base: FloatArray
+    logw: FloatArray
+    mu: FloatArray
+    s: FloatArray
+    unit: float = 1e-3
+    floor: float = 1e-3
+    wide: float = 1000.0
+
+    def mass(self, lo: FloatArray, hi: FloatArray) -> FloatArray:
+        # Subtract the baseline first: a GNSS position is millions of millimetres.
+        lo_u = (lo - self.base) / self.unit
+        hi_u = (hi - self.base) / self.unit
+        comp = log_logistic_mass(lo_u[:, None], hi_u[:, None], self.mu, self.s)
+        mix = np.logaddexp.reduce(self.logw + comp, axis=1)
+        wide = log_logistic_mass(lo_u, hi_u, np.zeros_like(lo_u), np.full_like(lo_u, self.wide))
+        logp = np.logaddexp(mix + np.log1p(-self.floor), wide + np.log(self.floor))
+        return np.asarray(np.exp(logp), dtype=np.float64)

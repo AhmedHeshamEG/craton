@@ -5,6 +5,8 @@ Three things are held out of Craton's training data, forever:
 * **Era A**, the Amatrice-Visso-Norcia-Campotosto sequence: 2016-08-24 → 2018-01-01.
 * **Era B**, L'Aquila: the whole of 2009.
 * **Held-out GNSS stations**: one station in ten, chosen once by a hash, never trained on.
+* **The CB-17 region** (Alto Tiberina, 43.0-43.6 N, 12.0-12.6 E), but only from the split that
+  CB-17's model learns on: a place that model has never seen, at any time.
 
 A **split** is a set of training shards cut from a data snapshot: token files with every
 held-out token removed. Each split is written to disk, every file named by its hash, with a
@@ -14,6 +16,7 @@ token got in.
     pretrain   everything except eras A and B and the held-out stations      (CB-01, CB-04, P4+)
     cb02_fit   everything before 2016-08-24, except the held-out stations    (CB-02 fits)
     cb03_fit   everything before 2009-01-01, except the held-out stations    (CB-03 fits)
+    cb17_fit   pretrain without any token inside the CB-17 region               (CB-17)
 
 The forecast tasks fit only on the past of their test window (pseudo-prospective). Their
 forecasts may still *read* quakes inside the window as they happen, day by day: that is the
@@ -78,20 +81,65 @@ MAX_JUMP_M = 1.0
 
 
 @dataclass(frozen=True)
+class Box:
+    """A latitude-longitude box, edges included at the south and west."""
+
+    name: str
+    lat0: float
+    lat1: float
+    lon0: float
+    lon1: float
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "lat": [self.lat0, self.lat1],
+            "lon": [self.lon0, self.lon1],
+        }
+
+    @staticmethod
+    def of(d: dict[str, Any]) -> Box:
+        return Box(d["name"], d["lat"][0], d["lat"][1], d["lon"][0], d["lon"][1])
+
+    def contains(self, lat: Any, lon: Any) -> Any:
+        return (lat >= self.lat0) & (lat < self.lat1) & (lon >= self.lon0) & (lon < self.lon1)
+
+
+#: CB-17's new region: the Alto Tiberina fault, a quiet-looking valley that never stops
+#: crackling (thousands of small quakes a year), and the 2023 Umbertide M4.5 inside it.
+CB17_REGION = Box("alto_tiberina", 43.0, 43.6, 12.0, 12.6)
+
+
+@dataclass(frozen=True)
 class SplitSpec:
     name: str
     purpose: str
     excluded: tuple[Window, ...]  # tokens inside these windows are left out
     before: str | None = None  # if set, only tokens strictly before this moment
+    region_out: Box | None = None  # if set, no token inside this box, at any time
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        out: dict[str, Any] = {
             "name": self.name,
             "purpose": self.purpose,
             "excluded": [w.as_dict() for w in self.excluded],
             "before": self.before,
             "heldout_stations_excluded": True,
         }
+        if self.region_out is not None:  # only then, so older splits keep their definition
+            out["region_out"] = self.region_out.as_dict()
+        return out
+
+    @staticmethod
+    def of(d: dict[str, Any]) -> SplitSpec:
+        box = d.get("region_out")
+        return SplitSpec(
+            d["name"],
+            d["purpose"],
+            tuple(Window(**w) for w in d["excluded"]),
+            d["before"],
+            Box.of(box) if box else None,
+        )
 
 
 SPLITS: dict[str, SplitSpec] = {
@@ -100,6 +148,12 @@ SPLITS: dict[str, SplitSpec] = {
         SplitSpec("pretrain", "general training; CB-01 and CB-04 baselines", ERAS),
         SplitSpec("cb02_fit", "fitting for CB-02 (pseudo-prospective)", (), ERA_A.start),
         SplitSpec("cb03_fit", "fitting for CB-03 (pseudo-prospective)", (), ERA_B.start),
+        SplitSpec(
+            "cb17_fit",
+            "training for CB-17 (a region never seen)",
+            ERAS,
+            region_out=CB17_REGION,
+        ),
     )
 }
 
@@ -207,6 +261,14 @@ def keep_mask(table: pa.Table, spec: SplitSpec, heldout: Iterable[str]) -> pa.Ar
         keep = pc.and_(keep, pc.invert(inside))
     if spec.before is not None:
         keep = pc.and_(keep, pc.less(t, to_seconds(spec.before)))
+    if spec.region_out is not None:
+        b = spec.region_out
+        lat, lon = table.column("lat"), table.column("lon")
+        inside = pc.and_(
+            pc.and_(pc.greater_equal(lat, b.lat0), pc.less(lat, b.lat1)),
+            pc.and_(pc.greater_equal(lon, b.lon0), pc.less(lon, b.lon1)),
+        )
+        keep = pc.and_(keep, pc.invert(inside))
     return keep
 
 
@@ -290,12 +352,7 @@ def leak_problems(
     ``forbidden_hashes`` (benchmark answers).
     """
     manifest = json.loads((split_dir / "manifest.json").read_text(encoding="utf-8"))
-    spec = SplitSpec(
-        manifest["split"]["name"],
-        manifest["split"]["purpose"],
-        tuple(Window(**w) for w in manifest["split"]["excluded"]),
-        manifest["split"]["before"],
-    )
+    spec = SplitSpec.of(manifest["split"])
     problems: list[str] = []
     if manifest_id(manifest) != manifest["id"]:
         problems.append(f"{spec.name}: manifest id does not match its content")
@@ -311,7 +368,7 @@ def leak_problems(
         if fp:
             problems.append(f"{spec.name}: {fp}")
             continue
-        table = pq.read_table(path, columns=["time", "qualifiers", "token_hash"])
+        table = pq.read_table(path, columns=["time", "lat", "lon", "qualifiers", "token_hash"])
         bad = pc.sum(pc.invert(keep_mask(table, spec, heldout))).as_py() or 0
         if bad:
             problems.append(f"{spec.name}: {bad} held-out token(s) in {shard['path']}")
@@ -320,6 +377,16 @@ def leak_problems(
             if hits:
                 problems.append(f"{spec.name}: {hits} benchmark answer(s) in {shard['path']}")
     return problems
+
+
+def grown_from(frozen: dict[str, Any], current: dict[str, Any]) -> bool:
+    """Whether ``current`` is ``frozen`` plus new splits: every frozen split unchanged, every
+    other part of the definition equal. Splits arrive phase by phase; none ever changes."""
+    rest = {k: v for k, v in current.items() if k != "splits"}
+    if rest != {k: v for k, v in frozen.items() if k != "splits"}:
+        return False
+    old, new = frozen.get("splits", {}), current.get("splits", {})
+    return all(new.get(name) == spec for name, spec in old.items())
 
 
 def definition_problems(frozen: dict[str, Any]) -> list[str]:

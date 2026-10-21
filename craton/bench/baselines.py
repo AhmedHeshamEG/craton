@@ -1,6 +1,8 @@
 """The simple methods every Craton model has to beat, registered by name.
 
     climatology   CB-01   each masked value drawn from how that instrument usually reads
+                  CB-17   the same, from a split that never saw the region: context ignored
+    context_kde   CB-17   the region's own first N days, smoothed: what counting gets you
     poisson       CB-02/3 quakes at their long-run rate, in their long-run places
     etas          CB-02/3 the standard aftershock model (``craton.bench.etas``)
     idw_trend     CB-04   a hidden station rebuilt from its neighbours: their trend + their day
@@ -27,6 +29,7 @@ from craton.bench.tasks import (
     GapQueries,
     GriddedForecast,
     MaskedQueries,
+    RegionQueries,
 )
 from craton.spec.timeaxis import to_seconds
 
@@ -53,6 +56,25 @@ def _smoothed_hist(values: FloatArray, edges: FloatArray) -> FloatArray:
     return np.asarray(p / p.sum(), dtype=np.float64)
 
 
+LAT_EDGES = _edges(41, 44, 0.01)
+LON_EDGES = _edges(11.5, 15, 0.01)
+DEPTH_EDGES = _edges(-5, 700, 1.0)
+MAG_EDGES = _edges(-1.0, 8.1, 0.1, 0.05)
+
+
+def quake_climatology(ev: Events, types: list[str]) -> dict[str, ChannelDist]:
+    """Histograms of latitude, longitude, depth and (per magnitude type) magnitude."""
+    all_m = _smoothed_hist(ev.mag, MAG_EDGES)
+    by_type = {t: _smoothed_hist(ev.mag[ev.mag_type == t], MAG_EDGES) for t in sorted(set(types))}
+    m_probs = np.stack([by_type.get(t, all_m) for t in types]) if types else all_m
+    return {
+        "lat": Histogram(LAT_EDGES, _smoothed_hist(ev.lat, LAT_EDGES)),
+        "lon": Histogram(LON_EDGES, _smoothed_hist(ev.lon, LON_EDGES)),
+        "depth_km": Histogram(DEPTH_EDGES, _smoothed_hist(ev.depth_km, DEPTH_EDGES)),
+        "magnitude": Histogram(MAG_EDGES, m_probs),
+    }
+
+
 @dataclass
 class Climatology:
     """Per-token climatology: every masked value is drawn from that instrument's history.
@@ -72,17 +94,7 @@ class Climatology:
         ev = ctx.train_events("pretrain")
         idx = queries.where("seismic_catalog")
         types = [queries.qualifiers[i]["magnitude_type"] for i in idx]
-        m_edges = _edges(-1.0, 8.1, 0.1, 0.05)
-        all_m = _smoothed_hist(ev.mag, m_edges)
-        by_type = {t: _smoothed_hist(ev.mag[ev.mag_type == t], m_edges) for t in sorted(set(types))}
-        m_probs = np.stack([by_type.get(t, all_m) for t in types]) if types else all_m
-        lat_e, lon_e, dep_e = _edges(41, 44, 0.01), _edges(11.5, 15, 0.01), _edges(-5, 700, 1.0)
-        out["seismic_catalog"] = {
-            "lat": Histogram(lat_e, _smoothed_hist(ev.lat, lat_e)),
-            "lon": Histogram(lon_e, _smoothed_hist(ev.lon, lon_e)),
-            "depth_km": Histogram(dep_e, _smoothed_hist(ev.depth_km, dep_e)),
-            "magnitude": Histogram(m_edges, m_probs),
-        }
+        out["seismic_catalog"] = quake_climatology(ev, types)
 
         g = ctx.train_gnss("pretrain")
         gi = queries.where("gnss_daily")
@@ -96,6 +108,67 @@ class Climatology:
         out["gnss_daily"] = {
             ch: Gaussian(mean[:, i], std[:, i]) for i, ch in enumerate(("east", "north", "up"))
         }
+        return out
+
+    def predict_in_context(
+        self, queries: RegionQueries, days: int, ctx: BenchContext, seed: int
+    ) -> dict[str, ChannelDist]:
+        """The whole region's climatology from a split that never saw the CB-17 region; the
+        context is ignored, so every N gets the same answer."""
+        return quake_climatology(ctx.train_events("cb17_fit"), queries.magnitude_type)
+
+
+def _kernel_hist(x: FloatArray, edges: FloatArray, sigma: float) -> FloatArray:
+    """Probability per bin of a Gaussian kernel density over ``x`` (unnormalised mass kept
+    inside the edges)."""
+    centres = 0.5 * (edges[:-1] + edges[1:])
+    width = edges[1] - edges[0]
+    out = np.zeros(len(centres))
+    for chunk in np.array_split(x, max(1, len(x) // 512)):
+        z = (centres[None, :] - chunk[:, None]) / sigma
+        out += (np.exp(-0.5 * z**2) * width / (sigma * np.sqrt(2 * np.pi))).sum(0)
+    return out
+
+
+@dataclass
+class ContextKde:
+    """CB-17's counting baseline: a kernel density of the region's first N days of quakes,
+    blended with the climatology of a split that never saw the region.
+
+    Each channel is (n · kde + prior · climatology) / (n + prior), with n the number of
+    context quakes: an empty context is pure climatology, a full year is mostly the region's
+    own quakes. Kernels: 0.02° in latitude and longitude, 2 km in depth, 0.2 in magnitude.
+    It knows nothing about earthquakes; it is what remembering the context gets you.
+    """
+
+    name: str = "context_kde"
+    kind: str = "baseline"
+    prior: float = 20.0
+
+    def predict_in_context(
+        self, queries: RegionQueries, days: int, ctx: BenchContext, seed: int
+    ) -> dict[str, ChannelDist]:
+        clim = quake_climatology(ctx.train_events("cb17_fit"), queries.magnitude_type)
+        _, values, _ = queries.context(days)
+        n = len(values)
+        out: dict[str, ChannelDist] = {}
+        for c, (ch, edges, sigma) in enumerate(
+            (
+                ("lat", LAT_EDGES, 0.02),
+                ("lon", LON_EDGES, 0.02),
+                ("depth_km", DEPTH_EDGES, 2.0),
+                ("magnitude", MAG_EDGES, 0.2),
+            )
+        ):
+            base = clim[ch]
+            assert isinstance(base, Histogram)
+            if not n:
+                out[ch] = base
+                continue
+            kde = _kernel_hist(values[:, c], edges, sigma)
+            kde = kde / kde.sum()
+            probs = (n * kde + self.prior * base.probs) / (n + self.prior)
+            out[ch] = Histogram(edges, probs)
         return out
 
 
@@ -262,5 +335,5 @@ def register_method(method: Any) -> Any:
     return method
 
 
-for _m in (Climatology(), PoissonClimatology(), Etas(), IdwTrend()):
+for _m in (Climatology(), ContextKde(), PoissonClimatology(), Etas(), IdwTrend()):
     register_method(_m)

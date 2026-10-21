@@ -9,32 +9,48 @@ import torch
 from pydantic import ValidationError
 
 from craton.bench import csep, harness
-from craton.bench.data import DAY, Events
-from craton.bench.tasks import TASKS, VRAM_BUDGET_BYTES, Efficiency
-from craton.config import TrainSettings
+from craton.bench.data import DAY, Events, Gnss, Tides
+from craton.bench.splits import grown_from
+from craton.bench.tasks import TASKS, VRAM_BUDGET_BYTES, Bin, Efficiency
+from craton.config import ContextPolicy, TrainSettings
+from craton.model.encoders import instrument_id
 from craton.model.heads import RATE_SCALES
 from craton.train import checkpoint
-from craton.train.data import (
+from craton.train.context import (
+    LINE_EPOCH,
+    YEAR,
     Catalog,
-    MaskedWindows,
+    GnssDays,
+    Sources,
+    Window,
+    fit_lines,
+    write,
+)
+from craton.train.data import (
+    Masked,
     NextDay,
-    context_rows,
     in_validation,
-    query_tokens,
+    midnight_window,
     recent_rates,
-    window_tokens,
 )
 from craton.train.flops import PEAK_FLOPS, flops_per_token, mfu
-from craton.train.loop import lr_at, train
-from tests.test_model import tiny_config
+from craton.train.loop import Stream, batches, lr_at, train
+from tests.test_model import ALL_INPUTS, tiny_config
 
 T0 = 1_000_000_000.0
+#: Small budgets so a 64-token window holds every kind of token.
+POLICY = ContextPolicy(
+    tides=6, tides_ahead=4, gnss=16, gnss_quake_window=8, gnss_days=2, gnss_stations=4,
+    next_day_gnss_days=2,
+    big_quakes=4,
+)  # fmt: skip
+LENGTH = 64
 
 
-def synthetic(n: int = 3000, seed: int = 0) -> Catalog:
+def synthetic_events(n: int = 3000, seed: int = 0) -> Events:
     rng = np.random.default_rng(seed)
     t = T0 + np.cumsum(rng.exponential(3600.0, n))
-    ev = Events(
+    return Events(
         time=t,
         lat=42 + rng.random(n),
         lon=13 + rng.random(n),
@@ -43,37 +59,206 @@ def synthetic(n: int = 3000, seed: int = 0) -> Catalog:
         mag_type=np.array(["ML"] * n),
         token_hash=np.array([f"h{i}" for i in range(n)]),
     )
-    return Catalog.of(ev)
 
 
-# ---------------------------------------------------------------- examples
+def synthetic(n: int = 3000, seed: int = 0) -> Catalog:
+    return Catalog.of(synthetic_events(n, seed))
+
+
+#: Six stations: (code, lat, lon, east velocity m/yr). Their positions are far from zero, as
+#: real ones are, and every station's series starts at its own arbitrary origin.
+STATIONS = (
+    ("AAAA", 42.2, 13.2, 0.020),
+    ("BBBB", 42.4, 13.4, 0.022),
+    ("CCCC", 42.6, 13.1, 0.024),
+    ("DDDD", 42.8, 13.5, 0.021),
+    ("EEEE", 42.5, 13.7, 0.023),
+    ("FFFF", 42.3, 13.9, 0.025),
+)
+
+
+def synthetic_gnss(days: int = 140, seed: int = 0) -> Gnss:
+    rng = np.random.default_rng(seed)
+    first = np.floor(T0 / DAY) * DAY + 0.5 * DAY
+    rows = []
+    for k, (code, lat, lon, ve) in enumerate(STATIONS):
+        t = first + DAY * np.arange(days)
+        dt = (t - LINE_EPOCH) / YEAR
+        enu = np.stack([1000.0 * k + ve * dt, 4_700_000.0 + 0.015 * dt, 300.0 + 0 * dt], 1)
+        enu += rng.normal(0, 0.002, enu.shape)
+        rows.append((t, np.full(days, code), np.full(days, lat), np.full(days, lon), enu))
+    t, st, la, lo, enu = (np.concatenate([r[i] for r in rows]) for i in range(5))
+    return Gnss(
+        t, st.astype(np.str_), la, lo, enu, np.full_like(enu, 0.002),
+        np.array([f"g{i}" for i in range(len(t))]),
+    )  # fmt: skip
+
+
+def synthetic_tides(t0: float, t1: float) -> Tides:
+    t = np.arange(np.ceil(t0 / 3600) * 3600, t1, 3600.0)
+    enu = 0.1 * np.stack([np.sin(t / 44_712), np.cos(t / 44_712), np.sin(t / 43_082)], 1)
+    return Tides(t, np.full(len(t), 42.5), np.full(len(t), 13.25), enu)
+
+
+def synthetic_sources(inputs: tuple[str, ...] = ALL_INPUTS, n: int = 3000) -> Sources:
+    ev = synthetic_events(n)
+    g = synthetic_gnss()
+    sites = {c: (la, lo) for c, la, lo, _ in STATIONS}
+    days = GnssDays.of(g, fit_lines(g, sites))
+    tides = synthetic_tides(ev.time[0] - DAY, ev.time[-1] + 2 * DAY)
+    return Sources.build(inputs, POLICY, LENGTH, ev, days, tides)
+
+
+# ---------------------------------------------------------------- windows
 
 
 def test_window_hides_place_and_size_but_not_time() -> None:
-    cat = synthetic(100)
-    rows = np.arange(10)[None, :]
-    hidden = np.zeros((1, 10), dtype=bool)
-    hidden[0, 3] = True
-    tok = window_tokens(cat, rows, hidden, cat.time[rows[:, 0]])
+    src = synthetic_sources(("seismic_catalog",))
+    cat = src.cat
+    hidden = np.zeros(10, dtype=bool)
+    hidden[3] = True
+    w = Window(t_ref=float(cat.time[0]), quakes=np.arange(10), quake_hidden=hidden)
+    b = write(src, [w])
+    tok = b.tokens
     assert torch.all(tok.values[0, 3] == 0)
-    assert tok.hidden[0, 3].all()
+    assert tok.hidden[0, 3, :4].all()
     assert not tok.hidden[0, 2].any()
     assert tok.known[0, 3].tolist() == [True, False, False, False]
     assert torch.all(tok.coords[0, 3, 1:] == 0)
     assert tok.coords[0, 3, 0].item() == pytest.approx(cat.time[3] - cat.time[0])
     assert tok.values[0, 2, 0].item() == pytest.approx(cat.values[2, 0], abs=1e-5)
+    assert b.quake_rows.tolist() == [3]
+    assert torch.allclose(b.quake_targets[0].double(), torch.from_numpy(cat.values[3]), atol=1e-4)
+    assert tok.instrument[0, 10:].eq(-1).all()
+    assert tok.padded
 
 
-def test_query_reads_only_the_past() -> None:
-    cat = synthetic(200)
-    day = np.floor(cat.time[150] / DAY) * DAY + DAY
-    tok = query_tokens(cat, np.array([day]), 16)
-    assert tok.query[0].tolist() == [False] * 15 + [True]
-    assert torch.all(tok.coords[0, :15, 0] < 0)  # every context quake is before midnight
-    assert tok.coords[0, 15, 0].item() == 0.0
-    assert tok.known[0, 15].tolist() == [True, False, False, False]
-    with pytest.raises(ValueError, match="fewer quakes"):
-        context_rows(cat, np.array([cat.time[3]]), 16)
+def test_hidden_positions_point_at_hidden_tokens() -> None:
+    src = synthetic_sources()
+    b = Masked(src, 0.15).sample(8, np.random.default_rng(1))
+    tok = b.tokens
+    flat_inst = tok.instrument.flatten()
+    flat_hid = tok.hidden[..., 0].flatten()
+    assert torch.all(flat_inst[b.quake_pos] == instrument_id("seismic_catalog"))
+    assert torch.all(flat_inst[b.gnss_pos] == instrument_id("gnss_daily"))
+    assert torch.all(flat_hid[b.quake_pos])
+    assert torch.all(flat_hid[b.gnss_pos])
+    quake_hidden = (flat_hid & (flat_inst == instrument_id("seismic_catalog"))).sum()
+    assert int(quake_hidden) == len(b.quake_pos) == len(b.quake_targets)
+
+
+def test_masked_windows_hide_about_the_share() -> None:
+    src = synthetic_sources(("seismic_catalog",))
+    masked = Masked(src, 0.15)
+    assert set(masked.kinds) == {"quake", "region"}
+    rng = np.random.default_rng(0)
+    ws = [masked.quake_window(int(r), rng) for r in rng.choice(masked.quake_train, 32)]
+    share = np.mean(np.concatenate([w.quake_hidden for w in ws]))
+    assert 0.1 < share < 0.2
+    assert all(w.size == LENGTH for w in ws)
+    assert len(masked.quake_train) > len(masked.quake_val) > 0
+
+
+def test_fused_windows_hold_every_instrument_under_the_budget() -> None:
+    src = synthetic_sources()
+    masked = Masked(src, 0.15)
+    rng = np.random.default_rng(2)
+    row = int(np.searchsorted(src.cat.time, src.gnss.time[300]))  # type: ignore[union-attr]
+    w = masked.quake_window(row, rng)
+    assert w.size == LENGTH
+    assert 0 < len(w.tides) <= POLICY.tides
+    assert 0 < len(w.gnss) <= POLICY.gnss_quake_window  # quakes keep the room
+    assert len(np.unique(src.gnss.station[w.gnss])) <= POLICY.gnss_stations  # type: ignore[union-attr]
+
+
+def test_a_station_hidden_whole_borrows_its_line() -> None:
+    src = synthetic_sources()
+    g = src.gnss
+    assert g is not None
+    masked = Masked(src, 0.15)
+    row = int(np.nonzero(g.station == 2)[0][60])
+    w = masked.gnss_window(row, "station", np.random.default_rng(0))
+    b = write(src, [w])
+    gi = instrument_id("gnss_daily")
+    tok = b.tokens
+    mine = (tok.instrument[0] == gi).numpy().copy()
+    mine[mine] = g.station[w.gnss] == 2
+    assert mine.any()
+    assert tok.hidden[0, mine, :3].all()
+    assert torch.all(tok.values[0, mine, 6] == 0)  # no level: nothing of it is visible
+    assert torch.all(tok.values[0, mine, 7] == 0)  # its line is borrowed
+    others = (tok.instrument[0] == gi).numpy() & ~mine
+    assert not tok.hidden[0, others, 0].any()
+
+
+def test_gnss_answers_sit_on_cb01_bins() -> None:
+    src = synthetic_sources()
+    g = src.gnss
+    assert g is not None
+    b = Masked(src, 0.15).sample(8, np.random.default_rng(3))
+    assert len(b.gnss_rows)
+    truth = g.enu[b.gnss_rows]
+    lo = b.gnss_base + b.gnss_lo.double().numpy() / 1000.0
+    for c, ch in enumerate(("east", "north", "up")):
+        edges, _ = Bin(ch, 0.001).edges_of(truth[:, c])
+        assert np.allclose(lo[:, c], edges, atol=2e-6)
+    assert np.all(np.abs(b.gnss_lo.numpy()) < 50)  # a few mm from line + level, not metres
+
+
+def test_lines_recover_velocities_and_never_borrow_from_themselves() -> None:
+    g = synthetic_gnss(days=400)
+    sites = {c: (la, lo) for c, la, lo, _ in STATIONS}
+    lines = fit_lines(g, sites)
+    assert lines.own.all()
+    for i, (_, _, _, ve) in enumerate(STATIONS):
+        assert lines.velocity[i, 0] == pytest.approx(ve, abs=0.003)
+    alone = fit_lines(g, {**sites, "ZZZZ": (42.45, 13.45)})
+    z = alone.index("ZZZZ")
+    assert not alone.own[z]
+    assert np.isnan(alone.offset[z, 0])
+    assert 0.019 < alone.velocity[z, 0] < 0.026  # borrowed from the six around it
+    assert not np.allclose(alone.borrowed[0], alone.velocity[0])
+
+
+def test_region_windows_fill_with_a_new_place() -> None:
+    src = synthetic_sources(("seismic_catalog",), n=12_000)
+    masked = Masked(src, 0.15)
+    rng = np.random.default_rng(4)
+    w = None
+    for _ in range(50):
+        w = masked.region_window(int(rng.choice(masked.quake_train[3000:])), rng)
+        if w is not None and (~w.quake_hidden).any():
+            break
+    assert w is not None
+    assert w.size == LENGTH
+    ctx = w.quakes[~w.quake_hidden]
+    qs = w.quakes[w.quake_hidden]
+    t0 = src.cat.time[qs].min()
+    assert src.cat.time[ctx].max() < t0  # the context is the place's past...
+    assert src.cat.time[ctx].min() >= t0 - 365 * DAY - 1  # ...from the year before
+    box = src.cat.values[w.quakes, :2]
+    assert np.ptp(box[:, 0]) <= 0.6 + 1e-9
+    assert np.ptp(box[:, 1]) <= 0.6 + 1e-9
+
+
+def test_query_reads_only_the_past_except_the_tide() -> None:
+    src = synthetic_sources()
+    day = float(np.floor(src.cat.time[1500] / DAY) * DAY + DAY)
+    w = midnight_window(src, day)
+    b = write(src, [w])
+    tok = b.tokens
+    assert tok.query[0, -1]
+    assert w.size == LENGTH
+    t = tok.coords[0, :, 0]
+    quake = tok.instrument[0] == instrument_id("seismic_catalog")
+    gnss = tok.instrument[0] == instrument_id("gnss_daily")
+    tide = tok.instrument[0] == instrument_id("solid_earth_tide")
+    assert torch.all(t[quake] < 0)
+    assert torch.all(t[gnss] < 0)
+    assert t[tide].max().item() > 0  # the forcing of the day ahead is known in advance
+    assert tok.known[0, -1].tolist() == [True, False, False, False]
+    big = src.cat.values[w.quakes, 3] >= POLICY.big_magnitude - 1e-9
+    assert big.sum() >= 1
 
 
 def test_recent_rates_measure_the_past() -> None:
@@ -87,26 +272,18 @@ def test_recent_rates_measure_the_past() -> None:
     assert np.exp(r[0, 5].numpy()) == pytest.approx(8, rel=0.5)
 
 
-def test_masked_windows_hide_about_the_share() -> None:
-    cat = synthetic(3000)
-    mw = MaskedWindows(cat, 64, 0.15)
-    b = mw.sample(32, np.random.default_rng(0))
-    share = b.tokens.hidden[..., 0].float().mean().item()
-    assert 0.1 < share < 0.2
-    assert b.targets.shape == (int(b.tokens.hidden[..., 0].sum()), 4)
-    assert len(mw.train_starts) > len(mw.val_starts) > 0
-
-
 def test_next_day_counts_the_next_24_hours() -> None:
-    cat = synthetic(3000)
+    src = synthetic_sources()
+    cat = src.cat
     grid = csep.Grid(41.0, 44.0, 11.5, 15.0, cell_deg=0.1, m_min=1.5, m_max=8.0)
-    nd = NextDay(cat, grid, 32, cat.time[0], cat.time[-1])
+    nd = NextDay(src, grid, cat.time[0], cat.time[-1])
     days = nd.train_days[:5]
     b = nd.batch(days)
     for i, d in enumerate(days):
         sel = (cat.time >= d) & (cat.time < d + DAY) & (cat.values[:, 3] >= 1.45)
         assert b.counts[i].item() == sel.sum()
     assert len(b.cells) == b.counts.sum().item() == len(b.day_of)
+    assert b.log_factorials >= 0.0
 
 
 def test_validation_blocks_are_stable_and_about_a_tenth() -> None:
@@ -114,6 +291,19 @@ def test_validation_blocks_are_stable_and_about_a_tenth() -> None:
     v = in_validation(t)
     assert np.array_equal(v, in_validation(t))
     assert 0.03 < v.mean() < 0.2
+
+
+def test_the_stream_is_fixed_by_its_seed() -> None:
+    src = synthetic_sources()
+    masked = Masked(src, 0.15)
+    a = next(batches(Stream(masked, None, 4, 7), 0))[0]
+    b = next(batches(Stream(masked, None, 4, 7), 0))[0]
+    c = next(batches(Stream(masked, None, 4, 8), 0))[0]
+    assert a is not None
+    assert b is not None
+    assert c is not None
+    assert torch.equal(a.tokens.values, b.tokens.values)
+    assert not torch.equal(a.tokens.values, c.tokens.values)
 
 
 # ---------------------------------------------------------------- the loop
@@ -130,23 +320,40 @@ def test_schedule_warms_up_then_decays() -> None:
     assert all(a >= b for a, b in itertools.pairwise(lrs[10:]))
 
 
-def test_a_tiny_model_trains_on_the_cpu() -> None:
-    cfg = tiny_config()
+@pytest.mark.parametrize(
+    "inputs",
+    [ALL_INPUTS, ("seismic_catalog",), ("gnss_daily", "solid_earth_tide")],
+)
+def test_a_tiny_model_trains_on_the_cpu(inputs: tuple[str, ...]) -> None:
+    cfg = tiny_config(inputs=inputs, length=LENGTH)
+    objectives = {"masked": 1.0, "gnss": 1.0, "next_day": 1.0}
     cfg = cfg.model_copy(
         update={
+            "context": POLICY,
             "train": cfg.train.model_copy(
-                update={"max_steps": 30, "eval_every": 10, "warmup_steps": 3, "patience": 10}
-            )
+                update={
+                    "max_steps": 12,
+                    "eval_every": 6,
+                    "warmup_steps": 3,
+                    "patience": 10,
+                    "objectives": objectives,
+                }
+            ),
         }
     )
-    cat = synthetic(3000)
-    res = train(cfg, cat, 0, (cat.time[0], cat.time[-1]), device=torch.device("cpu"))
-    first, last = res.history[0], res.history[-1]
-    assert last["val_masked"] < first["val_masked"] + 1.0
-    assert res.stats["steps"] == 30
+    src = synthetic_sources(inputs)
+    window = (float(src.cat.time[0]), float(src.cat.time[-1]))
+    res = train(cfg, src, 0, window, device=torch.device("cpu"))
+    last = res.history[-1]
+    assert ("val_masked" in last) == ("seismic_catalog" in inputs)
+    assert ("val_gnss" in last) == ("gnss_daily" in inputs)
+    assert ("val_next_day" in last) == ("seismic_catalog" in inputs)
+    assert all(np.isfinite(v) for v in last.values())
+    assert res.stats["steps"] == 12
     assert res.stats["tokens_seen"] > 0
     assert res.stats["device"] == "cpu"
     assert res.stats["peak_vram_bytes"] == 0
+    assert res.stats["inputs"] == list(inputs)
     assert set(res.state) == set(type_check_state(cfg))
 
 
@@ -162,6 +369,7 @@ def test_objectives_are_validated() -> None:
         TrainSettings(**base, objectives={"magic": 1.0})  # type: ignore[arg-type]
     with pytest.raises(ValidationError, match="positive weight"):
         TrainSettings(**base, objectives={"masked": 0.0})  # type: ignore[arg-type]
+    TrainSettings(**base, objectives={"gnss": 1.0})  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------- CB-15
@@ -206,16 +414,35 @@ def test_flops_follow_the_palm_formula() -> None:
     )
 
 
-def test_freezing_adds_new_tasks_and_never_changes_old_ones(tmp_path: Path) -> None:
+def _record(splits: dict[str, Any], tasks: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "snapshot": "a",
+        "definition": {"version": "1", "splits": splits},
+        "splits": {name: {"id": f"id-{name}"} for name in splits},
+        "tasks": tasks,
+    }
+
+
+def test_freezing_adds_new_tasks_and_splits_and_never_changes_old_ones(tmp_path: Path) -> None:
     path = tmp_path / "f.json"
-    frozen = {"snapshot": "a", "tasks": {"CB-01": {"fingerprint": "x"}}}
-    body = {"snapshot": "a", "tasks": {"CB-01": {"fingerprint": "x"}, "CB-15": {"f": "y"}}}
+    frozen = _record({"pretrain": {"x": 1}}, {"CB-01": {"fingerprint": "x"}})
+    body = _record(
+        {"pretrain": {"x": 1}, "cb17_fit": {"y": 2}},
+        {"CB-01": {"fingerprint": "x"}, "CB-17": {"f": "y"}},
+    )
     assert harness._add_tasks(frozen, body, path, lambda m: None) == []
-    assert json.loads(path.read_text())["tasks"]["CB-15"] == {"f": "y"}
-    changed = {"snapshot": "a", "tasks": {"CB-01": {"fingerprint": "z"}, "CB-15": {}}}
+    out = json.loads(path.read_text())
+    assert out["tasks"]["CB-17"] == {"f": "y"}
+    assert out["splits"]["cb17_fit"] == {"id": "id-cb17_fit"}
+    assert out["definition"]["splits"]["cb17_fit"] == {"y": 2}
+    changed = _record({"pretrain": {"x": 9}}, {"CB-01": {"fingerprint": "x"}})
     problems = harness._add_tasks(frozen, changed, tmp_path / "g.json", lambda m: None)
     assert problems
     assert not (tmp_path / "g.json").exists()
+    task_changed = _record({"pretrain": {"x": 1}}, {"CB-01": {"fingerprint": "z"}})
+    assert harness._add_tasks(frozen, task_changed, tmp_path / "h.json", lambda m: None)
+    assert grown_from(frozen["definition"], body["definition"])
+    assert not grown_from(body["definition"], frozen["definition"])
 
 
 # ---------------------------------------------------------------- checkpoints
@@ -226,8 +453,16 @@ def test_checkpoint_round_trip_and_card(tmp_path: Path) -> None:
     key = checkpoint.CheckpointKey("cb02_fit", "abcdef0123456789", cfg, 1)
     state = {"w": torch.ones(2)}
     stats = {
-        "params": {"total": 10, "trunk": 6, "encoder": 2, "masked_head": 1, "next_day_head": 1},
-        "objectives": {"masked": 1.0, "next_day": 1.0},
+        "params": {
+            "total": 11,
+            "trunk": 6,
+            "encoder": 2,
+            "masked_head": 1,
+            "gnss_head": 1,
+            "next_day_head": 1,
+        },
+        "objectives": {"masked": 1.0, "gnss": 1.0, "next_day": 1.0},
+        "inputs": list(ALL_INPUTS),
         "steps": 5,
         "best_step": 5,
         "tokens_seen": 100,

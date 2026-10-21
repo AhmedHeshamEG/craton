@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -8,6 +11,10 @@ from craton.bench.baselines import METHODS
 from craton.bench.data import Events
 from craton.bench.dists import Gaussian, Histogram
 from craton.bench.splits import Window
+
+if TYPE_CHECKING:
+    from craton.bench.tasks import RegionQueries
+
 from craton.bench.tasks import (
     CB01_BINS,
     TASKS,
@@ -134,3 +141,56 @@ def test_ids_and_names_are_never_reused() -> None:
         register_task(TASKS["CB-04"])
     with pytest.raises(ValueError, match="already registered"):
         register_method(METHODS["etas"])
+
+
+# ---------------------------------------------------------------- CB-17
+
+
+def _region(n_ctx: int = 400, n_test: int = 50, seed: int = 0) -> RegionQueries:
+    from craton.bench.tasks import CB17_START, RegionQueries
+    from craton.spec.timeaxis import to_seconds
+
+    rng = np.random.default_rng(seed)
+    t0 = to_seconds(CB17_START)
+    fault = lambda n: np.stack(  # noqa: E731 - every quake on one small fault
+        [43.30 + rng.normal(0, 0.01, n), 12.30 + rng.normal(0, 0.01, n),
+         rng.uniform(4, 8, n), rng.uniform(0.5, 2.0, n)], 1
+    )  # fmt: skip
+    return RegionQueries(
+        context_time=np.sort(t0 + rng.uniform(0, 365 * 86400.0, n_ctx)),
+        context_values=fault(n_ctx),
+        context_type=["ML"] * n_ctx,
+        time=np.sort(t0 + 366 * 86400.0 + rng.uniform(0, 300 * 86400.0, n_test)),
+        magnitude_type=["ML"] * n_test,
+    )
+
+
+def test_region_context_never_reaches_past_its_days() -> None:
+    from craton.bench.tasks import CB17_START
+    from craton.spec.timeaxis import to_seconds
+
+    q = _region()
+    for days in (0, 7, 90, 365):
+        t, v, types = q.context(days)
+        assert len(t) == len(v) == len(types)
+        assert np.all(t < to_seconds(CB17_START) + days * 86400.0)
+    assert len(q.context(0)[0]) == 0
+
+
+def test_counting_the_context_beats_ignoring_it_on_a_fault() -> None:
+    """The context KDE learns where a region's fault is; its answer sharpens with N. A Histogram
+    over the region, fed through CB-17's own scoring arithmetic."""
+    from craton.bench.baselines import LAT_EDGES, ContextKde, _kernel_hist
+
+    q = _region()
+    kde = ContextKde()
+    truth = np.full(50, 43.30)
+    lo, hi = Bin("lat", 0.01).edges_of(truth)
+    flat = Histogram(LAT_EDGES, np.full(len(LAT_EDGES) - 1, 1.0 / (len(LAT_EDGES) - 1)))
+    _, values, _ = q.context(365)
+    k = _kernel_hist(values[:, 0], LAT_EDGES, 0.02)
+    k = k / k.sum()
+    blended = Histogram(
+        LAT_EDGES, (len(values) * k + kde.prior * flat.probs) / (len(values) + kde.prior)
+    )
+    assert np.all(blended.mass(lo, hi) > 20 * flat.mass(lo, hi))

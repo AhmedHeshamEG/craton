@@ -2,7 +2,8 @@
 
     craton bench prepare           cut the splits, write the test files, compare with the frozen
     craton bench prepare --freeze  …and freeze it: the whole record the first time, later only
-                                   tasks it doesn't have yet (everything else must match)
+                                   tasks and splits it doesn't have yet (everything else must
+                                   match)
     craton bench leaks             read every training shard back and look for held-out tokens
     craton bench run etas          score a method on every task it supports, 3 seeds
                                    → results/pending/<run>.json, judged by `craton ratchet`
@@ -24,12 +25,20 @@ from pathlib import Path
 from typing import Any
 
 from craton.bench.results import RunResults, TaskResult
-from craton.bench.splits import SPLITS, definition, definition_problems, leak_problems, materialise
+from craton.bench.splits import (
+    SPLITS,
+    definition,
+    definition_problems,
+    grown_from,
+    leak_problems,
+    materialise,
+)
 from craton.bench.tasks import (
     TASKS,
     BenchContext,
     GeoPerplexity,
     GpsGapFill,
+    InContextAdaptation,
     Task,
     frozen_path,
     load_frozen,
@@ -96,19 +105,32 @@ def prepare(ctx: BenchContext, freeze: bool = False, log: Log = _quiet) -> list[
 
 
 def _add_tasks(frozen: dict[str, Any], body: dict[str, Any], path: Path, log: Log) -> list[str]:
-    """Freeze tasks the record doesn't have yet. Everything already frozen must match exactly:
-    a frozen benchmark grows, it never changes."""
+    """Freeze tasks and splits the record doesn't have yet. Everything already frozen must
+    match exactly: a frozen benchmark grows, it never changes."""
+    if not grown_from(frozen["definition"], body["definition"]):
+        return ["the split definition changed beyond adding splits; a changed split needs new IDs"]
     new = {t: v for t, v in body["tasks"].items() if t not in frozen["tasks"]}
-    known = {**body, "tasks": {t: v for t, v in body["tasks"].items() if t in frozen["tasks"]}}
+    new_splits = {s: v for s, v in body["splits"].items() if s not in frozen["splits"]}
+    known = {
+        **body,
+        "definition": frozen["definition"],
+        "splits": {s: v for s, v in body["splits"].items() if s in frozen["splits"]},
+        "tasks": {t: v for t, v in body["tasks"].items() if t in frozen["tasks"]},
+    }
     problems = _diff(frozen, known)
     if problems:
         return problems
-    if not new:
+    if not new and not new_splits:
         log("nothing new to freeze")
         return []
-    out = {**frozen, "tasks": {**frozen["tasks"], **new}}
+    out = {
+        **frozen,
+        "definition": body["definition"],
+        "splits": {**frozen["splits"], **new_splits},
+        "tasks": {**frozen["tasks"], **new},
+    }
     path.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8", newline="\n")
-    log(f"froze {', '.join(new)} into {path.name}")
+    log(f"froze {', '.join([*new_splits, *new])} into {path.name}")
     return []
 
 
@@ -135,11 +157,15 @@ def verify(ctx: BenchContext | None, root: Path) -> tuple[list[str], str]:
     for task_id, task in TASKS.items():
         if task.files(ctx) != frozen["tasks"][task_id]["files"]:
             problems.append(f"{task_id}: prepared test files differ from the frozen hashes")
-    cb01, cb04 = TASKS["CB-01"], TASKS["CB-04"]
+    cb01, cb04, cb17 = TASKS["CB-01"], TASKS["CB-04"], TASKS["CB-17"]
     assert isinstance(cb01, GeoPerplexity)
     assert isinstance(cb04, GpsGapFill)
+    assert isinstance(cb17, InContextAdaptation)
     gap_answers = cb04.answer_hashes(ctx)
-    forbidden = {"pretrain": cb01.hidden(ctx) | gap_answers}
+    forbidden = {
+        "pretrain": cb01.hidden(ctx) | gap_answers,
+        "cb17_fit": cb01.hidden(ctx) | gap_answers | cb17.answer_hashes(ctx),
+    }
     for name in SPLITS:
         if not (ctx.split_dir(name) / "manifest.json").is_file():
             problems.append(f"split {name} is not prepared")

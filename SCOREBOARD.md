@@ -10,7 +10,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 
 | | Task | Craton | Floor | Arrives |
 |---|---|---|---|---|
-| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 21.66 ± 0.026 ↓ (+0.997 vs climatology) | 22.66 ± 0 ↓ · climatology | P3 |
+| **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 15.12 ± 0.36 ↓ (+7.54 vs climatology) | 22.66 ± 0 ↓ · climatology | P3 |
 | **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −10.88 ± 0.67 ↑ (−3.76 vs etas) | −7.118 ± 0 ↑ · etas | P3 |
 | **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P6 |
 
@@ -18,10 +18,10 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 
 | ID | Task | Craton | Floor | Phase |
 |---|---|---|---|---|
-| CB-01 | Geo-perplexity | 21.66 ± 0.026 ↓ · craton-mini | 22.66 ± 0 ↓ · climatology | P3 |
+| CB-01 | Geo-perplexity | 15.12 ± 0.36 ↓ · craton-mini | 22.66 ± 0 ↓ · climatology | P3 |
 | CB-02 | Apennines 2016-17 forecast | −10.88 ± 0.67 ↑ · craton-mini | −7.118 ± 0 ↑ · etas | P3 |
 | CB-03 | L'Aquila 2009 era holdout | −15.13 ± 0.79 ↑ · craton-mini | −9.396 ± 0 ↑ · etas | P3 |
-| CB-04 | GPS gap-fill | · | 17.77 ± 0 ↓ · idw_trend | P3 |
+| CB-04 | GPS gap-fill | 17.5 ± 0.043 ↓ · craton-mini | 17.77 ± 0 ↓ · idw_trend | P3 |
 | CB-05 | Calibration | · | · | P6 |
 | CB-06 | Unseen region | · | · | P6 |
 | CB-07 | Fake-precursor attack | · | · | P6 |
@@ -32,9 +32,9 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-12 | Interpreter faithfulness | · | · | P9 |
 | CB-13 | Microscope | · | · | P10 |
 | CB-14 | Deep time | · | · | P11 |
-| CB-15 | Efficiency | 15.59 ± 0.11 ↑ · craton-mini | · | P4 |
+| CB-15 | Efficiency | 16.27 ± 0.043 ↑ · craton-mini | · | P4 |
 | CB-16 | Scaling-law fit | · | · | P12 |
-| CB-17 | In-context adaptation | · | · | P5 |
+| CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
 | CB-18 | Ladder rung 3 | · | · | P12 |
 
 ## The floor
@@ -49,11 +49,16 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-03 | etas | −9.396 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
 | CB-03 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
 | CB-04 | idw_trend | 17.77 ± 0 ↓ | RMSE (mm), hidden stations, offset per station and component removed | east 24.2 · north 15.2 · up 11.4 mm over 29 stations, 86,373 days |
+| CB-17 | context_kde | 19.03 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
+| CB-17 | climatology | 27.72 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-21 12:21 | `20261021-122053-craton-mini` | craton-mini | 2 improved, 2 new, 2 same |
+| 2026-10-21 12:21 | `20261021-070848-climatology` | climatology (baseline) | 1 new, 1 same |
+| 2026-10-21 12:21 | `20261020-230434-context-kde` | context_kde (baseline) | 1 new |
 | 2026-10-20 10:56 | `20261020-105609-craton-mini` | craton-mini | 4 new |
 | 2026-10-20 02:18 | `20261020-021726-etas` | etas (baseline) | 2 new |
 | 2026-10-20 02:18 | `20261020-020924-poisson` | poisson (baseline) | 2 new |

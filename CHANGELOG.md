@@ -3,6 +3,35 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [0.6.0] — 2026-10-21 · P5 Fusion: quakes + GPS + the Moon
+
+### Added
+- **Fusion**: encoders for `gnss_daily` and `solid_earth_tide` beside the quake encoder, a learned
+  modality vector each, and `model.inputs` in the config to choose what a model reads (D-048). The
+  trunk takes an optional padding mask.
+- **The context builder** (`craton.train.context`): one documented policy fills a window with tides,
+  the nearest GNSS stations' days and quakes by recency, keeping the past year's big ones (D-050);
+  a next-day window reads the day ahead's tide.
+- **GNSS as distance from a line**: each station's long-term line fitted on the training split, days
+  centred on their window, a mixture-of-logistics head scored on CB-01's 1 mm bins; unseen stations
+  borrow their line from their neighbours (D-049).
+- **Cross-modal masking** in both directions and whole-station masking (D-051), off by config for
+  the general models after measurement (D-056).
+- **CB-17 In-context adaptation** (D-052): a region the model has never seen, its first N days in
+  context. New split `cb17_fit`; floors `climatology` and `context_kde`.
+- **CB-04 for Craton**: the model rebuilds held-out GNSS stations.
+- **Ablation runner**: `craton bench ablate` → `results/ablation/`, `docs/ablation.md`, the
+  ablation figure.
+- `craton train cb17_fit`; config fields `model.inputs`, `context.*`, `train.windows`,
+  `train.split_windows`.
+
+### Changed
+- A frozen benchmark record grows by new splits as well as new tasks (D-052).
+- Training batches are cut in a worker process, pinned and copied without blocking; fused AdamW
+  (D-055).
+- The next-day rate: the trunk may move it at most 2x from the measured-rate path (D-057).
+- Model cards say what a checkpoint reads and are re-rendered from their metadata.
+
 ## [0.5.0] — 2026-10-20 · P4 Craton-mini v0
 
 ### Added
