@@ -1,4 +1,4 @@
-"""Append-only records: the logbook and the decisions.
+"""Append-only records: the logbook, the decisions and the ledger of locked forecasts.
 
 History is never rewritten. A wrong decision gets a new decision that supersedes it; a wrong
 logbook entry gets a correction below it. The check compares each record with the version at
@@ -11,7 +11,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-APPEND_ONLY = ("LOGBOOK.md", "DECISIONS.md")
+APPEND_ONLY = ("LOGBOOK.md", "DECISIONS.md", "forecasts/central_italy/ledger.jsonl")
 
 
 def _git_show(root: Path, ref: str, rel: str) -> str | None:
@@ -63,3 +63,29 @@ def _first_changed_line(old: list[str], new: list[str]) -> int:
         if a != b:
             return i
     return min(len(old), len(new)) + 1
+
+
+def locked_problems(root: Path, ref: str = "HEAD") -> list[str]:
+    """One message per locked forecast or grade that was edited or deleted since ``ref``, and
+    per seal that doesn't match its file. Adding new ones is the only change allowed."""
+    from craton import live
+
+    problems = live.verify(root)
+    try:
+        proc = subprocess.run(
+            ["git", "diff", "--name-status", "--no-renames", ref, "--", "forecasts"],
+            cwd=root,
+            capture_output=True,
+            timeout=60,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return problems
+    if proc.returncode != 0:
+        return problems
+    for line in proc.stdout.decode("utf-8").splitlines():
+        status, _, rel = line.partition("\t")
+        if rel.endswith(".json") and status in ("M", "D"):
+            what = "edited" if status == "M" else "deleted"
+            problems.append(f"{rel} was {what}. A locked forecast and its grade never change.")
+    return problems
