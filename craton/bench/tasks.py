@@ -590,7 +590,10 @@ class SequenceForecast(Task):
 
     def score(self, method: Any, ctx: BenchContext, seed: int) -> Score:
         spec = self.spec
-        fc = method.forecast(spec, ctx, seed)
+        from craton.trust.predictive import predictive_of
+
+        # Computed once per (method, task, seed): CB-05, CB-07, CB-08 and CB-11 read it too.
+        fc = predictive_of(method, spec, ctx, seed).forecast
         days = len(spec.day_starts)
         if fc.rates.shape != (days, spec.grid.n_cells):
             raise ValueError(f"{self.task_id}: forecast has shape {fc.rates.shape}")
@@ -1072,3 +1075,6 @@ register_task(InContextAdaptation())
 
 assert all(t.fit_split in SPLITS for t in TASKS.values() if isinstance(t, SequenceForecast))
 assert to_seconds(ERA_A.start) < to_seconds("2016-08-25T00:00:00Z")
+
+# The P7 trust tasks register themselves through the same registry (CB-05 … CB-11).
+from craton.bench import locks as _locks  # noqa: E402, F401

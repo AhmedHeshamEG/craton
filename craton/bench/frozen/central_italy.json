@@ -243,6 +243,84 @@
         "test_quakes": 1307,
         "largest_test": 4.5
       }
+    },
+    "CB-05": {
+      "name": "Calibration",
+      "metric": "calibration error, |log\u2082(observed \u00f7 forecast)| over M3+ cell-days \u2265 0.1% likely",
+      "direction": "lower",
+      "fingerprint": "0c3c1924c8978fbc5bd0578172d3022ca4147575c091d1a0b075334566d7aa4b",
+      "files": {
+        "CB-02/observed.parquet": "d160a0916717b9b2b31c7a5b1a5c3e3b16c2e99f99cd18172d9241ece98e53d3",
+        "CB-03/observed.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f"
+      },
+      "summary": {
+        "reads": [
+          "CB-02",
+          "CB-03"
+        ]
+      }
+    },
+    "CB-06": {
+      "name": "Unseen region",
+      "metric": "AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras",
+      "direction": "higher",
+      "fingerprint": "6f6037c07e3eb0525ae9c8a4ecb57efb1cfe83c464fd1b57a7cd8932d6667363",
+      "files": {
+        "midnights.parquet": "64357bdad5ada70979729bc4f72211622b305116589eef7a71fdc299af3bb450",
+        "unseen.parquet": "de4ef2ba19f337480337870202616f7cafd358a308befae8d53972830f38337e"
+      },
+      "summary": {
+        "reference": 1316,
+        "in_region": 287,
+        "unseen": 893,
+        "unseen_quakes": 61086
+      }
+    },
+    "CB-07": {
+      "name": "Fake-precursor attack",
+      "metric": "false alarms under attack \u00f7 clean false alarms, mean over the counted attacks",
+      "direction": "lower",
+      "fingerprint": "6f21d3efdeed700b6b7c073504d114124107c5d2c36d7100822477ee07f5df2e",
+      "files": {
+        "CB-03/observed.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f"
+      },
+      "summary": {
+        "reads": [
+          "CB-03"
+        ]
+      }
+    },
+    "CB-08": {
+      "name": "Physics sanity",
+      "metric": "hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget)",
+      "direction": "lower",
+      "fingerprint": "28bfbd7c99d8a5bb7c001120c4617913b7e35d0cedab6d36c29673ebb6e46c0c",
+      "files": {
+        "CB-02/observed.parquet": "d160a0916717b9b2b31c7a5b1a5c3e3b16c2e99f99cd18172d9241ece98e53d3",
+        "CB-03/observed.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f"
+      },
+      "summary": {
+        "reads": [
+          "CB-02",
+          "CB-03"
+        ]
+      }
+    },
+    "CB-11": {
+      "name": "Predictability meter",
+      "metric": "share of space-time (%) watched to catch 90% of the M4+ quakes",
+      "direction": "lower",
+      "fingerprint": "ad899191ff41ab3736c9236519ef045e3cc9867fdd382cd96ddd60bc8931d8b9",
+      "files": {
+        "CB-02/observed.parquet": "d160a0916717b9b2b31c7a5b1a5c3e3b16c2e99f99cd18172d9241ece98e53d3",
+        "CB-03/observed.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f"
+      },
+      "summary": {
+        "reads": [
+          "CB-02",
+          "CB-03"
+        ]
+      }
     }
   }
 }

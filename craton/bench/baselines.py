@@ -551,3 +551,9 @@ for _m in (
     IdwTrend(),
 ):
     register_method(_m)
+
+# CB-06's floors live with the detector they are the floor of.
+from craton.trust.ood import FingerprintKnn, NoDetector  # noqa: E402
+
+register_method(NoDetector())
+register_method(FingerprintKnn())
