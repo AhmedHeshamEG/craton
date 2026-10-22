@@ -1001,3 +1001,22 @@ meta). Decided on the principle before scoring it. Result: CB-02 −6.815 ± 0.0
 
 **Rejected.** Keeping the full retrain (it breaks the constructive rule and the bar). Choosing
 between the two by their test scores (that is fitting the answer; the principle decided).
+
+### D-077 · 2026-10-22 · after P7 — Seventeen phases, and expected numbers in place of odds
+
+P6's split of the loss to ETAS, and the oracle ceilings measured the same day, showed where the room
+above ETAS is: 70–78% of what a perfect daily count would add sits on the three days with an M5+, and
+a sharp *where* is worth more than any simple small-quake map. Three sequences in forty years cannot
+teach either. So four phases go in before the discovery work: more planets to learn from, including
+regions where the cause of the quakes is measured (P8); a hidden stress-and-pressure state graded
+against focal mechanisms and CO₂ maps it never saw (P9); continuous noise as instruments (P10); and a
+mainshock-day detector trained on the world's sequences (P11). The ghost, the translator, the
+microscope and scale follow as P12–P16. P14 adds a symbolic law distilled from the Field, and P15 the
+predictability horizon. Ten new tasks: CB-19 to CB-28.
+
+The roadmap's table of odds is replaced by expected numbers per phase. A chance is not something a
+phase can be checked against; a number is, and a miss gets written down.
+
+**Rejected.** Starting the ghost and the interpreters right after P7: they would read a forecaster
+that wins only on *how many*. Feeding the ML catalogues into CB-02 and CB-03: they were relocated
+with hindsight, so they get their own tasks (CB-20, CB-21) and the frozen tasks stay pure.

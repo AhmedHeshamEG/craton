@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P7%20of%20P13-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P7%20of%20P16-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -305,8 +305,8 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 
 ```
 CORE       ██████████████████████████████   8/8    foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
-SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
+DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/7    other planets, hidden state, listening, storm detector, ghost, translator, microscope
+SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon + how far ahead the crust is predictable, then mini → planet
 ```
 
 | | Phase | Borrowed from the LLM world |
@@ -319,12 +319,15 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P8** Fake planets: pretraining on simulated millennia | synthetic data |
-| ◻️ | **P9** The ghost channel: forces we forgot | register tokens |
-| ◻️ | **P10** The translator: plain-language answers, numbers only from the model | tool use |
-| ◻️ | **P11** The microscope: what the model learned | sparse autoencoders |
-| ◻️ | **P12** Any horizon, from next week to a million years | long context |
-| ◻️ | **P13** Scale-ready, open to every dataset | scaling laws, LoRA |
+| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
+| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw | latent variables, AlphaFold's pair representation |
+| ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
+| ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
+| ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |
+| ◻️ | **P13** The translator: plain-language answers, numbers only from the model | tool use |
+| ◻️ | **P14** The microscope and the law: what the model learned, as a formula | sparse autoencoders, symbolic distillation |
+| ◻️ | **P15** Any horizon, and how far ahead the crust is predictable at all | long context |
+| ◻️ | **P16** Scale-ready, open to every dataset | scaling laws, LoRA |
 
 The full plan, with every benchmark and exit test: [`ROADMAP.md`](ROADMAP.md).
 

@@ -1,5 +1,5 @@
 # Craton-regional: one tectonic region on one rented data-centre GPU.
-# Declared now so the code never assumes the laptop; it first runs in P12.
+# Declared now so the code never assumes the laptop; it first runs in P16.
 name: regional
 status: planned
 description: One tectonic region (e.g. the whole Mediterranean) on a single A100-class GPU.

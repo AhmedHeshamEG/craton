@@ -1,21 +1,22 @@
 # Roadmap
 
-Fourteen phases, P0 → P13. Each one ends with hard exit tests, a lesson in [`lessons/`](lessons/), a figure,
+Seventeen phases, P0 → P16. Each one ends with hard exit tests, a lesson in [`lessons/`](lessons/), a figure,
 and a release. A phase isn't done if any exit test fails. Live numbers are in [`SCOREBOARD.md`](SCOREBOARD.md);
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
 CORE       ██████████████████████████████   8/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P8–P11  fake planets, the ghost, the translator, the microscope
-SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P12–P13 any time horizon, then mini → regional → planet
-ALL        █████████████████░░░░░░░░░░░░░   8/14
+DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/7    P8–P14  other planets, hidden state, listening, storm detector, ghost, translator, microscope
+SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P15–P16 any time horizon + the predictability horizon, then mini → planet
+ALL        ██████████████░░░░░░░░░░░░░░░░   8/17
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
-here first) and **Craton** regional → planet (same code, bigger config files, unlocked in P13).
+here first) and **Craton** regional → planet (same code, bigger config files, unlocked in P16).
 
 Each phase lists its **Goal**, **Why**, the **LLM analogy** it borrows, what it builds, its **Benchmarks**, what
-is deliberately **not** in it, the exit tests (**Done when**) and what its lesson teaches (**Learn**).
+is deliberately **not** in it, the exit tests (**Done when**), the numbers it is expected to reach (**Expect**)
+and what its lesson teaches (**Learn**).
 
 ---
 
@@ -44,16 +45,29 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-06 | **Unseen region** | Train without Calabria + Sicily, test there; AUROC of the "never seen this" detector | Same model, no OOD detector | P7 |
 | CB-07 | **Fake-precursor attack** | False-alarm rate with injected fake GPS jumps / fake swarms | ≤ the clean false-alarm rate | P7 |
 | CB-08 | **Physics sanity** | Outputs breaking the slip budget, Gutenberg–Richter, Omori decay, non-negative rates | 0 hard violations | P7 |
-| CB-09 | **Sim-to-real gap** | Synthetic-test vs real-test score gap, per generator, tracked over versions | — | P8 |
-| CB-10 | **Planted discovery** | Tides removed on purpose: does the ghost recover the 12.42 h / 24 h / 14.8 d periods? | Random residual | P9 |
+| CB-09 | **Two planets + sim-to-real gap** | ETAS planet: Craton must tie ETAS; physics planet: must beat it; synthetic vs real gap per generator | ETAS on each planet | P8 |
+| CB-10 | **Planted discovery** | Tides removed on purpose: does the ghost recover the 12.42 h / 24 h / 14.8 d periods? | Random residual | P12 |
 | CB-11 | **Predictability meter** | 90%-coverage window width in time (days), space (km), magnitude, for M≥4 | ETAS window width | P7 |
-| CB-12 | **Interpreter faithfulness** | ~200 fixed questions: numeric agreement with tool outputs, citation coverage, hallucination rate, correct abstention | Plain LLM, no tools | P10 |
-| CB-13 | **Microscope** | SAE reconstruction + recovery of a planted hidden variable + share of features with validated labels | Random directions | P11 |
-| CB-14 | **Deep time** | Plate positions vs published GPlates reconstructions at past ages; angular error | Constant-velocity extrapolation | P12 |
+| CB-12 | **Interpreter faithfulness** | ~200 fixed questions: numeric agreement with tool outputs, citation coverage, hallucination rate, correct abstention | Plain LLM, no tools | P13 |
+| CB-13 | **Microscope** | SAE reconstruction + recovery of a planted hidden variable + share of features with validated labels | Random directions | P14 |
+| CB-14 | **Deep time** | Plate positions vs published GPlates reconstructions at past ages; angular error | Constant-velocity extrapolation | P15 |
 | CB-15 | **Efficiency** | Model FLOPs utilisation of the pretraining run on the RTX 2060; tokens/s, peak VRAM, wall-clock alongside | Must fit in 6 GB (a hard gate) | P4 |
-| CB-16 | **Scaling-law fit** | Loss vs params and tokens over 4–5 sizes; predict the next size before training it | — | P13 |
+| CB-16 | **Scaling-law fit** | Loss vs params and tokens over 4–5 sizes; predict the next size before training it | — | P16 |
 | CB-17 | **In-context adaptation** | Only the first N days of a new region in context, no retraining: does CB-01 improve as N grows? | Empty context | P5 |
-| CB-18 | **Ladder rung 3** | Timing of the next event on repeating-earthquake patches | Periodic / Poisson | P13 (spec only) |
+| CB-18 | **Ladder rung 3** | Timing of the next event on repeating-earthquake patches | Periodic / Poisson | P16 (spec only) |
+| CB-19 | **30-day forecast** | As CB-02, one forecast per 30 days: the horizon where GPS strain is known to pay | ETAS | P8 |
+| CB-20 | **Apennines, enhanced inputs** | CB-02's scoring, with the 2016–17 ML catalogue as input (relocated with hindsight, so its own task) | ETAS on the same inputs | P8 |
+| CB-21 | **L'Aquila, enhanced inputs** | CB-03's scoring, with the 2009 ML catalogue as input | ETAS on the same inputs | P8 |
+| CB-22 | **World sequences** | Daily forecasts on held-out sequences in California, Japan, New Zealand; share where Craton beats ETAS + mean gain | ETAS fitted per region | P8 |
+| CB-23 | **Hidden-state truth** | Inferred stress axes vs focal-mechanism stress inversions (angle); inferred pressure vs Vp/Vs and CO₂ maps | Regional-average stress | P9 |
+| CB-24 | **Migration** | Connection graph learned before 2016 vs the order the 2016–17 sequence lit up | Distance only | P9 |
+| CB-25 | **Mainshock days** | Skill on held-out world M6+ days: Molchan curve, false alarms per hit | ETAS | P11 |
+| CB-26 | **Distilled law** | A symbolic formula's held-out gain over ETAS vs the network's | the network itself | P14 |
+| CB-27 | **Predictability horizon** | Skill over ETAS vs lead time (1 day → 1 year): where it reaches zero, with error bars | — | P15 |
+| CB-28 | **Velocity gap-fill** | Hide one station's dv/v series, rebuild it | Neighbour average | P10 |
+
+CB-02 and CB-03 also report, from P6 on: how-many / where / how-big bits, the score without the M5+ days, and
+the oracle ceilings (the building).
 
 ---
 
@@ -364,38 +378,162 @@ in [`forecasts/`](forecasts/). Step by step: [`lessons/P7.md`](lessons/P7.md).
 
 ---
 
+## Why the plan grew after P7
+
+P6 split the old four-bit loss to ETAS before fixing it: almost all of it was *where*, and the cause was the
+model's short memory and blurry map. Measured the same day:
+
+- **How tall the building is.** Above ETAS, knowing each day's count is worth +2.1 bits per quake (CB-02) and
+  +3.55 (CB-03), and 70–78% of that sits on the three days with an M5+. Knowing where to the cell is worth
+  +2.1 / +2.45; to ~10 km, only +0.6.
+- **Where the literature agrees.** Start from ETAS, feed the small quakes in, think in a grid field. Nobody has
+  a neural win on *where* yet.
+- **A false discovery, caught.** Tidal phase-locking of aftershocks looked like p = 10⁻²¹; a 24-hour clock locks
+  just as hard. That is why the referee exists.
+
+So after the locks come the AlphaFold-shaped moves: many more planets to learn from (P8), the crust's
+hidden state graded against data it never saw (P9), instruments that report every day (P10), and a detector
+for the mainshock days, where most of the headroom is (P11). The ghost, the translator, the microscope and
+scale follow, renumbered.
+
+---
+
 # DISCOVERY
 
-## P8 · Fake planets (synthetic pretraining) → v0.9.0
-**Goal:** pretrain on millions of simulated years, then fine-tune on the real Earth.
+## P8 · Other planets: real, human-made and fake → v0.9.0
+**Goal:** many more sequences to learn from, and planets where the answer is known.
 
-**Why:** fixes rarity (many full fault cycles) and gives enough tokens to justify a bigger model.
+**Why:** central Italy has three big sequences in 40 years; a correction learned on three is a horoscope.
 
-**LLM analogy:** synthetic-data pretraining + curriculum; sim-to-real transfer.
+**LLM analogy:** more pretraining data, curriculum, synthetic data with verifiable answers, transfer.
 
 **Build**
-1. At least **two** independent generators:
-   1. ETAS synthetic catalogs with randomised parameters
-   2. a physics-based cycle simulator (`SPIKE`: QDYN or another quasi-dynamic rate-and-state code builds and
-      runs on Windows / WSL; fallback: a verified spring-block model in NumPy)
-2. Synthetic GPS from simulated slip (elastic half-space), synthetic tides.
-3. Same spec, `provenance.synthetic = true`.
-4. Curriculum: synthetic only → mixed → real fine-tune.
-5. 50–100M synthetic tokens on the laptop (generation runs overnight).
-6. Figure: a fake planet's 10,000-year catalog next to the real Apennines.
+1. **ML catalogues** as a new instrument source: Tan et al. 2016–17 (~900k events), L'Aquila 2009
+   (PhaseNet + GaMMA), Altotiberina 2010–23 (~420k). They were relocated with hindsight, so they feed **new
+   tasks only** (CB-20, CB-21); CB-02 and CB-03 stay pure.
+2. **Other real regions:** California (ComCat, plus the QTM template-matching catalogue), Japan (JMA), New
+   Zealand (GeoNet). A world set of held-out sequences for CB-22.
+3. **Human-made planets with a measured cause:** Groningen (gas production and reservoir pressure) and
+   Oklahoma (wastewater injection volumes). Learn "pressure → quakes" where pressure is known.
+4. **Fake planets, as a two-planet test:** an ETAS planet (Craton must tie ETAS: it can't beat the truth) and
+   a physics planet (`SPIKE`: QDYN or a quasi-dynamic rate-and-state code on Windows / WSL; fallback a
+   verified spring-block model in NumPy) with real fault geometry, stress transfer and a fluid source (Craton
+   must beat ETAS). Then fake data pretrains the correction only.
+5. **CB-19, a 30-day forecast:** where GPS strain is known to beat ETAS (Santibáñez-Leal 2026).
+6. Curriculum: planets → regions → central Italy fine-tune.
+7. Figure: one fake planet's 10,000 years next to the real Apennines; and the world map of sequences Craton
+   learned from.
 
-**Benchmarks:** everything before + **CB-09 (sim-to-real gap, new)**.
+**Benchmarks:** **CB-09 (two-planet test + sim-to-real gap, new), CB-19, CB-20, CB-21, CB-22 (new)** +
+everything before.
+
+**Not in this phase:** the hidden-state layer (P9).
 
 **Done when**
-- synthetic pretraining improves real CB-01 / CB-02 beyond noise, or the negative result is documented with
-  evidence
-- model size raised to ~2–5M only if the scaling evidence supports it
-- the sim-to-real gap tracked per generator
+- ETAS planet tied within noise; physics planet beaten beyond noise
+- CB-02 / CB-03 improve on P6 beyond noise from the new data, or the negative result is documented
+- CB-22: Craton above ETAS on most held-out world sequences
+- model size raised only if the scaling evidence supports it
 - `lessons/P8.md` written
 
-**Learn:** simulators, rate-and-state friction (intuition), synthetic data, curriculum, transfer.
+**Expect:** CB-02 ≈ +0.6 over ETAS · CB-03 ≈ +1.4 · CB-20 ≈ +1.1 · CB-21 ≈ +1.8 · CB-19 ≈ +0.2 ·
+CB-22 above ETAS on ~2 sequences in 3 · CB-09 ETAS planet |Δ| < 0.05, physics planet ≈ +1.
 
-## P9 · Ghost channel + the atlas → v0.10.0
+**Learn:** simulators, rate-and-state friction, induced seismicity, catalogue completeness, transfer.
+
+## P9 · The hidden state: stress, pressure and the wiring → v0.10.0
+**Goal:** Craton infers what nobody measures (stress, fluid pressure, closeness to failure per patch) and
+which places talk to each other, and the inference is graded against data it never saw.
+
+**Why:** the AlphaFold move. The forecast becomes the exam that proves the hidden structure.
+
+**LLM analogy:** latent-variable models; AlphaFold's pair representation; probing.
+
+**Build**
+1. **A hidden-state layer:** per cell, a stress-and-pressure vector that turns into rates through a
+   rate-and-state-shaped law (seismicity as a stress meter, Dieterich 1994); trained end to end.
+2. **The pair representation:** which cells excite which, learned from 40 years of co-activation; one
+   connection graph per region.
+3. **Graded against independent truth:** stress orientation vs the 72,000 focal mechanisms of the 2016–17
+   ML catalogue (stress inversions); pressure vs Vp/Vs tomography and the Apennine CO₂ outflow maps.
+4. **The migration test:** the graph learned on data before 2016 vs the order the 2016–17 sequence lit up
+   (Amatrice → Visso → Norcia → Campotosto).
+5. A Coulomb rate-and-state (CRS) baseline on CB-02 (Mancini et al. 2019 beat ETAS after Visso).
+6. Figure: Italy's inferred pressure map next to the CO₂ map it was never shown.
+
+**Benchmarks:** **CB-23 (hidden-state truth), CB-24 (migration), new**; CRS joins the floors.
+
+**Done when**
+- CB-23 beats a regional-average-stress baseline; CB-24 beats distance-only
+- CB-02 / CB-03 improve on P8 or the negative result is documented
+- the referee passes every map shown in public
+- `lessons/P9.md` written
+
+**Expect:** CB-23 stress axes within ~20° of the inversions · CB-24 the true next patch in the graph's top 3 ·
+CB-02 ≈ +0.9 · CB-03 ≈ +1.6.
+
+**Learn:** stress, pore pressure, Coulomb failure, rate-and-state as a stress meter, inverse problems.
+
+## P10 · Listening: continuous noise as instruments → v0.11.0
+**Goal:** two instruments that report every day, quake or no quake: seismic noise power and seismic velocity
+change (dv/v from ambient-noise correlation).
+
+**Why:** quakes are rare and noise isn't. In the lab, a fault's continuous noise predicted time to failure;
+in Cascadia, seismic power rose exponentially weeks to months before slow slip (Los Alamos, 2017–2020).
+
+**LLM analogy:** a new modality with its own encoder (like adding audio to a text model).
+
+**Build**
+1. `SPIKE`: a handful of INGV broadband stations on the Apennine faults through EIDA FDSN; daily noise
+   correlations (MSNoise or own code) fit the laptop's disk and time.
+2. Adapters: `seismic_noise_power`, `seismic_velocity_change`, with seasonal and ocean-noise corrections
+   (ocean-noise direction can fake dv/v; Hadziioannou 2011).
+3. Their encoders join the fusion; ablation as in P5.
+4. Figure: dv/v under the 2016 sequence, day by day.
+
+**Benchmarks:** **CB-28 (velocity gap-fill: hide a station's dv/v, rebuild it), new**; their ablation share
+on CB-19 and CB-25.
+
+**Done when**
+- both instruments flow through the spec with data cards
+- their ablation share is measured (zero is a result)
+- `lessons/P10.md` written
+
+**Expect:** CB-28 beats a neighbour average · ablation share ≈ 0 next-day, positive at 30 days.
+
+**Learn:** ambient-noise interferometry, why the Earth hums, new modalities.
+
+## P11 · The storm detector: the mainshock days → v0.12.0
+**Goal:** raise tomorrow's rate on the days a big quake is coming, without crying wolf.
+
+**Why:** 70–78% of the headroom above ETAS sits on the M5+ days. On L'Aquila one day at 30× ETAS is worth
++1.3 bits for the whole year; break-even is ~97 false-alarm days per hit.
+
+**LLM analogy:** a classifier head with calibrated probabilities; anomaly detection; test-time sampling of
+many futures.
+
+**Build**
+1. A head for "an M5+ in this cell tomorrow", folded into the rates.
+2. Its inputs: b-value trends (L'Aquila: 0.68 in the last 10 days), foreshock acceleration and migration,
+   GPS transients, the hidden state (P9), the noise instruments (P10).
+3. Trained on thousands of mainshock sequences worldwide (QuakeGen used 2,126), never on Italy alone.
+4. Every alarm passes the referee and the fake-precursor attack; forecasts locked.
+5. Figure: a Molchan diagram, Craton vs ETAS, and the L'Aquila foreshock months day by day.
+
+**Benchmarks:** **CB-25 (mainshock-day skill on held-out world mainshocks, with false alarms per hit), new**;
+CB-02, CB-03.
+
+**Done when**
+- CB-25 above ETAS's Molchan curve on held-out mainshocks
+- false alarms per hit below the break-even on CB-02 and CB-03
+- `lessons/P11.md` written
+
+**Expect:** CB-25 flags ~1 in 4 held-out M6+ days at ≤ 50 false alarms per hit · CB-02 ≈ +1.3 ·
+CB-03 ≈ +2.2.
+
+**Learn:** foreshocks, b-value, Molchan diagrams, the history of failed precursors and why they failed.
+
+## P12 · Ghost channel + the atlas → v0.13.0
 **Goal:** let the model point at forces we didn't give it.
 
 **Why:** no list of forces is provably complete; the ghost turns "missing input" into a discovery signal.
@@ -407,22 +545,26 @@ in [`forecasts/`](forecasts/). Step by step: [`lessons/P7.md`](lessons/P7.md).
    inputs can't explain.
 2. Residual toolkit: spectra, autocorrelation, correlation with candidate external series.
 3. **Planted discovery:** train with tides removed, check the ghost recovers the tidal periods.
-4. **The Forcing & Property Atlas** (`craton/atlas/`): a machine-readable registry of all forces (the 7 layers
-   + the measurement layer) and properties, each `available` / `adapter-planned` / `no-data` / `null-test`
-   (solar activity is a null test).
-5. Two more adapters from the atlas where public data is reachable (precipitation reanalysis, air pressure).
-6. Figure: the ghost's spectrum with the tidal peaks it found on its own.
+4. **Tidal sensitivity, done right:** does tidal phase-locking of small quakes rise before big ones?
+   Declustered, fake clocks, through the referee.
+5. **The Forcing & Property Atlas** (`craton/atlas/`): every force and property with a status
+   (`available` / `adapter-planned` / `no-data` / `null-test`; solar activity is a null test).
+6. Two more adapters from the atlas (precipitation reanalysis, air pressure).
+7. Figure: the ghost's spectrum with the tidal peaks it found on its own.
 
 **Benchmarks:** **CB-10 (new)** + everything before.
 
 **Done when**
 - CB-10 recovers the planted tide with a clear spectral peak
+- the tidal-sensitivity test has a referee verdict
 - every atlas entry has a status
-- `lessons/P9.md` written
+- `lessons/P12.md` written
+
+**Expect:** CB-10 finds M2, O1 and K1 · tidal sensitivity: a clean measured answer either way.
 
 **Learn:** residuals, spectral analysis, the Neptune story; why null tests matter.
 
-## P10 · Interpreter A: the translator → v0.11.0
+## P13 · Interpreter A: the translator → v0.14.0
 **Goal:** ask Craton questions in plain language.
 
 **Why:** nobody reads a 256-number vector.
@@ -444,16 +586,19 @@ in [`forecasts/`](forecasts/). Step by step: [`lessons/P7.md`](lessons/P7.md).
 **Done when**
 - hallucinated-number rate = 0 on CB-12
 - beats the plain-LLM baseline on faithfulness
-- `lessons/P10.md` written
+- `lessons/P13.md` written
+
+**Expect:** CB-12 zero invented numbers; abstains correctly on every OOD question.
 
 **Learn:** tool calling, grounding, why the LLM never does the physics.
 
-## P11 · Interpreter B: the microscope → v0.12.0
-**Goal:** break the model's internal vectors into named concepts.
+## P14 · Interpreter B: the microscope + the law → v0.15.0
+**Goal:** break the model's internal vectors into named concepts, and distill what it learned into a formula.
 
-**Why:** where the "theory" gets pulled out of the simulator.
+**Why:** where the "theory" gets pulled out of the simulator. Cranmer et al. (2020) got a new dark-matter
+formula out of a network this way, and it generalised better than the network.
 
-**LLM analogy:** mechanistic interpretability with sparse autoencoders.
+**LLM analogy:** mechanistic interpretability with sparse autoencoders; symbolic distillation.
 
 **Build**
 1. Activation capture from chosen layers.
@@ -461,59 +606,72 @@ in [`forecasts/`](forecasts/). Step by step: [`lessons/P7.md`](lessons/P7.md).
 3. Feature browser: per feature, top contexts, maps and timelines (static HTML).
 4. **Planted-variable test** on synthetic data with a known hidden variable.
 5. A label counts only with a quantitative test against an independent measurement.
-6. Figure: the feature that lit up for the planted variable, on a map.
+6. **The law:** symbolic regression (PySR) on the Field's correction over ETAS. A formula counts only if it
+   keeps most of the network's gain on held-out sequences.
+7. Figure: the feature that lit up for the planted variable, on a map; the formula next to Omori's.
 
-**Benchmarks:** **CB-13 (new)**.
+**Benchmarks:** **CB-13, CB-26 (distilled law: the formula's CB-02 / CB-22 gain vs the network's), new**.
 
 **Done when**
 - the planted variable recovered
 - a handful of features validated with numbers, unknown ones listed for investigation
-- `lessons/P11.md` written
+- a formula reported with its held-out score, or the negative result
+- `lessons/P14.md` written
 
-**Learn:** activations, superposition, sparse dictionaries, how labs read LLM internals.
+**Expect:** CB-13 planted variable found · CB-26 a formula of ≤ 10 terms keeping ~80% of the gain.
+
+**Learn:** activations, superposition, sparse dictionaries, symbolic regression, how laws get written.
 
 ---
 
 # SCALE
 
-## P12 · Long horizons + multi-scale zoom → v0.13.0
-**Goal:** any (place, time) question answered at the right resolution, from seconds to millions of years.
+## P15 · Long horizons + the predictability horizon → v0.16.0
+**Goal:** any (place, time) question answered at the right resolution, and the crust's predictability limit
+measured.
 
-**Why:** the prompt to Craton is a place, a time and some context. The time can be next week, 1349, or a million years from now.
+**Why:** the prompt to Craton is a place, a time and some context, and the time can be next week, 1349, or a
+million years from now. And the question nobody has answered: how far ahead is the crust predictable at all? Weather's is about two weeks
+(Lorenz).
 
-**LLM analogy:** long context + hierarchical models (coarse-to-fine, Perceiver-style bottlenecks); test-time
-compute (sampling many futures).
+**LLM analogy:** long context + hierarchical models; test-time compute (sampling many futures).
 
 **Build**
 1. Resolution ladder: rupture (s) / cycle (yr) / plate (Myr) tokens, each with declared resolution.
 2. Plate-scale adapter from published reconstructions (pyGPlates or exported rotation files).
-3. Query router: picks the sharpest resolution the evidence supports and **states it** in the answer.
+3. Query router: picks the sharpest resolution the evidence supports and **states it**.
 4. Ensemble sampling of pasts and futures.
-5. Figure: one place, zoomed from +7 days to +1 Myr, resolution shrinking on screen.
+5. **The predictability horizon:** skill over ETAS as a function of lead time (1 day → 1 year), per region;
+   the lead time where it reaches zero, with error bars, and how it moves with data and model size.
+6. Figure: one place, zoomed from +7 days to +1 Myr; the skill-vs-lead-time curve.
 
-**Benchmarks:** **CB-14 (new)** + everything before.
+**Benchmarks:** **CB-14, CB-27 (predictability horizon), new** + everything before.
 
 **Done when**
 - T = +1 Myr returns plate-scale output with its resolution stated; T = +7 days returns event rates
 - CB-14 beats constant-velocity extrapolation
-- `lessons/P12.md` written
+- CB-27 reported with error bars
+- `lessons/P15.md` written
 
-**Learn:** multi-scale modelling, plate reconstructions, why resolution shrinks with horizon.
+**Expect:** CB-14 beats constant velocity · CB-27 a horizon measured in weeks to months, with its error bar.
 
-## P13 · Scale-ready + open platform → v0.14.0
+**Learn:** multi-scale modelling, plate reconstructions, chaos and predictability limits.
+
+## P16 · Scale-ready + open platform → v0.17.0
 **Goal:** mini → regional → planet with a config switch, and strangers can contribute safely.
 
-**Why:** same project; when stronger GPUs or new techniques arrive, it grows without a redesign.
+**Why:** "same project, once we have stronger GPUs or new techniques, it just grows".
 
 **LLM analogy:** scaling laws (Kaplan, Chinchilla), distributed training, LoRA, model hub + cards.
 
 **Build**
-1. Scaling study on the laptop: 4–5 sizes, fit loss vs params / tokens, predict the next size (CB-16).
+1. Scaling study on the laptop: 4–5 sizes, fit loss vs params / tokens, predict the next size (CB-16);
+   context length (1,024 vs 2,048) measured with its cost.
 2. `regional.yaml` (~50–150M) and `planet.yaml` (~1–10B) pass a smoke run on rented GPUs.
 3. DDP / FSDP behind config flags; nothing in the core assumes one GPU.
 4. Regional low-rank adapters for new regions on a frozen trunk.
 5. The full `CONTRIBUTING.md`: add an adapter, a force, a property, a benchmark; all add-only,
-   ratchet-protected.
+   ratchet-protected. CratonBench open to outside submissions.
 6. CB-18 spec + a data survey of repeating earthquakes.
 7. The final report: what works, what doesn't, the scoreboard history, what's next.
 8. Figure: the scaling law with the predicted point and the real one.
@@ -524,21 +682,31 @@ compute (sampling many futures).
 - the scaling prediction lands within a documented error
 - the regional config passes a smoke run
 - a new adapter added by following CONTRIBUTING alone passes every check without touching core code
-- `lessons/P13.md` + the final report written
+- `lessons/P16.md` + the final report written
+
+**Expect:** CB-16 next size predicted within ~5% of its loss.
 
 **Learn:** scaling laws, distributed training, LoRA, how an open research platform runs.
 
 ---
 
-## Expectations (honest)
+## Expected benchmarks
 
-| Outcome | Chance |
-|---|---|
-| Working repo, spec, pipelines, CratonBench, mini model training | ~90% |
-| Mini matches ETAS on Apennines M3+ | ~70% |
-| GPS + tides + fake planets beat ETAS on small quakes → arXiv paper | ~40% |
-| Ghost channel / microscope finds something real and new | ~10–15% |
-| Exact time / place of a big quake | ~0% on a laptop; the ladder's job, over years |
+Bits per M3+ quake **above ETAS** on the two headline forecasts (CB-02 ETAS −7.12, CB-03 ETAS −9.40). A score
+of k bits gives the real quakes 2^k times ETAS's probability. Measured rows are measured; the rest is the plan.
+
+| After | CB-02 Apennines | CB-03 L'Aquila | Where it comes from |
+|---|---|---|---|
+| P5 (measured) | −4.7 (1/26 of ETAS) | −4.4 (1/21) | the window forgets, the map is blurry |
+| P6 the Field (measured) | **+0.30** (1.2×) | **+1.16** (2.2×) | memory, a grid of cells, ETAS as the start |
+| P8 other planets | +0.6 (1.5×) | +1.4 (2.6×) | many sequences, small quakes, pressure → quakes |
+| P9 hidden state | +0.9 (1.9×) | +1.6 (3×) | stress, fluids, the wiring |
+| P11 storm detector | **+1.3** (2.5×) | **+2.2** (4.6×) | the mainshock days |
+| the roof (all-knowing) | +4.2 (18×) | +6.0 (64×) | measured by the oracles |
+
+The great version, where everything works: CB-02 ≈ +2 (4×), CB-03 ≈ +3.5 (11×), the enhanced-input tasks higher
+still. Every other task's expectation is on its phase's **Expect** line. The exact time and place of a big quake
+is not on this table: that is the ladder's job, over years.
 
 Negative results are results: they go on the scoreboard and in the logbook like everything else.
 
@@ -548,5 +716,6 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
 - [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [x] P7 The 8 locks
-- [ ] P8 Fake planets · [ ] P9 Ghost + atlas · [ ] P10 Translator · [ ] P11 Microscope
-- [ ] P12 Long horizons · [ ] P13 Scale + open platform
+- [ ] P8 Other planets · [ ] P9 Hidden state · [ ] P10 Listening · [ ] P11 Storm detector
+- [ ] P12 Ghost + atlas · [ ] P13 Translator · [ ] P14 Microscope + law
+- [ ] P15 Long horizons · [ ] P16 Scale + open platform
