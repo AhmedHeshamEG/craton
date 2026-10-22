@@ -3,6 +3,16 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [Unreleased]
+
+### Changed
+- **The roadmap grows to 17 phases** (D-077): P8 Other planets, P9 The hidden state, P10 Listening,
+  P11 The storm detector, then the ghost (P12), the translator (P13), the microscope and the law
+  (P14), long horizons with the predictability horizon (P15) and scale (P16). Each phase now carries
+  the numbers it is expected to reach.
+- **Ten planned tasks, CB-19 to CB-28**, on the scoreboard; CB-09 becomes the two-planet test, and
+  CB-10, 12, 13, 14, 16 and 18 move to their new phases.
+
 ## [0.8.0] — 2026-10-22 · P7 The 8 locks: knowing when it doesn't know
 
 ### Added

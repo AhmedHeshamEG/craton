@@ -26,16 +26,26 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-06 | Unseen region | 0.9972 ± 0.00065 ↑ · craton-mini | 0.9982 ± 0 ↑ · fingerprint_knn | P7 |
 | CB-07 | Fake-precursor attack | 1.002 ± 0.0039 ↓ · craton-mini | 1 ± 0 ↓ · poisson | P7 |
 | CB-08 | Physics sanity | 0 ± 0 ↓ · craton-mini | 0 ± 0 ↓ · poisson | P7 |
-| CB-09 | Sim-to-real gap | · | · | P8 |
-| CB-10 | Planted discovery | · | · | P9 |
+| CB-09 | Two planets | · | · | P8 |
+| CB-10 | Planted discovery | · | · | P12 |
 | CB-11 | Predictability meter | 0.843 ± 0.06 ↓ · craton-mini | 1.317 ± 0 ↓ · etas_aniso | P7 |
-| CB-12 | Interpreter faithfulness | · | · | P10 |
-| CB-13 | Microscope | · | · | P11 |
-| CB-14 | Deep time | · | · | P12 |
+| CB-12 | Interpreter faithfulness | · | · | P13 |
+| CB-13 | Microscope | · | · | P14 |
+| CB-14 | Deep time | · | · | P15 |
 | CB-15 | Efficiency | 16.27 ± 0.043 ↑ · craton-mini | · | P4 |
-| CB-16 | Scaling-law fit | · | · | P13 |
+| CB-16 | Scaling-law fit | · | · | P16 |
 | CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
-| CB-18 | Ladder rung 3 | · | · | P13 |
+| CB-18 | Ladder rung 3 | · | · | P16 |
+| CB-19 | 30-day forecast | · | · | P8 |
+| CB-20 | Apennines, enhanced inputs | · | · | P8 |
+| CB-21 | L'Aquila, enhanced inputs | · | · | P8 |
+| CB-22 | World sequences | · | · | P8 |
+| CB-23 | Hidden-state truth | · | · | P9 |
+| CB-24 | Migration | · | · | P9 |
+| CB-25 | Mainshock days | · | · | P11 |
+| CB-26 | Distilled law | · | · | P14 |
+| CB-27 | Predictability horizon | · | · | P15 |
+| CB-28 | Velocity gap-fill | · | · | P10 |
 
 ## The building
 

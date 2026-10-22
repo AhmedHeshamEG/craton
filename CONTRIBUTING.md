@@ -28,7 +28,7 @@ Plain `uv sync` without an extra removes PyTorch; always pass one.
 
 ## What's useful right now
 
-The project is at phase P3 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful things today:
+The project is at phase P7 of P16 ([`ROADMAP.md`](ROADMAP.md)). The most helpful things today:
 
 - **Data you know.** A public catalogue, GNSS network, borehole record or historical archive that should become
   tokens. Open an issue with the *new data source* template: what it is, its licence, how to fetch it.
@@ -40,7 +40,7 @@ The project is at phase P3 of P12 ([`ROADMAP.md`](ROADMAP.md)). The most helpful
   [`SPEC_POLICY.md`](SPEC_POLICY.md) for how, and what can never change.
 
 Adding a method to CratonBench is below; the guides to a force and a property arrive with their extension
-point (P8); the complete version lands in P12.
+point (P12, the atlas); the complete version lands in P16.
 
 ## Add a data source
 

@@ -1,5 +1,5 @@
 # Craton-planet: the whole solid Earth. A GPU cluster, once the scaling law says it's worth it.
-# Declared now so nothing in the core assumes one GPU; smoke-tested in P12.
+# Declared now so nothing in the core assumes one GPU; smoke-tested in P16.
 name: planet
 status: planned
 description: The whole planet, every instrument. A multi-node GPU cluster.
