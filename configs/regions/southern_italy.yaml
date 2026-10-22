@@ -1,0 +1,12 @@
+# Calabria and Sicily: the region Craton never trains on (CB-06's unseen region).
+# Deep quakes of the Ionian slab down to ~600 km, Etna's swarms, the Messina Strait, Pollino.
+name: southern_italy
+description: Calabria and Sicily, the Aeolian arc and the southern Tyrrhenian slab. Held out of all training.
+box:
+  lat_min: 36.5
+  lat_max: 40.0
+  lon_min: 12.0
+  lon_max: 17.5
+start: "1985-01-01T00:00:00Z"   # same start as central Italy
+end: "2026-10-01T00:00:00Z"     # fixed; moving it is a new snapshot
+adapters: [ingv_catalog]
