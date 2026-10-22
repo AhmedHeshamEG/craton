@@ -795,3 +795,209 @@ mainshock-day work later in the plan, not something a map of recent activity can
 
 **Rejected.** Mixing ETAS's map into the Field's by a weight chosen on the test (that is fitting the
 answer). Holding the release until *where* ties on CB-02 (no honest lever left inside this phase).
+
+### D-065 · 2026-10-22 · P7 — The trust tasks read the forecasts CB-02 and CB-03 already make
+
+CB-05 (calibration), CB-07 (fake precursors), CB-08 (physics) and CB-11 (the meter) are scored on
+the same two test windows and the same frozen answers as CB-02 and CB-03; their fingerprints
+include those files. A forecaster may say more than its rates through one optional protocol,
+`predictive` (`craton.trust.predictive`): every ensemble member's rates, the negative binomial
+dispersion of a day's total and of one cell's count, and days it abstains on. A plain forecaster is
+read as Poisson with one member, so every floor gets a score on every trust task with no extra
+code. Each (method, task, seed) forecast is computed once and shared (`predictive_of`).
+
+**Rejected.** New test windows for the trust tasks (they would split the evidence; the two
+sequences are the hardest days the region has). A separate calibration model beside the Field (the
+dispersion fitted post hoc on validation days does the job without a second network).
+
+### D-066 · 2026-10-22 · P7 — CB-05 scores calibration as a factor, not a gap
+
+For rare events the expected calibration error is small even when a forecast is badly off: a
+forecast of 0.16% for cell-days that came 0.54% of the time is a gap of 0.004 and three times too
+low. CB-05's number is the gap as a factor: |log₂(observed ÷ forecast)| per reliability group,
+weighted by the group's size, over cell-days forecast at least 0.1% likely (observed share
+smoothed as (hits + ½)/(n + 1)). 0 is perfect, 1 is "off by 2x". The ECE stays beside it, for
+cell-days forecast at least 1% (the plan's exit test, threshold 0.05) and for all. The day totals
+get a randomised PIT (KS distance from uniform), CRPS and 90%-interval hits.
+
+Post-hoc calibration, fitted on the Field's validation days (one 30-day block in eight of the
+training split, never the test), by maximum likelihood, stored as `calibration.json` beside each
+checkpoint: the negative binomial size of a cell's count, and of a day's total as k = κ · mean^γ.
+A single k for every day (γ = 0) came out at 0.56, which makes the spread grow like the mean
+itself: far too wide inside a sequence (PIT distance 0.10 on CB-02, seed 0). The validation days
+alone prefer γ ≈ 0.67 for CB-02's fits (log-likelihood −486.2 against −490.2), γ ≈ 0.1 for
+CB-03's, whose validation years hold fewer busy days.
+
+Result: Craton 0.32 ± 0.08 doublings off, behind ETAS (0.22) and ETAS-incomplete (0.10): Craton is
+a little high on the middle groups (forecast 1.7%, observed 1.3%) and low on the top one (44%,
+observed 51%). Its day totals are the best calibrated of any method (PIT distance 0.039; ETAS
+0.061), its 90% intervals a little wide (97% of days inside). ECE on committed cell-days 0.012,
+under the plan's 0.05.
+
+**Rejected.** ECE alone as the number (it would rate a Poisson map that is 3x low as nearly
+perfect). Isotonic recalibration of the cell rates (fitted on validation days that hold almost no
+committed cell-days; the dispersion is one parameter and transfers).
+
+### D-067 · 2026-10-22 · P7 — Six Fields, a magnitude ceiling, and the guard in front
+
+- **Six members** per forecast (was four; the plan asks for five or more so the spread is an
+  estimate, not an anecdote): P6's four kept, two new ones added (D-076).
+- **No magnitude above 7.3.** The Field's Gutenberg-Richter shares stop at Mw 7.3: CPTI15's 7.1
+  for Avezzano 1915, the largest quake on record in the box, plus 0.2. An open-ended law spreads
+  rate up to M8, and on calm days that alone breaks the slip budget (D-070).
+- **The guard** (D-072) cleans the test-time catalogue before the Field reads it.
+
+Neither the ceiling nor the guard is in the checkpoints: they act at forecast time.
+
+### D-068 · 2026-10-22 · P7 — CB-06: Calabria and Sicily, judged by kind, not by place
+
+New region `southern_italy` (36.5-40 N, 12-17.5 E, INGV only): 61,086 quakes, snapshot
+`6dd8efd2fbc23ce6`, never read by any training split. A context is the 1,024 quakes before a
+midnight; three sets: training contexts (the bank, a midnight every 10 days of `pretrain`),
+central Italy's held-out eras (every 3 days) and Calabria + Sicily (every 15 days). Score: the
+AUROC of the out-of-distribution score, unseen vs in-region; the abstention threshold is the 95th
+percentile of the training contexts' own scores.
+
+Every context is moved so its median epicentre sits at the centre of central Italy before
+anything reads it. The trunk sees absolute coordinates, so without this any detector scores a
+meaningless 1.0 for noticing "elsewhere".
+
+Craton's detector is the trunk's query vector (the one the forecast reads) and the fingerprint
+of the very quakes it read (time span, depth and magnitude quantiles, spread), side by side,
+nearest-neighbour distance (Sun et al. 2022). The trunk alone scores **0.38, 0.12, 0.28** over
+the seeds, below a coin flip: it finds central Italy's own sequences stranger than Sicily, and it
+cannot see depth (Calabria's slab quakes go to 500 km). Together: 0.997 ± 0.001, against the
+fingerprint floor's 0.998: the trunk adds nothing yet. Abstains on 100% of Calabria and Sicily,
+72% of central Italy's sequence days, 5% of training contexts. Floors: `no_detector` (0.5, the
+plan's baseline) and `fingerprint_knn`.
+
+**Rejected.** The trunk alone (it fails). Raw coordinates (a test of geography). Calibrating the
+threshold on the unseen region (that would be reading the test).
+
+### D-069 · 2026-10-22 · P7 — CB-07: five fakes before L'Aquila, three of them counted
+
+Each seed plants five fakes into the inputs of the CB-03 window, inside a 30-day stretch of
+January-February 2009, at a site at least 60 km from L'Aquila: a 5 cm step at the five nearest
+GNSS stations; every quake listed twice; every magnitude 0.4 too high; small quakes grown so the
+b-value falls to ~0.7; a 150-quake swarm. The first three carry no information about the Earth
+and are **counted**; the b-value drop and the swarm are real-looking seismicity, where reacting
+can be physics, so they are reported, not counted. An alarm is an expected M4+ rate of at least
+0.001 in a cell and its eight neighbours (~30 km) on a day, about ten times the usual level; a
+false alarm is an alarmed cell-day with no real M4+ in the same nine cells. Score: (false alarms
+under attack + 1) ÷ (clean + 1), averaged over the counted three.
+
+Measured first on ETAS: at 0.01 (the first choice) no fake moved any alarm, even though the fakes
+raised ETAS's local rates up to 3x (duplicates), 114x (magnitude shift) and 2,800x (swarm):
+outside a real sequence nothing reaches 1% a day, so the test had no teeth. The glitches are
+network-wide (every quake in the box), because that is how they happen: two catalogues merged,
+or a calibration change (INGV's own move from Md to ML in 2005 shifted the whole catalogue).
+
+Result: Craton 1.002 ± 0.004 (the GNSS step and the duplicates exactly 1.000; the magnitude shift
+1.006, all of it one seed the guard caught only in part), ETAS 1.002. The exit test (at or below
+the clean rate) is missed by 0.2%. The swarm raises Craton's false alarms 2.6%, ETAS's 2%; the
+b-value drop does nothing to either.
+
+### D-070 · 2026-10-22 · P7 — CB-08's hard checks, and the slip budget in numbers
+
+Hard violations, summed: non-finite or negative rates and shares; magnitude shares that grow with
+magnitude (the open last bin excluded) or imply b outside 0.5-2 at M3; the **Omori probe** (the
+real catalogue up to the end of Amatrice's first day, 25 Aug 2016, and of L'Aquila's, 7 Apr 2009,
+then nothing: on each of the next 30 days the box's M3+ rate may not rise by more than 0.5%); and
+the **slip budget**: on calm days (no M5+ in the box in the previous 30), the long-run seismic
+moment the forecast implies may not exceed Kostrov's moment rate with every number generous:
+2 · 33 GPa · 15 km · 400 km · 4 mm/yr = 1.58 × 10¹⁸ N·m/yr (extension 2-4 mm/yr from geodesy and
+geology; dip 45°).
+
+Result: Craton zero violations (calm-day moment 8.4 × 10¹⁷ on CB-02); every ETAS floor breaks the
+budget on CB-02's calm days (1.66-1.81 × 10¹⁸), because its Gutenberg-Richter law runs to M8.
+Nobody fails the Omori probe.
+
+### D-071 · 2026-10-22 · P7 — CB-11: the meter is the share of space-time you watch
+
+Rank every (day, 0.1° cell) of both test windows by the forecast's M4+ rate and watch from the
+top until 90% of the real M4+ quakes (89 of them) are inside: the share watched is CB-11's number,
+in %. Ties are broken against the forecast (a tied block is watched whole). Beside it: the days on
+alert (ranking days by their total), the radius of the daily area holding 90% (coverage-matched,
+the conformal-prediction trick: coverage guaranteed, only size compared), and the magnitude
+width (central 90% given M4+).
+
+Result: Craton **0.84 ± 0.06%**, ETAS 1.32% (a window 36% smaller), a map of the past 24%. The
+gain is in time: 213 alert days a year against ETAS's 282; in space the two are level (radius
+40 km against 38). Magnitude width 1.14 for everyone (all use Gutenberg-Richter).
+
+**Rejected.** Each width at the forecast's own nominal 90% (it would reward an overconfident
+forecast with a small window it doesn't cover; the nominal coverage is reported instead).
+
+### D-072 · 2026-10-22 · P7 — The guard: two glitch rules, tested on 41 years of real data
+
+On the live edge only (the forecast window and the 60 days before it): drop a quake if an earlier
+one lies within 5 s, 3 km and 0.3 magnitude units; and per 5-day stretch, if the 25th, 50th and
+75th magnitude percentiles all jumped by 0.2 or more against the previous year (median by 0.25 or
+more), with 20+ quakes and no more than twice the usual count, and the jump is shared across the
+map (two-thirds of the 0.5° blocks with 3+ quakes, at least three), take the median jump off the
+stretch.
+
+Real catalogue: 7 duplicates dropped before CB-02, 3 before CB-03, no shift in either window. Run
+over the whole of 1987-2026 the shift rule fires on 24 stretches (once every two years or so);
+each test alone fired about twice as often. The injected duplicates are caught completely; the
+injected 0.4 shift on 39-100% of its quakes depending on the seed.
+
+### D-073 · 2026-10-22 · P7 — `craton referee`, and the 2026-10-21 tidal claim replayed
+
+Five tests (module docstring of `craton/trust/referee.py`): raw Schuster, declustered (Gardner-
+Knopoff) p < 0.01, beat 99% of 200 fake clocks, beat 99% of 200 time-of-day shuffles, and a locked
+prediction (effect hashed before a held-out catalogue is read; p < 0.05 there within 45°).
+
+The replay, with the computed tide (phase of the vertical solid-Earth tide's analytic signal) on
+the 2016-17 sequence: raw p = 10⁻⁴¹³. Declustered, 397 mainshocks, p = 10⁻³·³: passes. Locked on
+2016-17 and tested on 2009: p = 10⁻³·⁹ at the same phase: passes. It is still false: slid by random
+lags of 30 days to 10 years, the same tide "locks" as hard 71% of the time. The tide's phase is not
+spread evenly over time, so any catalogue looks locked to it; the Schuster test assumes it is. That
+control, shifted tides, is what the referee uses whenever the cycle is a computed series instead
+of a clock. Fake planets: a clustered ETAS catalogue with day-night detection (raw p = 10⁻⁹³⁴) is
+rejected on every test; a planted 12.42-hour signal passes all five. `results/referee/replay.json`.
+
+### D-074 · 2026-10-22 · P7 — Locked forecasts, every night, from a frozen bundle
+
+`craton live run` (GitHub Actions, `.github/workflows/live.yml`, 22:30 UTC): fetch the INGV
+catalogue (cached per month, the last two refetched), run the frozen bundle for the next UTC day,
+seal the file with SHA-256 and append to the ledger, grade every locked day at least three days
+old, regenerate `forecasts/README.md`, push (~33 KB a day). The bundle (`craton live bundle`): CB-02's Field
+members and ETAS fits for all three seeds (18 members), their calibration and the fingerprint bank,
+attached to the release as `craton-live-central_italy-v0.8.0.tar.gz`. Graded per 0.1° cell at M3+,
+Craton against the ETAS floor locked in the same file. The forecast reads the catalogue as
+published at issue time, so the last ~1.5 h before midnight are unseen. Missed days stay missed. A
+locked file or grade can never be edited (`craton check`, D-008's spirit).
+
+Live abstention uses the fingerprint half of the detector only: the trunk adds nothing measurable
+on CB-06 and would add three 20 MB checkpoints to the bundle.
+
+**Rejected.** Running the live job on the laptop (it isn't always on). Training on CI (the Field
+needs the GPU and the full data). Backfilling a missed day (a backfilled forecast is not a locked
+one).
+
+### D-075 · 2026-10-22 · P7 — A simulator registry, with ETAS as the first planet
+
+`craton/sim`: `SIMULATORS`, a `Simulator` protocol (`simulate(SimSpec, seed) -> Events`) and the
+ETAS planet. Synthetic quakes carry the magnitude type `sim` and token hashes naming the simulator
+and seed, so nothing synthetic can pass for real data. The referee's replays use it; P8 adds
+physics-based planets beside it.
+
+### D-076 · 2026-10-22 · P7 — An ensemble grows; it is never retrained
+
+The first P7 run retrained all six Fields per seed from scratch. CB-02 came out −6.825 ± 0.006 and
+CB-03 −8.236 ± 0.011, a few thousandths of a bit under P6 (−6.818, −8.233): within noise, but
+under the bar that no phase scores below the last. Attributed seed by seed: the guard changes
+nothing (±0.0006 bits) and neither does the magnitude ceiling; retraining the same four member
+seeds on the GPU alone moves a seed by up to 0.03 bits. Throwing away the shipped Fields was the
+mistake: it is not constructive.
+
+So the Field grows: when a config asks for more members than an existing checkpoint of the same
+config has, `FieldForecaster.states` loads the smaller ensemble and trains only the new members
+(each member is trained alone from its own seed, so this is the same job). P7's ensembles are
+P6's four members plus members four and five of the full run (`grown_from` in each checkpoint's
+meta). Decided on the principle before scoring it. Result: CB-02 −6.815 ± 0.013, CB-03
+−8.231 ± 0.006, both at or above P6.
+
+**Rejected.** Keeping the full retrain (it breaks the constructive rule and the bar). Choosing
+between the two by their test scores (that is fitting the answer; the principle decided).

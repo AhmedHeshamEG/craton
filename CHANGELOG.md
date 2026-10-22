@@ -3,6 +3,35 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [0.8.0] — 2026-10-22 · P7 The 8 locks: knowing when it doesn't know
+
+### Added
+- **Five trust tasks** (`craton/bench/locks.py`, D-065): CB-05 Calibration (the calibration error as
+  a factor, D-066), CB-06 Unseen region (Calabria + Sicily, D-068), CB-07 Fake-precursor attack
+  (D-069), CB-08 Physics sanity (D-070), CB-11 the Predictability meter (D-071). CB-05, 07, 08 and 11
+  read the forecasts of CB-02 and CB-03, so every forecaster and floor is scored on them.
+- **The trust layer** (`craton/trust`): forecasts as distributions (`predictive`: ensemble members,
+  negative binomial dispersion), calibration, the meter, physics checks, fake-precursor attacks, the
+  input guard (D-072), the out-of-distribution detector.
+- **`craton referee`** (D-073): a periodicity claim against declustering, fake clocks or shifted
+  tides, time-of-day shuffles and a locked held-out prediction; `craton referee` with no arguments
+  replays the 2026-10-21 tidal claim (rejected) and two fake planets (`results/referee/replay.json`).
+- **Locked forecasts** (D-074): `craton live run|bundle|page|verify`, `forecasts/`, the nightly
+  `.github/workflows/live.yml`; the frozen model ships as a release asset. `craton check` refuses any
+  edit to a locked forecast or grade.
+- **The simulator registry** (`craton/sim`, D-075) with the ETAS planet; Omori bursts and periodic
+  thinning for the referee's replays.
+- Region `southern_italy` (INGV, 61,086 quakes, snapshot `6dd8efd2fbc23ce6`), read only by CB-06.
+- Floors `no_detector` and `fingerprint_knn` (CB-06).
+- `docs/assets/meter-*.png`, `scripts/figures/meter.py`.
+- `craton check` verifies every locked forecast's seal and refuses edits to locked files and grades.
+
+### Changed
+- The Field averages **six** members, P6's four plus two new ones: an ensemble grows and is never
+  retrained (D-076). It forecasts no magnitude above 7.3 and reads the catalogue through the guard
+  (D-067). Day totals carry a negative binomial size k = κ·mean^γ fitted on validation days (D-066).
+- CB-02 and CB-03 compute each forecast once and share it with the trust tasks.
+
 ## [0.7.0] — 2026-10-22 · P6 Beat ETAS: the Field
 
 ### Added
