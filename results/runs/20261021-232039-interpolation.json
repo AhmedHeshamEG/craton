@@ -1,0 +1,83 @@
+{
+  "run_id": "20261021-232039-interpolation",
+  "model": "interpolation",
+  "kind": "baseline",
+  "config_hash": "baseline",
+  "git_commit": "f45b646dc5ff",
+  "created": "2026-10-21T23:20:39Z",
+  "results": [
+    {
+      "task_id": "CB-01",
+      "metric": "bits per masked token, mean over instruments",
+      "direction": "lower",
+      "fingerprint": "faa360aee280f00136ec7b9ef49a6eda9b979c8cc0acda317b9a5d70763a8ef6",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "values": [
+        16.06726427828849,
+        16.06726427828849,
+        16.06726427828849
+      ],
+      "extras": {
+        "seismic_catalog.lat_bits": [
+          7.420296744455853,
+          7.420296744455853,
+          7.420296744455853
+        ],
+        "seismic_catalog.lon_bits": [
+          7.0225429505433254,
+          7.0225429505433254,
+          7.0225429505433254
+        ],
+        "seismic_catalog.depth_km_bits": [
+          3.371703827672586,
+          3.371703827672586,
+          3.371703827672586
+        ],
+        "seismic_catalog.magnitude_bits": [
+          4.670412315951113,
+          4.670412315951113,
+          4.670412315951113
+        ],
+        "seismic_catalog_bits_per_token": [
+          22.484955838622877,
+          22.484955838622877,
+          22.484955838622877
+        ],
+        "seismic_catalog_queries": [
+          17310.0,
+          17310.0,
+          17310.0
+        ],
+        "gnss_daily.east_bits": [
+          2.6534601543742116,
+          2.6534601543742116,
+          2.6534601543742116
+        ],
+        "gnss_daily.north_bits": [
+          2.662208466685327,
+          2.662208466685327,
+          2.662208466685327
+        ],
+        "gnss_daily.up_bits": [
+          4.333904096894568,
+          4.333904096894568,
+          4.333904096894568
+        ],
+        "gnss_daily_bits_per_token": [
+          9.649572717954108,
+          9.649572717954108,
+          9.649572717954108
+        ],
+        "gnss_daily_queries": [
+          10690.0,
+          10690.0,
+          10690.0
+        ]
+      }
+    }
+  ]
+}

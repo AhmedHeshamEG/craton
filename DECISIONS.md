@@ -687,3 +687,111 @@ validation blocks are quiet months, the test is a crisis). Fewer steps (blind to
 **Note.** The ablation (`docs/ablation.md`) was measured with the uncapped head (training v0.2). Its
 quake, GNSS and CB-04 rows don't touch the rate head; its CB-02 row compares variants that all had
 the uncapped head, so the comparison holds, but its absolute CB-02 numbers are not the scoreboard's.
+
+### D-058 · 2026-10-22 · P6 — Every forecast score comes split into how many, where and how big
+
+CB-02 and CB-03 report, as extras, the score per quake split exactly into four parts: how many
+(each day's Poisson total), where (the share of the day's rate in the quake's cell), how big (the
+share of the cell's rate in its magnitude bin) and a shuffle term (log N! − Σ log n!, the same for
+every forecast). They add up to the score to rounding. Also the score without the days that hold
+an M5+ quake. Extras only: the tasks' test data, metric and fingerprints do not move.
+
+**Why.** The P5 loss was 4.7 bits behind ETAS on CB-02, and only splitting it showed 3.6 of them
+were *where*. A phase that says "beat ETAS" needs to say on which part.
+
+**Rejected.** A new task ID for the split (nothing about the test changes).
+
+### D-059 · 2026-10-22 · P6 — The building: oracle floors above ETAS, measured once
+
+`craton bench ceiling` writes `results/ceiling.json`: ETAS's own forecast with one thing replaced
+by the truth: each day's count (+2.10 bits on CB-02, +3.55 on CB-03), the day's map to ~10 km
+(+0.60, +0.66) or to the exact cell (+2.11, +2.45), and the roof, count and cell together (+4.21,
++6.00). The scoreboard draws every forecast on that building.
+
+**Why.** "Above ETAS" needs a scale. The oracles read the answers, so no method can reach them;
+they say how much room there is and where it is (most of the count room sits on the three M5+
+days).
+
+### D-060 · 2026-10-22 · P6 — Three stronger floors, and two of them barely move
+
+- `interpolation` (CB-01): a hidden GNSS day is the line between the same station's nearest
+  visible days, two logistics wide (widths per station from leave-one-out on the training split).
+  GNSS half: **9.65 bits**. Craton P5 scores 9.75 there: Craton's GNSS skill is no better than
+  drawing a line between neighbouring days. Kept on the board as the honest bar.
+- `etas_aniso` (CB-02/03): every M4+ quake's zone becomes an ellipse along its first 6 hours of
+  aftershocks (principal axes, stretch up to 6x, centred on their centroid; rupture radius from
+  Wells and Coppersmith 1994). 85 quakes get shapes, aligned NW-SE along the Apennines.
+  CB-02 −7.119, CB-03 −9.401: **nothing**. ETAS's M6 kernel is ~3 km wide, and the thousands of
+  small aftershocks, each a parent of its own, already draw the fault.
+- `etas_incomplete` (CB-02/03): the blind-time model of Hainzl (2016, 2022), simplified: ETAS keeps
+  its fit, and a blind time Tb plus a productivity factor κ are chosen by grid search on the
+  training days' counts per magnitude bin. Detection inside each day is computed minute by minute.
+  Both tasks pick Tb = 0 and κ = 1.1: CB-02 −7.059, CB-03 −9.295. Daily counts can't see the
+  blindness; the gain is the productivity factor.
+
+**Rejected.** A full Hainzl refit with Tb inside the likelihood (a much larger change to the ETAS
+fit; the simplified floor already says what daily data can tell). Faults from DISS for the
+stretched zones (an adapter and a data card for a floor that the data says adds nothing; the
+catalogue draws its own faults).
+
+### D-061 · 2026-10-22 · P6 — The Field: Omori memory, cell tokens, ETAS as the starting line
+
+CB-02 and CB-03 are now forecast by the Field (`craton/field`), not the trunk's next-day head:
+
+- **Omori memory.** Each 0.1° cell keeps fading counters of the quakes in it, lifetimes 1 hour →
+  12 years (9, log-spaced), counting every quake down to M1.5, weighted by 1 or by 10^(m−2), seen
+  at three spreads (the cell, ~10 km, ~30 km): 54 numbers per cell per midnight. A power law is a
+  sum of exponentials, so ETAS's triggering is one fixed recipe over these counters: a diagonal
+  state-space layer with fixed decays.
+- **Cell tokens.** The 1,050 cells are the tokens; two attention layers let each read the others.
+- **ETAS start.** Out of each cell come two bounded corrections to ETAS's log rate (M2-3, M3+), at
+  most 4x either way; the output layer starts at zero, so the untrained Field is ETAS exactly.
+- **Small quakes in, big quakes scored.** Memory counts M1.5+, the loss learns from M2+ (the
+  benchmark's Poisson score), only M3+ is forecast.
+
+The spike, seed 0 → 2: the flip alone (no place context) takes CB-02 from −10.98 to
+−7.02 ± 0.13 and CB-03 from −14.05 to −8.72 ± 0.14, ETAS −7.12 and −9.40. All of the gain is how
+many; where ties ETAS. Without attention between cells, where loses 0.36 bits on CB-03; a single
+correction for the whole day gains less count than one per cell.
+
+**Rejected.** The P5 trunk's vector in every cell for now (the spike beat ETAS without it; it
+stays the next thing to try). An ETAS with M1.5 parents as the base (CB-03 −9.05, all count, its
+fit hits a parameter bound, and it runs out of memory on CB-02).
+
+### D-062 · 2026-10-22 · P6 — A forecast is the average of four Fields
+
+Each seed's forecast is the mean rate of four Fields (member seeds 100·s + m). One Field per seed
+swung CB-02 between −6.87 and −7.10 (566 to 877 quakes expected): the ratchet's noise would have
+been ±0.26. Four members: −7.019, −7.014, −7.044 (± 0.016).
+
+**Why.** A deep ensemble: the members disagree where the training data is thin, and averaging
+their rates is a better forecast than any one of them.
+
+### D-063 · 2026-10-22 · P6 — The Field has its own config and checkpoints; ETAS runs on the GPU
+
+`configs/field/mini.yaml`, its own hash, its own checkpoints (`results/checkpoints/field-...`),
+so a Field change never retrains the trunk's twelve. `craton-mini`'s CB-01, CB-04 and CB-17 come
+from the same trunk checkpoints as P5. ETAS's daily rates for the Field's ~4,600 training days run
+on the GPU (`craton/field/base.py`), equal to the CPU code to 5·10⁻¹², about a hundred times
+faster. The `etas` baseline keeps its CPU path, so its frozen numbers cannot move.
+
+### D-064 · 2026-10-22 · P6 — The Field learns from 1991; the *where* exit test is missed, and kept
+
+The Field's training days start on 1 January 1991, not 2005: it sees Colfiorito 1997 (in the older Md
+magnitudes) as well as L'Aquila 2009, with ETAS's 2005 fit as the starting line throughout. Seed 0,
+four members: CB-02 −7.02 → −6.85, CB-03 −8.61 → −8.25, and CB-03's *where* went from a tie to
++0.12 over ETAS.
+
+Final, 3 seeds: CB-02 −6.818 ± 0.016, CB-03 −8.233 ± 0.006. *Where* against ETAS: CB-03 +0.15,
+CB-02 −0.018. The CB-02 shortfall is all on two days, 30 October 2016 (Norcia, −38.8 bits) and
+18 January 2017 (Campotosto, −18.2 bits), when a new mainshock struck away from the swarm the Field
+was leaning on; on every other day the Field's map is ahead (+0.02 bits per quake). P6 ships with
+this exit test unmet, said here, in the logbook and in the lesson.
+
+**Why.** More sequences are the cheapest teacher there is. The rest of the plan (above ETAS beyond
+noise on both, above the stronger floors) is met, and blending ETAS's map back in only made CB-02's
+*where* worse at every mix (checked, not tuned on the test). Seeing a mainshock coming is the
+mainshock-day work later in the plan, not something a map of recent activity can do.
+
+**Rejected.** Mixing ETAS's map into the Field's by a weight chosen on the test (that is fitting the
+answer). Holding the release until *where* ties on CB-02 (no honest lever left inside this phase).

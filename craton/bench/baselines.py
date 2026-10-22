@@ -21,7 +21,7 @@ import numpy as np
 
 from craton.bench import csep, etas
 from craton.bench.data import DAY, Events
-from craton.bench.dists import ChannelDist, Gaussian, Histogram
+from craton.bench.dists import ChannelDist, Gaussian, Histogram, LogisticMixture
 from craton.bench.splits import stable_stations, station_sites
 from craton.bench.tasks import (
     BenchContext,
@@ -116,6 +116,100 @@ class Climatology:
         """The whole region's climatology from a split that never saw the CB-17 region; the
         context is ignored, so every N gets the same answer."""
         return quake_climatology(ctx.train_events("cb17_fit"), queries.magnitude_type)
+
+
+#: Interpolation's answer: two logistics around the line between a day's neighbours, the wide
+#: one for the days a station jumps. Widths are per station and component, from training.
+INTERP_WIDE = 6.0
+INTERP_WIDE_WEIGHT = 0.08
+
+
+def _neighbour_line(
+    t: FloatArray, vt: FloatArray, venu: FloatArray
+) -> tuple[FloatArray, FloatArray]:
+    """For each query time ``t``, the straight line between the station's nearest visible day
+    before and after it (or the nearest one, when only one side has any). Returns the
+    positions (n, 3) and the gap in days between the two days used (at least 1)."""
+    pos = np.searchsorted(vt, t)
+    lo = np.clip(pos - 1, 0, len(vt) - 1)
+    hi = np.clip(pos, 0, len(vt) - 1)
+    t_lo, t_hi = vt[lo], vt[hi]
+    span = t_hi - t_lo
+    frac = np.where(span > 0, (t - t_lo) / np.where(span > 0, span, 1.0), 0.0)
+    frac = np.clip(frac, 0.0, 1.0)
+    enu = venu[lo] + frac[:, None] * (venu[hi] - venu[lo])
+    gap = np.maximum(np.maximum(span, np.abs(t - t_lo)), np.abs(t_hi - t)) / DAY
+    return enu, np.maximum(gap, 1.0)
+
+
+@dataclass
+class Interpolation:
+    """CB-01's honest GNSS floor: a hidden day is the line between the same station's
+    nearest visible days. Quakes get the climatology answer.
+
+    How wide the answer is comes from the training split alone: every interior training day
+    is hidden in turn and rebuilt from its two neighbours, and the residuals set one logistic
+    width per station and component (median absolute residual / ln 3), growing with the
+    square root of the gap. A second logistic, ``INTERP_WIDE`` times wider, holds
+    ``INTERP_WIDE_WEIGHT`` of the probability for the days a station jumps.
+    """
+
+    name: str = "interpolation"
+    kind: str = "baseline"
+
+    def widths(self, ctx: BenchContext) -> dict[str, FloatArray]:
+        """Per station: the logistic width (mm) of a one-day-gap rebuild, per component."""
+        g = ctx.train_gnss("pretrain")
+        out: dict[str, FloatArray] = {}
+        for s in np.unique(g.station):
+            sel = g.station == s
+            t, enu = g.time[sel], g.enu[sel]
+            if len(t) < 3:
+                continue
+            frac = (t[1:-1] - t[:-2]) / (t[2:] - t[:-2])
+            line = enu[:-2] + frac[:, None] * (enu[2:] - enu[:-2])
+            gap = (t[2:] - t[:-2]) / DAY
+            resid = (enu[1:-1] - line) * 1000.0 / np.sqrt(gap / 2.0)[:, None]
+            out[str(s)] = np.maximum(np.median(np.abs(resid), axis=0) / math.log(3.0), 0.2)
+        return out
+
+    def predict_masked(
+        self, queries: MaskedQueries, ctx: BenchContext, seed: int
+    ) -> dict[str, dict[str, ChannelDist]]:
+        out = Climatology().predict_masked(queries, ctx, seed)
+        gi = queries.where("gnss_daily")
+        if not len(gi):
+            return out
+        from craton.bench.tasks import TASKS, GeoPerplexity
+
+        task = TASKS["CB-01"]
+        assert isinstance(task, GeoPerplexity)
+        hidden = task.hidden(ctx)
+        g = ctx.gnss
+        g = g.select(~np.isin(g.token_hash, sorted(hidden)) & ~np.isin(g.station, ctx.heldout))
+        widths = self.widths(ctx)
+        fallback = np.median(np.stack(list(widths.values())), axis=0)
+        stations = np.array([queries.qualifiers[i]["station"] for i in gi])
+        t = queries.time[gi]
+        base = np.zeros((len(gi), 3))
+        scale = np.zeros((len(gi), 3))
+        for s in np.unique(stations):
+            rows = np.nonzero(stations == s)[0]
+            sel = g.station == s
+            enu, gap = _neighbour_line(t[rows], g.time[sel], g.enu[sel])
+            base[rows] = enu
+            scale[rows] = widths.get(str(s), fallback)[None, :] * np.sqrt(gap / 2.0)[:, None]
+        logw = np.log(np.array([1 - INTERP_WIDE_WEIGHT, INTERP_WIDE_WEIGHT]))
+        out["gnss_daily"] = {
+            ch: LogisticMixture(
+                base[:, c],
+                np.broadcast_to(logw, (len(gi), 2)).copy(),
+                np.zeros((len(gi), 2)),
+                np.stack([scale[:, c], INTERP_WIDE * scale[:, c]], axis=1),
+            )
+            for c, ch in enumerate(("east", "north", "up"))
+        }
+        return out
 
 
 def _kernel_hist(x: FloatArray, edges: FloatArray, sigma: float) -> FloatArray:
@@ -225,6 +319,7 @@ class Etas:
 
     name: str = "etas"
     kind: str = "baseline"
+    anisotropic: bool = False
 
     def fit(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> etas.EtasFit:
         key = f"etas-fit:{spec.task_id}:{seed}"
@@ -246,9 +341,119 @@ class Etas:
         hist = ctx.events.window(f.t_ref, spec.window.t1).above(f.mc)
         cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, f.t_ref)
         days = (spec.day_starts - f.t_ref) / DAY
-        daily = etas.forecast_days(f, cat, days, spec.grid, proj)
+        daily = etas.forecast_days(f, cat, days, spec.grid, proj, self.anisotropic)
         scale, shares = _shares(f.b, f.mc, spec.grid)
         return GriddedForecast(daily.rates * scale, shares)
+
+
+#: ETAS-incomplete searches these blind times (seconds) and productivity factors.
+BLIND_SECONDS = (0.0, 5.0, 10.0, 20.0, 40.0, 80.0, 160.0, 320.0)
+PRODUCTIVITY_FACTORS = tuple(round(0.7 + 0.1 * i, 1) for i in range(19))  # 0.7 … 2.5
+
+
+@dataclass
+class EtasIncomplete(Etas):
+    """ETAS that knows the network goes partly blind after a big quake.
+
+    Short-term aftershock incompleteness (Hainzl 2016, 2022): right after a large quake,
+    smaller ones hide in its shaking and the catalogue misses them. Under Hainzl's blind-time
+    assumption a quake is missed if a larger one came less than Tb before it
+    (``etas.detection_factors``). ETAS fitted on such a catalogue under-counts how productive
+    big quakes are, so the triggered rate gets a factor κ, and the forecast is of the quakes
+    the network will *see*, which is what the catalogue scores.
+
+    A simplification of Hainzl (2022), which refits every parameter with the blind time
+    inside the likelihood: here ETAS keeps its fit, and only (Tb, κ) are chosen, by grid
+    search, to maximise the likelihood of each training day's count per magnitude bin.
+    """
+
+    name: str = "etas_incomplete"
+
+    @staticmethod
+    def _daily_box(
+        f: etas.EtasFit, cat: etas.Catalog, in_box: FloatArray, starts: FloatArray, bg: float
+    ) -> FloatArray:
+        """Triggered quakes expected per day in the box, M ≥ mc, cascade in; ``bg`` is the
+        background's daily total."""
+        pr = f.params
+        factor = etas.cascade_factor(pr, f.b, f.mc, 1.0)
+        prod = pr.k * np.exp(pr.a * (cat.m - f.mc)) * in_box
+        trig = np.zeros(len(starts))
+        for i in range(0, len(starts), 256):
+            t0 = starts[i : i + 256, None]
+            w = etas.omori_integral(t0 + 1 - cat.t[None, :], pr.c, pr.p) - etas.omori_integral(
+                t0 - cat.t[None, :], pr.c, pr.p
+            )
+            trig[i : i + 256] = np.where(cat.t[None, :] < t0, w, 0.0) @ prod
+        return trig * factor
+
+    def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
+        f = self.fit(spec, ctx, seed)
+        grid = spec.grid
+        proj = etas.Projection.for_grid(grid)
+        factor = etas.cascade_factor(f.params, f.b, f.mc, 1.0)
+        bg_cell = f.params.mu * f.background.cell_mass(grid, proj) * factor
+        bg_box = float(bg_cell.sum())
+        hist = ctx.events.window(f.t_ref, spec.window.t1).above(f.mc)
+        cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, f.t_ref)
+        smat = etas.spatial_matrix(f.params, cat, f.mc, grid, proj)
+        in_box = np.asarray(smat.sum(axis=1)).ravel()
+        half = grid.m_step / 2
+        lo = grid.magnitudes - half
+        hi = np.append(grid.magnitudes[1:] - half, np.inf)
+        gr = csep.gutenberg_richter_bins(f.b, f.mc, grid)
+
+        # Choose (Tb, κ) on the training days: each day's count per magnitude bin, M ≥ mc.
+        train = ctx.train_events(spec.fit_split).window(f.t_ref, to_seconds(ctx_split_end(spec)))
+        tr = etas.to_catalog(train.time, train.lat, train.lon, train.mag, proj, f.t_ref)
+        t_end = (to_seconds(ctx_split_end(spec)) - f.t_ref) / DAY
+        starts = np.arange(etas.BURN_IN_DAYS, np.floor(t_end))
+        past = tr.select(tr.m >= f.mc - 1e-9)
+        past_in_box = np.asarray(
+            etas.spatial_matrix(f.params, past, f.mc, grid, proj).sum(axis=1)
+        ).ravel()
+        trig = self._daily_box(f, past, past_in_box, starts, bg_box)
+        bg = np.full(len(starts), bg_box)
+        fine1 = etas.fine_box_rate(f, past, starts, bg + trig, past_in_box)
+        first = int(grid.mag_bin_of(np.array([f.mc]))[0])
+        inside = grid.cell_of(train.lat, train.lon) >= 0
+        keep = inside & (train.mag >= f.mc - 1e-9)
+        day = np.floor(tr.t[keep] - etas.BURN_IN_DAYS).astype(np.int64)
+        ok = (day >= 0) & (day < len(starts))
+        counts = np.zeros((len(starts), grid.n_mags))
+        np.add.at(counts, (day[ok], grid.mag_bin_of(train.mag[keep][ok])), 1.0)
+        best = (-math.inf, 0.0, 1.0)
+        for kappa in PRODUCTIVITY_FACTORS:
+            fine = bg[:, None] + kappa * (fine1 - bg[:, None])
+            for tb in BLIND_SECONDS:
+                det = etas.detection_factors(fine, f.b, f.mc, lo[first:], hi[first:], tb / DAY)
+                lam = fine.mean(axis=1)[:, None] * gr[None, first:] * det
+                ll = float(np.sum(counts[:, first:] * np.log(np.maximum(lam, 1e-300)) - lam))
+                if ll > best[0]:
+                    best = (ll, tb, kappa)
+        _, tb, kappa = best
+        ctx._cache[f"etas-incomplete:{spec.task_id}:{seed}"] = {"blind_s": tb, "kappa": kappa}
+
+        # The test days: ETAS's map with the triggered part scaled, then what will be seen.
+        days = (spec.day_starts - f.t_ref) / DAY
+        daily = etas.forecast_days(f, cat, days, grid, proj)
+        true = bg_cell[None, :] + kappa * (daily.rates - bg_cell[None, :])
+        fine_t = etas.fine_box_rate(f, cat, days, daily.rates.sum(axis=1), in_box)
+        fine_t = bg_box + kappa * (fine_t - bg_box)
+        det = etas.detection_factors(fine_t, f.b, f.mc, lo, hi, tb / DAY)
+        seen = gr[None, :] * det  # (days, mags) per quake of the true rate at M ≥ mc
+        total = seen.sum(axis=1)
+        return GriddedForecast(true * total[:, None], (seen / total[:, None])[:, None, :])
+
+
+@dataclass
+class EtasAniso(Etas):
+    """ETAS with stretched aftershock zones: the same fit, but every M4+ quake's zone becomes
+    an ellipse along its first hours of aftershocks (``etas.learn_shapes``), the way a
+    rupture drags its aftershocks along the fault."""
+
+    name: str = "etas_aniso"
+    anisotropic: bool = True
 
 
 # ---------------------------------------------------------------- IDW + trend (CB-04)
@@ -335,5 +540,14 @@ def register_method(method: Any) -> Any:
     return method
 
 
-for _m in (Climatology(), ContextKde(), PoissonClimatology(), Etas(), IdwTrend()):
+for _m in (
+    Climatology(),
+    ContextKde(),
+    Interpolation(),
+    PoissonClimatology(),
+    Etas(),
+    EtasAniso(),
+    EtasIncomplete(),
+    IdwTrend(),
+):
     register_method(_m)

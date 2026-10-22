@@ -475,18 +475,95 @@ def _fine_points(grid: Grid, proj: Projection, per_cell: int = 5) -> tuple[Any, 
     return xs, ys, cells, step
 
 
+@dataclass(frozen=True)
+class Shapes:
+    """Elliptical aftershock zones for some parents (anisotropic ETAS).
+
+    For parent ``index[i]`` the kernel is centred at (``x[i]``, ``y[i]``) and its squared
+    distance is measured as u²/ρ + v²·ρ, u along ``angle[i]`` and v across it. The stretch
+    keeps the kernel's area (the Jacobian is 1), so it still integrates to one. A shape is
+    usable only for forecasts that start at or after ``ready[i]`` (days).
+    """
+
+    index: IntArray
+    x: FloatArray
+    y: FloatArray
+    angle: FloatArray
+    rho: FloatArray
+    ready: FloatArray
+
+
+#: Anisotropic ETAS: parents this big get a shape, learned from this many hours of their own
+#: aftershocks, if at least ``SHAPE_MIN_QUAKES`` of them fall inside twice the rupture length.
+SHAPE_MIN_MAG = 4.0
+SHAPE_HOURS = 6.0
+SHAPE_MIN_QUAKES = 10
+SHAPE_MAX_RHO = 6.0
+
+
+def rupture_length_km(m: FloatArray) -> FloatArray:
+    """Subsurface rupture length, all slip types (Wells and Coppersmith 1994)."""
+    return np.asarray(10.0 ** (-2.44 + 0.59 * np.asarray(m)), dtype=np.float64)
+
+
+def learn_shapes(cat: Catalog, mc: float, hours: float = SHAPE_HOURS) -> Shapes:
+    """An ellipse for every big parent from its first ``hours`` of aftershocks at or above
+    ``mc``: centre = their centroid, axis = the main direction of their spread (principal
+    components), ρ = the square root of the two spreads' ratio (capped)."""
+    rows, xs, ys, angles, rhos, ready = [], [], [], [], [], []
+    span = hours / 24.0
+    for i in np.nonzero(cat.m >= SHAPE_MIN_MAG)[0]:
+        radius = max(2.0 * float(rupture_length_km(cat.m[i])), 5.0)
+        sel = (
+            (cat.t > cat.t[i])
+            & (cat.t <= cat.t[i] + span)
+            & (cat.m >= mc - 1e-9)
+            & ((cat.x - cat.x[i]) ** 2 + (cat.y - cat.y[i]) ** 2 <= radius**2)
+        )
+        if sel.sum() < SHAPE_MIN_QUAKES:
+            continue
+        pts = np.stack([cat.x[sel], cat.y[sel]], 1)
+        evals, evecs = np.linalg.eigh(np.cov(pts.T))
+        rho = math.sqrt(max(evals[1], 1e-6) / max(evals[0], 1e-6))
+        rows.append(i)
+        xs.append(float(pts[:, 0].mean()))
+        ys.append(float(pts[:, 1].mean()))
+        angles.append(math.atan2(evecs[1, 1], evecs[0, 1]))
+        rhos.append(min(rho, SHAPE_MAX_RHO))
+        ready.append(float(cat.t[i] + span))
+    return Shapes(
+        np.asarray(rows, dtype=np.int64),
+        np.asarray(xs, dtype=np.float64),
+        np.asarray(ys, dtype=np.float64),
+        np.asarray(angles, dtype=np.float64),
+        np.asarray(rhos, dtype=np.float64),
+        np.asarray(ready, dtype=np.float64),
+    )
+
+
 def spatial_matrix(
-    params: EtasParams, cat: Catalog, mc: float, grid: Grid, proj: Projection, chunk: int = 256
+    params: EtasParams,
+    cat: Catalog,
+    mc: float,
+    grid: Grid,
+    proj: Projection,
+    chunk: int = 256,
+    shapes: Shapes | None = None,
 ) -> sp.csr_matrix:
     """(events × cells) share of each event's aftershock kernel landing in each cell.
 
     The kernel is sampled on a fine grid and renormalised to its in-disc total, so a narrow
     kernel keeps its full mass instead of vanishing between quadrature points. Mass that falls
     outside the box is lost, as it should be: those aftershocks are outside the forecast.
+    With ``shapes``, ``cat`` is the shaped parents only (in the order of ``shapes``) and each
+    kernel is the parent's ellipse.
     """
+    if shapes is not None:
+        cat = Catalog(cat.t, shapes.x, shapes.y, cat.m)
     xs, ys, cells, _ = _fine_points(grid, proj)
     dxs, dys = xs[1] - xs[0], ys[1] - ys[0]
-    rx, ry = math.ceil(R_MAX / dxs) + 1, math.ceil(R_MAX / dys) + 1
+    reach = R_MAX * (math.sqrt(float(shapes.rho.max())) if shapes and len(shapes.rho) else 1.0)
+    rx, ry = math.ceil(reach / dxs) + 1, math.ceil(reach / dys) + 1
     grid_y, grid_x = np.meshgrid(np.arange(-ry, ry + 1), np.arange(-rx, rx + 1), indexing="ij")
     oy, ox = grid_y.ravel(), grid_x.ravel()
     rows, cols, vals = [], [], []
@@ -498,7 +575,14 @@ def spatial_matrix(
         gy = iy[:, None] + oy[None, :]
         valid = (gx >= 0) & (gx < len(xs)) & (gy >= 0) & (gy < len(ys))
         gxc, gyc = np.clip(gx, 0, len(xs) - 1), np.clip(gy, 0, len(ys) - 1)
-        r2 = (xs[gxc] - cat.x[sl, None]) ** 2 + (ys[gyc] - cat.y[sl, None]) ** 2
+        dx, dy = xs[gxc] - cat.x[sl, None], ys[gyc] - cat.y[sl, None]
+        if shapes is None:
+            r2 = dx**2 + dy**2
+        else:
+            cos, sin = np.cos(shapes.angle[sl])[:, None], np.sin(shapes.angle[sl])[:, None]
+            rho = shapes.rho[sl][:, None]
+            u, v = dx * cos + dy * sin, -dx * sin + dy * cos
+            r2 = u**2 / rho + v**2 * rho
         inside = valid & (r2 <= R_MAX**2)
         m_rel = np.broadcast_to((cat.m[sl] - mc)[:, None], r2.shape)
         w = np.where(inside, _spatial(params, r2, m_rel), 0.0)
@@ -543,10 +627,12 @@ def forecast_days(
     day_starts: FloatArray,
     grid: Grid,
     proj: Projection,
+    anisotropic: bool = False,
 ) -> DailyForecast:
     """Daily ETAS forecasts. ``history`` holds every quake known by each day (model units).
 
     Day ``d`` covers [day_starts[d], day_starts[d] + 1) and sees only quakes before it starts.
+    With ``anisotropic``, big parents get elliptical zones (``learn_shapes``) once known.
     """
     pr = fit.params
     parents = history.select(history.m >= fit.mc - 1e-9)
@@ -559,10 +645,89 @@ def forecast_days(
         - omori_integral(t0 - parents.t[None, :], pr.c, pr.p)
     )
     w = np.where(seen, w, 0.0)
-    triggered = np.asarray((smat.T @ w.T).T)
+    if anisotropic:
+        shapes = learn_shapes(parents, fit.mc)
+        shaped = spatial_matrix(pr, parents.select(shapes.index), fit.mc, grid, proj, shapes=shapes)
+        # A parent's ellipse replaces its circle on every day that starts after it is known.
+        use = day_starts[:, None] >= shapes.ready[None, :]
+        w_shaped = np.where(use, w[:, shapes.index], 0.0)
+        w[:, shapes.index] = np.where(use, 0.0, w[:, shapes.index])
+        triggered = np.asarray((smat.T @ w.T).T + (shaped.T @ w_shaped.T).T)
+    else:
+        triggered = np.asarray((smat.T @ w.T).T)
     background = pr.mu * fit.background.cell_mass(grid, proj)
     factor = cascade_factor(pr, fit.b, fit.mc, 1.0)
     return DailyForecast((background[None, :] + triggered) * factor, fit.mc, fit.b)
+
+
+# ---------------------------------------------------------------- short-term incompleteness
+
+#: Resolution of the within-day rate for the blind-time correction, and how far back parents
+#: are followed minute by minute (older ones are smooth enough to spread evenly over a day).
+MINUTE = 1.0 / 1440.0
+FINE_LOOKBACK_DAYS = 30.0
+
+
+def fine_box_rate(
+    fit: EtasFit,
+    history: Catalog,
+    day_starts: FloatArray,
+    daily_total: FloatArray,
+    in_box: FloatArray,
+) -> FloatArray:
+    """(days, 1440) the forecast's rate (quakes per day, M ≥ mc, whole box) minute by minute.
+
+    Parents from the last ``FINE_LOOKBACK_DAYS`` before each day are followed exactly (each
+    minute gets the Omori integral over it); the rest of the day's total, ``daily_total``
+    minus that, is spread evenly. ``in_box`` is each parent's share of aftershocks landing in
+    the box. The cascade factor scales the exact part as it scales the daily forecast.
+    """
+    pr = fit.params
+    factor = cascade_factor(pr, fit.b, fit.mc, 1.0)
+    prod = pr.k * np.exp(pr.a * (history.m - fit.mc)) * in_box
+    edges = np.arange(1441) * MINUTE
+    out = np.zeros((len(day_starts), 1440))
+    for d, t0 in enumerate(day_starts):
+        sel = (history.t < t0) & (history.t >= t0 - FINE_LOOKBACK_DAYS)
+        if sel.any():
+            age = t0 + edges[None, :] - history.t[sel, None]
+            per_min = np.diff(omori_integral(age, pr.c, pr.p), axis=1)
+            exact = factor * (prod[sel] @ per_min) / MINUTE
+        else:
+            exact = np.zeros(1440)
+        rest = max(float(daily_total[d]) - float(exact.mean()), 0.0)
+        out[d] = exact + rest
+    return out
+
+
+def detection_factors(
+    fine_rate: FloatArray, b: float, mc: float, lo: FloatArray, hi: FloatArray, blind_days: float
+) -> FloatArray:
+    """(days, bins) share of each magnitude bin [lo, hi) the network detects.
+
+    The blind-time assumption (Hainzl 2016, 2022): a quake of magnitude m is missed if a
+    larger one happened less than ``blind_days`` before it. With a true rate R above ``mc``
+    and Gutenberg-Richter magnitudes, larger ones arrive at R·10^(−b(m−mc)), so m is seen
+    with probability exp(−Tb·R·10^(−b(m−mc))) and the detected rate in [lo, hi) integrates to
+    (e^(−Tb·R·S(hi)) − e^(−Tb·R·S(lo))) / Tb, with S the GR survival above ``mc``.
+    """
+    import torch
+
+    s_lo = 10.0 ** (-b * (lo - mc))
+    s_hi = np.where(np.isinf(hi), 0.0, 10.0 ** (-b * (np.minimum(hi, 99.0) - mc)))
+    true = (s_lo - s_hi)[None, :] * fine_rate.mean(axis=1)[:, None]
+    if blind_days <= 0:
+        return np.ones_like(true)
+    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    lo_t = torch.tensor(s_lo, dtype=torch.float64, device=dev)[None, None, :]
+    hi_t = torch.tensor(s_hi, dtype=torch.float64, device=dev)[None, None, :]
+    seen = np.zeros_like(true)
+    for d0 in range(0, len(fine_rate), 128):
+        r = torch.tensor(fine_rate[d0 : d0 + 128], dtype=torch.float64, device=dev)[..., None]
+        r = r * blind_days
+        part = (torch.exp(-r * hi_t) - torch.exp(-r * lo_t)).mean(dim=1) / blind_days
+        seen[d0 : d0 + 128] = part.cpu().numpy()
+    return np.asarray(np.where(true > 0, seen / np.maximum(true, 1e-300), 1.0), np.float64)
 
 
 # ---------------------------------------------------------------- simulation

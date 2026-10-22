@@ -599,6 +599,58 @@ class SequenceForecast(Task):
         return score_forecast(fc, self.observed(ctx), spec, seed)
 
 
+#: Days holding a quake this big are left out of ``bits_without_big_days``.
+BIG_DAY_MAGNITUDE = 5.0
+
+
+def bit_split(
+    fc: GriddedForecast,
+    expected: FloatArray,
+    day: Any,
+    cell: Any,
+    mag: Any,
+    counts: Any,
+    first: int,
+    n_obs: int,
+    tag: str,
+) -> dict[str, float]:
+    """The score per quake, split exactly into where its bits come from.
+
+    A Poisson forecast over (day, cell, bin) is a Poisson total per day times a multinomial
+    over that day's cells and bins, so the log-likelihood is a sum of:
+
+        how_many   N log R − R − log N! per day (the day's total, R expected, N seen)
+        where      log of the share of the day's rate in the quake's cell
+        how_big    log of the share of the cell's rate in the quake's magnitude bin
+        shuffle    log N! − Σ log n! (how many ways the day's quakes could be arranged): the
+                   same for every forecast, so it never moves a comparison
+
+    Each in bits per quake; the four add up to ``bits_per_eq``. ``day``, ``cell``, ``mag``
+    and ``counts`` list the observed (day, cell, bin) keys and their counts.
+    """
+    per_day = expected.sum(axis=1)
+    n_day = np.bincount(day, weights=counts, minlength=len(per_day))
+    with np.errstate(divide="ignore"):
+        how_many = float(
+            np.sum(n_day * np.log(per_day)) - per_day.sum() - sum(math.lgamma(n + 1) for n in n_day)
+        )
+        share_cell = expected[day, cell] / per_day[day]
+        shares = np.broadcast_to(fc.mag_shares, (*fc.rates.shape, fc.mag_shares.shape[-1]))
+        share_mag = shares[day, cell, mag] / shares[day, cell, first:].sum(axis=-1)
+        where = float(np.sum(counts * np.log(share_cell)))
+        how_big = float(np.sum(counts * np.log(share_mag)))
+    shuffle = float(
+        sum(math.lgamma(n + 1) for n in n_day) - sum(math.lgamma(n + 1) for n in counts)
+    )
+    scale = 1.0 / (n_obs * csep.LN2)
+    return {
+        f"{tag}.how_many_bits": how_many * scale,
+        f"{tag}.where_bits": where * scale,
+        f"{tag}.how_big_bits": how_big * scale,
+        f"{tag}.shuffle_bits": shuffle * scale,
+    }
+
+
 def score_forecast(fc: GriddedForecast, obs: Events, spec: ForecastSpec, seed: int) -> Score:
     """Joint Poisson log-likelihood per quake, plus the CSEP consistency tests, as extras."""
     g = spec.grid
@@ -625,6 +677,17 @@ def score_forecast(fc: GriddedForecast, obs: Events, spec: ForecastSpec, seed: i
         extras[f"{tag}.observed"] = float(n_obs)
         extras[f"{tag}.expected"] = float(expected.sum())
         extras[f"{tag}.bits_per_eq"] = bits
+        if n_obs:
+            extras.update(bit_split(fc, expected, d, c, m, counts, first, n_obs, tag))
+            big_days = np.unique(day[obs.mag >= BIG_DAY_MAGNITUDE - 1e-9])
+            calm = ~np.isin(d, big_days)
+            n_calm = int(counts[calm].sum())
+            if n_calm:
+                ll_calm = float(
+                    np.sum(log_terms[calm])
+                    - np.delete(expected, big_days[big_days < len(expected)], axis=0).sum()
+                )
+                extras[f"{tag}.bits_without_big_days"] = csep.bits_per_earthquake(ll_calm, n_calm)
         per_day = expected.sum(axis=1)
         obs_day = np.bincount(day[sel], minlength=len(per_day))
         tests = [csep.n_test(e, int(o)) for e, o in zip(per_day, obs_day, strict=True)]

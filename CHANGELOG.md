@@ -3,6 +3,29 @@
 One release per phase. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions
 follow D-009 (phase Pn ships as v0.(n+1).0).
 
+## [0.7.0] — 2026-10-22 · P6 Beat ETAS: the Field
+
+### Added
+- **The Field** (`craton/field`): CB-02 and CB-03 are forecast by the 1,050 forecast cells as
+  tokens, each with an Omori memory (fading counters from 1 hour to 12 years, every quake down to
+  M1.5), attention between cells, and ETAS as the starting line: a bounded correction, at most 4x
+  either way, zero before training (D-061). Four Fields averaged per forecast (D-062). Its own
+  config (`configs/field/mini.yaml`) and checkpoints, so it never retrains the trunk (D-063).
+- **The bit split**: CB-02 and CB-03 extras split the score per quake into how many, where, how
+  big and a shuffle term, plus the score without the M5+ days (D-058).
+- **The building**: `craton bench ceiling` → `results/ceiling.json`, oracle floors above ETAS,
+  drawn on the scoreboard and in `docs/assets/building-*.png` (D-059).
+- **Floors** (D-060): `interpolation` (CB-01's GNSS half: 9.65 bits, ahead of Craton's 9.75),
+  `etas_aniso` (stretched aftershock zones: no gain), `etas_incomplete` (blind time + productivity:
+  CB-02 −7.059, CB-03 −9.295).
+- ETAS daily rates on the GPU for the Field's training days (`craton/field/base.py`).
+
+### Changed
+- `craton-mini` forecasts through the Field; `field_config=""` keeps the trunk's own next-day head,
+  which the ablation runner still uses.
+- Task phases on the scoreboard follow the roadmap: P6 is now Beat ETAS, the locks move to P7 and
+  every later phase moves down one.
+
 ## [0.6.0] — 2026-10-21 · P5 Fusion: quakes + GPS + the Moon
 
 ### Added

@@ -99,6 +99,8 @@ class CratonMini:
     config_name: str = "mini"
     #: A config to use instead of ``config_name`` (the ablation runner's variants).
     override: CratonConfig | None = None
+    #: The Field config that answers CB-02 and CB-03 (``configs/field/``); "" = the trunk.
+    field_config: str = "mini"
     log: Log = _quiet
     _models: dict[tuple[str, int], CratonModel] = field(default_factory=dict)
     _meta: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict)
@@ -544,6 +546,15 @@ class CratonMini:
     # ------------------------------------------------------------ CB-02, CB-03
 
     def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
+        """CB-02 and CB-03: through the Field (P6) unless ``field_config`` is "", then through the
+        trunk's own next-day head (P4-P5)."""
+        if self.field_config:
+            from craton.field.forecaster import FieldForecaster
+
+            return FieldForecaster(self.field_config, log=self.log).forecast(spec, ctx, seed)
+        return self.trunk_forecast(spec, ctx, seed)
+
+    def trunk_forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
         model = self.model(ctx, spec.fit_split, seed)
         gnss = None
         if "gnss_daily" in self.inputs:
@@ -568,10 +579,27 @@ class CratonMini:
         return GriddedForecast(np.concatenate(rates), mag[:, None, :])
 
     def write_cards(self, root: Any) -> Any:
-        """docs/models/<config>.md: the cards of every checkpoint this method has loaded."""
-        folders = [self.key_from_meta(meta).folder(root) for meta in self._meta.values()]
+        """docs/models/<config>.md: the card of every trunk checkpoint of this config on disk,
+        then every Field checkpoint's card."""
+        cdir = checkpoint.checkpoints_dir(root)
+        prefix = f"{self.config.name}-{checkpoint.TRAIN_VERSION}-"
+        suffix = f"-{self.config_hash[:8]}-s"
+        folders = [
+            f for f in cdir.glob(f"{prefix}*") if suffix in f.name and (f / "card.json").is_file()
+        ]
+        folders += [self.key_from_meta(meta).folder(root) for meta in self._meta.values()]
+        fields = []
+        if self.field_config:
+            fields = [
+                (f / "card.md").read_text("utf-8")
+                for f in sorted(cdir.glob(f"field-{self.field_config}-*"))
+                if (f / "card.md").is_file()
+            ]
         return checkpoint.write_index(
-            root, folders, root / "docs" / "models" / f"craton-{self.config_name}.md"
+            root,
+            sorted(set(folders)),
+            root / "docs" / "models" / f"craton-{self.config_name}.md",
+            fields,
         )
 
     def key_from_meta(self, meta: dict[str, Any]) -> checkpoint.CheckpointKey:

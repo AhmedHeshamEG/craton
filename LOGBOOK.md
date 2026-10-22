@@ -292,3 +292,53 @@ Decisions: D-048 … D-057.
 
 Next: P6, the 8 locks. Calibration, ensembles, the OOD detector, physics budgets, locked forecasts,
 and an honest interpolation baseline for CB-01's GNSS half.
+
+## 2026-10-22 — P6 — Beat ETAS: the Field
+
+TLDR: Craton is above ETAS on both forecasts for the first time. The forecast is now the Field: the
+1,050 forecast cells as tokens with a fading memory of their quakes, attention between them, and ETAS
+as the starting line. CB-02 −10.98 → −6.82 (ETAS −7.12), CB-03 −14.05 → −8.23 (ETAS −9.40). Almost
+all of it is how many; *where* beats ETAS on 2009 and misses by 0.02 on 2016-17.
+
+Built:
+- the bit split (how many / where / how big / shuffle) and the score without M5+ days, as extras of
+  CB-02 and CB-03 (D-058)
+- `craton bench ceiling` and the building on the scoreboard and README (D-059)
+- floors `interpolation`, `etas_aniso`, `etas_incomplete` (D-060)
+- `craton/field`: Omori memory, GPU ETAS base, `FieldNet`, the forecaster, its own config and
+  checkpoints; `craton-mini` forecasts through it (D-061, D-062, D-063, D-064)
+- the building figure; ROADMAP gains P6 and every later phase moves down one
+- tests: 319 → 329
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261022-014206-craton-mini`):
+- CB-02 −6.818 ± 0.016 (P5 −10.98, P4 champion −10.88; ETAS −7.118, ETAS-incomplete −7.059). How
+  many +0.32 over ETAS, where −0.02, without M5+ days −0.09. 1,118 M3+ expected, 1,065 seen.
+- CB-03 −8.233 ± 0.006 (P5 −14.05, champion −15.13; ETAS −9.396, ETAS-incomplete −9.295). How many
+  +1.02, where +0.15, without M5+ days +0.70. 216 expected, 315 seen.
+- CB-01 15.12 (quakes 20.48, GNSS 9.75), CB-04 17.50 mm, CB-15 16.27%, CB-17 24.56: unchanged, same
+  trunk checkpoints.
+- Floors: interpolation CB-01 16.07 (GNSS half 9.65, ahead of Craton's 9.75); etas_aniso −7.119 /
+  −9.401; etas_incomplete −7.059 / −9.295 (blind time 0 s, productivity ×1.1).
+- The building (`results/ceiling.json`): count +2.10 / +3.55, where to ~10 km +0.60 / +0.66, to the
+  cell +2.11 / +2.45, roof +4.21 / +6.00.
+
+Surprises / problems:
+- The spike (memory + cell tokens + ETAS start, no place context) already beat ETAS: −7.02 / −8.72.
+  The trunk's view of each cell was never needed.
+- All of the gain was how many. Without attention between cells *where* got worse by 0.36 bits.
+- One Field per seed swung CB-02 by ±0.13; four averaged, ±0.02 (D-062).
+- Stretched aftershock zones: zero. The small aftershocks already draw the fault.
+- The blind-time floor chose a blind time of zero: daily counts can't see minutes of blindness.
+- ETAS with M1.5 parents ran out of RAM on CB-02 (pairs inside L'Aquila); dropped as a base.
+- ETAS over ~4,700 training days took an hour on the CPU; the GPU version takes seconds and matches to
+  5·10⁻¹².
+- The *where* exit test is missed on CB-02 by 0.02, all on the Norcia and Campotosto days (D-064).
+- On CB-02's calm days ETAS is still 0.09 ahead; the Field wins the busy ones. M1.5+ on CB-02 is worse
+  than ETAS (−2.95 vs −2.76): small quakes are extended from the M3+ output by Gutenberg-Richter.
+- A new attribute called `field` on the method shadowed `dataclasses.field` in its own class body; lint
+  caught it before any run.
+
+Decisions: D-058 … D-064.
+
+Next: P7, the locks. Calibration, ensembles (the Field already averages four), the OOD detector, physics
+budgets, locked forecasts and `craton referee`.

@@ -164,7 +164,61 @@ def _notes(entry: ScoreEntry) -> str:
     return ""
 
 
-def render(board: Scoreboard, data: dict[str, Any] | None = None) -> str:
+ORACLE_NAMES = {
+    "count": "knowing each day's count",
+    "where_10km": "knowing where, to ~10 km",
+    "where_cell": "knowing where, to the cell",
+    "roof": "the roof: count and cell",
+}
+
+
+def render_building(board: Scoreboard, building: dict[str, Any] | None) -> list[str]:
+    """How far above ETAS a forecast can climb (``craton bench ceiling``), and where Craton
+    and every forecast floor stand on it, in bits per M3+ quake above ETAS."""
+    if not building:
+        return []
+    lines = [
+        "",
+        "## The building",
+        "",
+        "Bits per M3+ quake above ETAS. A forecast on floor k gives the real quakes 2^k times "
+        "ETAS's probability. The oracles above ETAS read the answers; no method can, so they "
+        "measure the room, not a target.",
+        "",
+        "| | " + " | ".join(sorted(building)) + " |",
+        "|---|" + "---|" * len(building) + "",
+    ]
+    rows: list[tuple[str, list[str]]] = []
+    for key in ("roof", "where_cell", "where_10km", "count"):
+        rows.append(
+            (
+                f"oracle · {ORACLE_NAMES[key]}",
+                [_num(building[t]["above_etas_bits"][key], "+.2f") for t in sorted(building)],
+            )
+        )
+    methods: dict[str, list[str]] = {}
+    for t in sorted(building):
+        etas = building[t]["etas"]
+        found = {f"{e.model} (floor)": e.mean for e in board.baselines.get(t, {}).values()}
+        if t in board.entries:
+            found[f"**Craton** · {board.entries[t].model}"] = board.entries[t].mean
+        for name, mean in found.items():
+            methods.setdefault(name, ["·"] * len(building))
+            methods[name][sorted(building).index(t)] = _num(mean - etas, "+.2f")
+    rows += sorted(methods.items(), key=lambda kv: -max(_value(v) for v in kv[1]))
+    lines += [f"| {name} | " + " | ".join(vals) + " |" for name, vals in rows]
+    return lines
+
+
+def _value(cell: str) -> float:
+    return float(cell.replace("−", "-")) if cell != "·" else float("-inf")
+
+
+def render(
+    board: Scoreboard,
+    data: dict[str, Any] | None = None,
+    building: dict[str, Any] | None = None,
+) -> str:
     lines: list[str] = [HEADER, "# Scoreboard", ""]
     lines += [
         "Every number here comes from a script and is a mean ± std over 3 seeds. "
@@ -200,6 +254,8 @@ def render(board: Scoreboard, data: dict[str, Any] | None = None) -> str:
         phase = planned.phase if planned else "—"
         score = f"{_fmt(entry)} · {entry.model}" if entry else "·"
         lines.append(f"| {task_id} | {name} | {score} | {_floor(board, task_id)} | {phase} |")
+
+    lines += render_building(board, building)
 
     if board.baselines:
         lines += [
@@ -242,10 +298,18 @@ def _load_data(root: Path) -> dict[str, Any] | None:
     return out
 
 
+def _load_building(root: Path) -> dict[str, Any] | None:
+    from craton.bench.ceiling import load
+
+    return load(root / "results" / "ceiling.json")
+
+
 def write(root: Path) -> Path:
     board = Scoreboard.load(scoreboard_json(root))
     out = scoreboard_md(root)
-    out.write_text(render(board, _load_data(root)), encoding="utf-8", newline="\n")
+    out.write_text(
+        render(board, _load_data(root), _load_building(root)), encoding="utf-8", newline="\n"
+    )
     return out
 
 
@@ -254,7 +318,9 @@ def integrity_problem(root: Path) -> str | None:
     md = scoreboard_md(root)
     if not md.exists():
         return "SCOREBOARD.md is missing. Run `craton scoreboard`."
-    expected = render(Scoreboard.load(scoreboard_json(root)), _load_data(root))
+    expected = render(
+        Scoreboard.load(scoreboard_json(root)), _load_data(root), _load_building(root)
+    )
     actual = md.read_text(encoding="utf-8").replace("\r\n", "\n")
     if actual != expected:
         return (
