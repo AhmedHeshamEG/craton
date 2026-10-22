@@ -85,6 +85,46 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Fingerprint:** `4225fb37a25e9adb`
 - **Test data:** context quakes 0 0, 7 8, 30 56, 90 148, 365 874 · test quakes 1,307 · largest test 4.5
 
+## CB-05 · Calibration
+
+
+
+- **Metric:** calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely (lower is better)
+- **Fingerprint:** `0c3c1924c8978fbc`
+- **Test data:** reads ['CB-02', 'CB-03']
+
+## CB-06 · Unseen region
+
+
+
+- **Metric:** AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras (higher is better)
+- **Fingerprint:** `6f6037c07e3eb052`
+- **Test data:** reference 1,316 · in region 287 · unseen 893 · unseen quakes 61,086
+
+## CB-07 · Fake-precursor attack
+
+
+
+- **Metric:** false alarms under attack ÷ clean false alarms, mean over the counted attacks (lower is better)
+- **Fingerprint:** `6f21d3efdeed700b`
+- **Test data:** reads ['CB-03']
+
+## CB-08 · Physics sanity
+
+
+
+- **Metric:** hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) (lower is better)
+- **Fingerprint:** `28bfbd7c99d8a5bb`
+- **Test data:** reads ['CB-02', 'CB-03']
+
+## CB-11 · Predictability meter
+
+
+
+- **Metric:** share of space-time (%) watched to catch 90% of the M4+ quakes (lower is better)
+- **Fingerprint:** `ad899191ff41ab37`
+- **Test data:** reads ['CB-02', 'CB-03']
+
 ## Add a method
 
 Implement the task's protocol (`MaskedPredictor`, `Forecaster`, `GapFiller` or `EfficiencyReport` in `craton/bench/tasks.py`), register it with `register_method`, and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet --accept` puts it on the scoreboard if nothing got worse.

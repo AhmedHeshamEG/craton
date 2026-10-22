@@ -48,7 +48,7 @@ CATALOG: tuple[PlannedTask, ...] = (
     PlannedTask(
         "CB-11",
         "Predictability meter",
-        "width of the 90% window in days, km, magnitude",
+        "share of space-time (%) watched to catch 90% of the M4+ quakes",
         "P7",
         True,
     ),

@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P6%20of%20P13-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P7%20of%20P13-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -227,6 +227,46 @@ the M5+ days, ETAS still edges the Apennines. Above it all, the oracles: the roo
 and +6.0 bits. The honest GNSS floor arrived too: drawing a line between a station's neighbouring days
 (9.65 bits) beats Craton's 9.75. Step by step: [`lessons/P6.md`](lessons/P6.md).
 
+## Knowing when it doesn't know
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/meter-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/meter-light.png">
+    <img alt="The predictability meter: the share of central Italy's space and time you had to watch to catch 90% of the M4+ quakes of 2009 and 2016-17. Watching everything 100%, a map of the past 24%, ETAS 1.32%, Craton 0.84%." src="docs/assets/meter-dark.png" width="100%">
+  </picture>
+</p>
+
+A confidently wrong earthquake model is worse than none. So before Craton learns anything new, it has to
+pass the locks: the tests that killed every false precursor in the history of the field.
+
+| Lock | The test | Craton | Best floor |
+|---|---|---|---|
+| **The meter** (CB-11) | Share of space-time you watch to catch 90% of the M4+ quakes | **0.84%** | ETAS 1.32% |
+| **Physics** (CB-08) | Negative rates, more big quakes than small, rising rates with no new quakes, the slip budget | **0 violations** | ETAS: 1, the slip budget |
+| **Never seen this** (CB-06) | Tell Calabria + Sicily from central Italy, by the kind of seismicity, not the place | 0.997 | fingerprint 0.998 |
+| **Calibration** (CB-05) | Does "1%" happen 1% of the time? Times off, in doublings | 0.32 | ETAS-incomplete 0.10 |
+| **Fake precursors** (CB-07) | False alarms when the inputs carry glitches, ÷ clean | 1.002 | ETAS 1.002 |
+
+The meter is where it shows: to catch 90% of the M4+ quakes of 2009 and 2016-17, Craton puts you on alert 213
+days a year, ETAS 282. It never breaks physics; every ETAS variant promises more seismic moment than the
+Apennines can store, because its magnitudes run to M8. It knows when it is somewhere new, though it needs a
+hand-made fingerprint to tell: its own vectors find central Italy's sequences stranger than Sicily. Its day
+totals are the best calibrated of any method; cell by cell it is still a third of a doubling off. And one
+glitch, a magnitude shift, leaks past its input guard on one seed out of three. That miss is on the board too.
+
+**Every night, a forecast nobody can change.** Before midnight UTC a GitHub job runs the frozen model of this
+release on the latest INGV catalogue, writes tomorrow's forecast for central Italy with ETAS's beside it,
+seals it with a SHA-256 hash and pushes it to [`forecasts/`](forecasts/). Three days later the day is graded.
+Nothing is backfilled, and the check refuses any edit to a locked file. Running score:
+[`forecasts/README.md`](forecasts/README.md).
+
+**The referee.** The day before this phase, aftershocks in central Italy looked locked to the solid-Earth
+tide. `craton referee` replays it: raw p = 10⁻⁴¹³; with the aftershocks removed it survives (10⁻³·³); it even
+"predicts" 2009 at the same phase (10⁻³·⁹). Then the tide is slid by random lags, and the fake tides lock as
+hard 71% of the time. The tide's phase isn't spread evenly over time, and the test assumed it was. Rejected. A
+planted 12.42-hour signal passes all five tests. Step by step: [`lessons/P7.md`](lessons/P7.md).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -245,7 +285,7 @@ All of it is one command, the same on a laptop and on CI:
 ```console
 $ uv run craton check
 ✓ lint · ✓ format · ✓ types · ✓ tests · ✓ scoreboard is generated · ✓ records append-only
-✓ benchmarks frozen, no leaks · ✓ ratchet
+✓ locked forecasts sealed, never edited · ✓ benchmarks frozen, no leaks · ✓ ratchet
 all green. The foundation holds.
 ```
 
@@ -264,7 +304,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       ██████████████████████████░░░░   7/8    foundation → beat ETAS → a model that knows when it doesn't know
+CORE       ██████████████████████████████   8/8    foundation → beat ETAS → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -278,7 +318,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P4** Craton-mini v0, the first transformer | the GPT-2 small run |
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
-| ◻️ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
+| ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ◻️ | **P8** Fake planets: pretraining on simulated millennia | synthetic data |
 | ◻️ | **P9** The ghost channel: forces we forgot | register tokens |
 | ◻️ | **P10** The translator: plain-language answers, numbers only from the model | tool use |

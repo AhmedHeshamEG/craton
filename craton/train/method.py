@@ -70,6 +70,9 @@ from craton.train.context import (
 )
 from craton.train.data import midnight_window, recent_rates, region_context
 from craton.train.loop import Log, train
+from craton.trust import ood
+from craton.trust.ood import OodQueries, OodScores
+from craton.trust.predictive import Predictive
 
 FloatArray = np.ndarray[Any, np.dtype[np.float64]]
 IntArray = np.ndarray[Any, np.dtype[np.int64]]
@@ -554,6 +557,44 @@ class CratonMini:
             return FieldForecaster(self.field_config, log=self.log).forecast(spec, ctx, seed)
         return self.trunk_forecast(spec, ctx, seed)
 
+    def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
+        """CB-05 and the other trust tasks: the Field's members and fitted dispersion."""
+        if self.field_config:
+            from craton.field.forecaster import FieldForecaster
+
+            return FieldForecaster(self.field_config, log=self.log).predictive(spec, ctx, seed)
+        return Predictive(self.trunk_forecast(spec, ctx, seed))
+
+    # ------------------------------------------------------------ CB-06
+
+    def ood_scores(self, queries: OodQueries, ctx: BenchContext, seed: int) -> OodScores:
+        """The trunk trained on ``pretrain`` reads every context, moved to a common centre
+        (``craton.trust.ood``); its query vector and the fingerprint of the quakes it read,
+        side by side, against the training contexts' own."""
+        model = self.model(ctx, "pretrain", seed)
+
+        def run(batch: Batch) -> torch.Tensor:
+            return self._run(model, batch)
+
+        sets = (
+            (ctx.train_events("pretrain"), queries.reference),
+            (ctx.events, queries.in_region),
+            (queries.unseen_events, queries.unseen),
+        )
+        vecs = [ood.craton_vectors(run, self.sources(ctx, ev, None), ev, m) for ev, m in sets]
+        d = vecs[0].shape[1] - len(ood.fingerprint(queries.unseen_events.select(np.arange(2))))
+        both = ood.scores_of(*ood.combine(*vecs, d_trunk=d))
+        trunk = ood.scores_of(*(v[:, :d] for v in vecs)).summary()
+        prints = ood.scores_of(*ood.standardise(*(v[:, d:] for v in vecs))).summary()
+        extra = {
+            f"trunk_only.{k}": trunk[k] for k in ("auroc", "abstain_in_region", "abstain_unseen")
+        }
+        extra |= {
+            f"fingerprint_only.{k}": prints[k]
+            for k in ("auroc", "abstain_in_region", "abstain_unseen")
+        }
+        return ood.OodScores(both.reference, both.in_region, both.unseen, extra)
+
     def trunk_forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
         model = self.model(ctx, spec.fit_split, seed)
         gnss = None
@@ -590,9 +631,14 @@ class CratonMini:
         folders += [self.key_from_meta(meta).folder(root) for meta in self._meta.values()]
         fields = []
         if self.field_config:
+            from craton.field.config import field_hash, load_field_config
+            from craton.field.forecaster import FIELD_VERSION
+
+            # Only the Field checkpoints of the current config (older ones may still be on disk).
+            fh = field_hash(load_field_config(self.field_config))[:8]
             fields = [
                 (f / "card.md").read_text("utf-8")
-                for f in sorted(cdir.glob(f"field-{self.field_config}-*"))
+                for f in sorted(cdir.glob(f"field-{self.field_config}-{FIELD_VERSION}-*-{fh}-s*"))
                 if (f / "card.md").is_file()
             ]
         return checkpoint.write_index(

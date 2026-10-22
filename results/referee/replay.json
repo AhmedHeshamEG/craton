@@ -1,0 +1,178 @@
+{
+ "central Italy 2016-17 vs the M2 clock, held out 2009": {
+  "claim": {
+   "name": "M2 tide (12.42 h)",
+   "period_hours": 12.4206012,
+   "m_min": 1.5
+  },
+  "raw": {
+   "n": 42555,
+   "r2_over_n": 3.1206722514436507,
+   "log10_p": -1.3552907386305746,
+   "phase_deg": 114.1157554516293,
+   "amplitude": 0.01712690062678847
+  },
+  "declustered": {
+   "n": 397,
+   "r2_over_n": 1.3329258855182247,
+   "log10_p": -0.5788823568665705,
+   "phase_deg": 184.84957738929515,
+   "amplitude": 0.11588780666308732
+  },
+  "mainshock_share": 0.009329103513100694,
+  "clock_quantile": 0.75,
+  "named_clocks": {
+   "solar day": -0.3752714057186786,
+   "solar half-day": -1.0803362345992054
+  },
+  "shuffle_quantile": 0.705,
+  "lock_hash": "83752d87ff45efd67d3b8449ff5e99fa1daeae3795e04c86f8e6252e9957c787",
+  "holdout": {
+   "n": 704,
+   "r2_over_n": 0.25052762591844135,
+   "log10_p": -0.10880276550070116,
+   "phase_deg": 159.22515551403023,
+   "amplitude": 0.03772866840999221
+  },
+  "phase_gap_deg": 25.624421875264915,
+  "tests": {
+   "declustered": false,
+   "fake clocks": false,
+   "shuffled time of day": false,
+   "locked prediction": false
+  },
+  "passed": false
+ },
+ "fake planet: clustered + day-night detection": {
+  "claim": {
+   "name": "M2 tide (12.42 h)",
+   "period_hours": 12.4206012,
+   "m_min": 1.5
+  },
+  "raw": {
+   "n": 18838,
+   "r2_over_n": 2150.6254468973657,
+   "log10_p": -934.0047642282408,
+   "phase_deg": 316.05918222362203,
+   "amplitude": 0.6757639029352802
+  },
+  "declustered": {
+   "n": 1791,
+   "r2_over_n": 0.48235678465202636,
+   "log10_p": -0.20948488988297018,
+   "phase_deg": 126.73979787476131,
+   "amplitude": 0.03282210258321835
+  },
+  "mainshock_share": 0.09507378702622359,
+  "clock_quantile": 0.415,
+  "named_clocks": {
+   "solar day": -17.764338434011357,
+   "solar half-day": -0.4235786974594384
+  },
+  "shuffle_quantile": 0.36,
+  "lock_hash": "9519eb99745db38258bdc5ad5f2d2395d19be2bdb0da7e028c54e46bb2d68666",
+  "holdout": {
+   "n": 1816,
+   "r2_over_n": 0.19074253118629345,
+   "log10_p": -0.08283842875846616,
+   "phase_deg": 36.00445847626524,
+   "amplitude": 0.02049726161931184
+  },
+  "phase_gap_deg": 90.73533939849607,
+  "tests": {
+   "declustered": false,
+   "fake clocks": false,
+   "shuffled time of day": false,
+   "locked prediction": false
+  },
+  "passed": false
+ },
+ "fake planet: a true 12.42 h signal planted": {
+  "claim": {
+   "name": "M2 tide (12.42 h)",
+   "period_hours": 12.4206012,
+   "m_min": 1.5
+  },
+  "raw": {
+   "n": 1918,
+   "r2_over_n": 40.24096065492345,
+   "log10_p": -17.47642715891912,
+   "phase_deg": 359.9375781420926,
+   "amplitude": 0.28969424266529187
+  },
+  "declustered": {
+   "n": 1753,
+   "r2_over_n": 32.698119195283944,
+   "log10_p": -14.200612735126613,
+   "phase_deg": 0.920965064759773,
+   "amplitude": 0.27314950884460915
+  },
+  "mainshock_share": 0.9139728884254432,
+  "clock_quantile": 1.0,
+  "named_clocks": {
+   "solar day": -0.20937157219657082,
+   "solar half-day": -0.5048834981885572
+  },
+  "shuffle_quantile": 1.0,
+  "lock_hash": "2d6bab87cccad0e752ff5c2630020f7b5489968f012844af70de673cedf5a0ac",
+  "holdout": {
+   "n": 1752,
+   "r2_over_n": 42.712290929824576,
+   "log10_p": -18.549712260269125,
+   "phase_deg": 6.255305087716979,
+   "amplitude": 0.3122765536483705
+  },
+  "phase_gap_deg": 5.334340022957207,
+  "tests": {
+   "declustered": true,
+   "fake clocks": true,
+   "shuffled time of day": true,
+   "locked prediction": true
+  },
+  "passed": true
+ },
+ "central Italy 2016-17 vs the computed tide (the 2026-10-21 claim)": {
+  "claim": {
+   "name": "solid-Earth tide",
+   "period_hours": 12.4206012,
+   "m_min": 1.5
+  },
+  "raw": {
+   "n": 42555,
+   "r2_over_n": 950.2112240946326,
+   "log10_p": -412.67149126683313,
+   "phase_deg": 189.6131517714365,
+   "amplitude": 0.2988579246605021
+  },
+  "declustered": {
+   "n": 397,
+   "r2_over_n": 7.546049604394844,
+   "log10_p": -3.277207703356897,
+   "phase_deg": 183.6023249737314,
+   "amplitude": 0.2757366977619107
+  },
+  "mainshock_share": 0.009329103513100694,
+  "clock_quantile": 0.295,
+  "named_clocks": {
+   "solar day": -0.3752714057186786,
+   "solar half-day": -1.0803362345992054
+  },
+  "shuffle_quantile": 0.295,
+  "lock_hash": "aa140b9ff698cfe4f69093e853c87ca4479d2fb7c228014db2d940c5f2936881",
+  "holdout": {
+   "n": 704,
+   "r2_over_n": 9.071820910796163,
+   "log10_p": -3.9398417623733053,
+   "phase_deg": 184.38991311388392,
+   "amplitude": 0.22703399964137533
+  },
+  "phase_gap_deg": 0.7875881401525078,
+  "tests": {
+   "declustered": true,
+   "fake clocks": false,
+   "shuffled time of day": false,
+   "locked prediction": true
+  },
+  "passed": false
+ }
+}

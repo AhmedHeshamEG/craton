@@ -5,10 +5,10 @@ and a release. A phase isn't done if any exit test fails. Live numbers are in [`
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
-CORE       ██████████████████████████░░░░   7/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
+CORE       ██████████████████████████████   8/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P8–P11  fake planets, the ghost, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P12–P13 any time horizon, then mini → regional → planet
-ALL        ███████████████░░░░░░░░░░░░░░░   7/14
+ALL        █████████████████░░░░░░░░░░░░░   8/14
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -354,6 +354,14 @@ unsure.
 **Learn:** aleatoric vs epistemic uncertainty, calibration, ensembles, OOD, prospective testing; why an honest
 "I don't know" is a feature.
 
+**Shipped (v0.8.0, 2026-10-22).** CB-11: Craton watches 0.84% of space-time to catch 90% of the M4+ quakes,
+ETAS 1.32%. CB-08: zero violations (every ETAS floor breaks the slip budget). CB-06: AUROC 0.997, abstains on
+all of Calabria and Sicily. CB-05: ECE 0.012 and the best-calibrated day totals (PIT distance 0.039), but cell
+by cell 0.32 doublings off, behind ETAS-incomplete's 0.10. **Missed:** CB-07 is 1.002, 0.2% over the clean
+false-alarm rate (a magnitude shift the guard caught only in part on one seed). Added beyond the plan: `craton
+referee` (it rejects the project's own tidal claim of 2026-10-21) and locked forecasts published every night
+in [`forecasts/`](forecasts/). Step by step: [`lessons/P7.md`](lessons/P7.md).
+
 ---
 
 # DISCOVERY
@@ -539,6 +547,6 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 ## Tracker
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
-- [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [ ] P7 The 8 locks
+- [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [x] P7 The 8 locks
 - [ ] P8 Fake planets · [ ] P9 Ghost + atlas · [ ] P10 Translator · [ ] P11 Microscope
 - [ ] P12 Long horizons · [ ] P13 Scale + open platform

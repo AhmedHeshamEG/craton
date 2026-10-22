@@ -12,7 +12,13 @@ For a task and a seed:
    ``train.validation_every``.
 4. Test days are built from the snapshot the same way (each midnight still reads only its
    past) and the forecast is the members' average M3+ rate. Magnitudes follow ETAS's
-   Gutenberg-Richter b-value, as in the ``etas`` baseline.
+   Gutenberg-Richter b-value, as in the ``etas`` baseline, up to ``MAX_MAGNITUDE`` (P7: an
+   unbounded Gutenberg-Richter law breaks the region's slip budget, ``craton.trust.physics``).
+5. (P7) The test-time catalogue passes the guard first (``craton.trust.guard``): duplicates
+   and magnitude-scale glitches on the live edge are removed before the Field reads it.
+6. (P7) ``predictive`` adds what the rates alone can't say: every member's rates, and the
+   negative binomial dispersion of day totals and of cell counts, fitted on the training
+   split's validation days (``calibration.json`` beside the checkpoint).
 
 Checkpoints live in ``results/checkpoints/field-...`` (gitignored), named by everything that
 made them, with a model card beside each.
@@ -43,6 +49,8 @@ from craton.field.memory import MemorySpec, memory
 from craton.field.model import FieldNet
 from craton.spec.timeaxis import to_seconds
 from craton.train.checkpoint import checkpoints_dir
+from craton.trust import calibration, guard
+from craton.trust.predictive import Predictive
 
 FloatArray = np.ndarray[Any, np.dtype[np.float64]]
 IntArray = np.ndarray[Any, np.dtype[np.int64]]
@@ -54,6 +62,10 @@ FIELD_VERSION = "f0.1"
 M_SCORED = 3.0
 VALIDATION_BLOCK_DAYS = 30
 INFER_DAYS = 16
+#: The largest magnitude the Field forecasts: CPTI15's Mw 7.1 for Avezzano 1915, the largest
+#: quake on record in the box, plus 0.2 for what history may have missed.
+MAX_MAGNITUDE = 7.3
+CALIBRATION_VERSION = "c2"
 
 
 def _quiet(_: str) -> None:
@@ -73,9 +85,11 @@ class Days:
 def _counts(ev: Events, grid: csep.Grid, starts: FloatArray, mc: float) -> np.ndarray:
     ev = ev.above(mc).window(float(starts[0]), float(starts[-1]) + DAY)
     cell = grid.cell_of(ev.lat, ev.lon)
-    day = np.floor((ev.time - starts[0]) / DAY).astype(np.int64)
+    # Each quake to the day it falls in; ``starts`` need not be consecutive (validation days).
+    day = np.searchsorted(starts, ev.time, side="right") - 1
+    inside = (day >= 0) & (ev.time < starts[np.maximum(day, 0)] + DAY)
     big = (ev.mag >= M_SCORED - 1e-9).astype(np.int64)
-    ok = cell >= 0
+    ok = (cell >= 0) & inside
     out = np.zeros((len(starts), grid.n_cells, 2), np.float32)
     np.add.at(out, (day[ok], cell[ok], big[ok]), 1.0)
     return out
@@ -176,11 +190,18 @@ def predict(
     states: list[dict[str, torch.Tensor]], days: Days, grid: csep.Grid, cfg: FieldConfig
 ) -> FloatArray:
     """(days, cells) the members' average M3+ rate."""
+    return np.asarray(predict_members(states, days, grid, cfg).mean(axis=0), dtype=np.float64)
+
+
+def predict_members(
+    states: list[dict[str, torch.Tensor]], days: Days, grid: csep.Grid, cfg: FieldConfig
+) -> FloatArray:
+    """(members, days, cells) each member's M3+ rate."""
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    out = np.zeros((len(days.starts), grid.n_cells))
+    out = np.zeros((len(states), len(days.starts), grid.n_cells))
     mem = torch.from_numpy(days.memory)
     log_e = torch.from_numpy(days.log_etas[..., 1])
-    for state in states:
+    for k, state in enumerate(states):
         net = FieldNet(days.memory.shape[-1], grid, cfg.model)
         net.load_state_dict(state)
         net.to(dev).eval()
@@ -189,7 +210,7 @@ def predict(
                 lb = log_e[i : i + INFER_DAYS].to(dev)
                 corr = net(mem[i : i + INFER_DAYS].to(dev).float(), lb)
                 rate = (lb + corr[..., 1]).exp().double().cpu().numpy()
-                out[i : i + INFER_DAYS] += rate / len(states)
+                out[k, i : i + INFER_DAYS] = rate
     return out
 
 
@@ -205,13 +226,33 @@ class FieldForecaster:
     def config(self) -> FieldConfig:
         return load_field_config(self.config_name)
 
-    def folder(self, ctx: BenchContext, spec: ForecastSpec, seed: int) -> Path:
+    def folder(
+        self, ctx: BenchContext, spec: ForecastSpec, seed: int, config: FieldConfig | None = None
+    ) -> Path:
+        cfg = config or self.config
         manifest = json.loads((ctx.split_dir(spec.fit_split) / "manifest.json").read_text("utf-8"))
         name = (
-            f"field-{self.config.name}-{FIELD_VERSION}-{spec.task_id}-{manifest['id'][:12]}-"
-            f"{field_hash(self.config)[:8]}-s{seed}"
+            f"field-{cfg.name}-{FIELD_VERSION}-{spec.task_id}-{manifest['id'][:12]}-"
+            f"{field_hash(cfg)[:8]}-s{seed}"
         )
         return checkpoints_dir(ctx.root) / name
+
+    def grown_from(
+        self, ctx: BenchContext, spec: ForecastSpec, seed: int
+    ) -> tuple[list[dict[str, torch.Tensor]], list[dict[str, float]], str]:
+        """The largest ensemble already trained with this exact config but fewer members:
+        an ensemble grows, it is never retrained (constructive-only, D-076). Members are
+        trained one by one from their own seeds, so the first k of a bigger ensemble are the
+        same job as a k-member ensemble."""
+        tc = self.config.train
+        for k in range(tc.members - 1, 0, -1):
+            smaller = self.config.model_copy(update={"train": tc.model_copy(update={"members": k})})
+            folder = self.folder(ctx, spec, seed, smaller)
+            if (folder / "model.pt").is_file():
+                body = torch.load(folder / "model.pt", map_location="cpu", weights_only=True)
+                meta = json.loads((folder / "meta.json").read_text("utf-8"))
+                return list(body["members"]), list(meta["members"]), folder.name
+        return [], [], ""
 
     def states(
         self, spec: ForecastSpec, ctx: BenchContext, seed: int, fit: etas.EtasFit
@@ -229,8 +270,10 @@ class FieldForecaster:
         starts = np.arange(first, cut - DAY + 1, DAY)
         self.log(f"Field {spec.task_id} seed {seed}: building {len(starts)} training days")
         days = build_days(fit, ctx.train_events(spec.fit_split), starts, spec.grid, cfg, True)
-        states, runs = [], []
-        for m in range(cfg.train.members):
+        states, runs, base = self.grown_from(ctx, spec, seed)
+        if base:
+            self.log(f"Field {spec.task_id} seed {seed}: keeping {len(states)} members of {base}")
+        for m in range(len(states), cfg.train.members):
             st, info = train_member(days, spec.grid, cfg, seed * 100 + m, self.log)
             states.append(st)
             runs.append(info)
@@ -245,6 +288,7 @@ class FieldForecaster:
             "training_days": len(starts),
             "first_day": cfg.train.first_day,
             "members": runs,
+            "grown_from": base or None,
             "etas": {**fit.params.as_dict(), "b": fit.b, "mc": fit.mc},
             "parameters": sum(v.numel() for v in states[0].values()),
             "train_seconds": time.perf_counter() - t0,
@@ -255,15 +299,92 @@ class FieldForecaster:
         (folder / "card.md").write_text(card(meta), "utf-8")
         return states, meta
 
-    def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
+    def inputs(self, spec: ForecastSpec, ctx: BenchContext) -> Events:
+        """The test-time catalogue after the guard, which watches the live edge: the test
+        window and the ``guard.LIVE_EDGE_DAYS`` before it."""
+        since = spec.window.t0 - guard.LIVE_EDGE_DAYS * DAY
+        key = f"guarded:{since:.0f}"
+        if key not in ctx._cache:
+            ctx._cache[key] = guard.clean(ctx.events, since)
+        out: tuple[Events, guard.GuardReport] = ctx._cache[key]
+        return out[0]
+
+    def members(
+        self, spec: ForecastSpec, ctx: BenchContext, seed: int
+    ) -> tuple[FloatArray, FloatArray, etas.EtasFit, list[dict[str, torch.Tensor]]]:
+        """(members, days, cells) M1.5+ rates, the magnitude shares, the ETAS fit, the states."""
         fit = Etas().fit(spec, ctx, seed)
         states, _ = self.states(spec, ctx, seed, fit)
-        days = build_days(fit, ctx.events, spec.day_starts, spec.grid, self.config, False)
-        m3 = predict(states, days, spec.grid, self.config)
-        gr = csep.gutenberg_richter_bins(fit.b, fit.mc, spec.grid)
-        shares = gr / gr.sum()
+        days = build_days(
+            fit, self.inputs(spec, ctx), spec.day_starts, spec.grid, self.config, False
+        )
+        m3 = predict_members(states, days, spec.grid, self.config)
+        shares = magnitude_shares(fit, spec.grid)
         first = int(spec.grid.mag_bin_of(np.array([M_SCORED]))[0])
-        return GriddedForecast(m3 / shares[first:].sum(), shares)
+        return m3 / shares[first:].sum(), shares, fit, states
+
+    def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
+        rates, shares, _, _ = self.members(spec, ctx, seed)
+        return GriddedForecast(rates.mean(axis=0), shares)
+
+    def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
+        rates, shares, fit, states = self.members(spec, ctx, seed)
+        cal = self.calibration(spec, ctx, seed, fit, states)
+        return Predictive(
+            GriddedForecast(rates.mean(axis=0), shares),
+            members=rates,
+            day_k=cal["day_k"],
+            day_gamma=cal["day_gamma"],
+            cell_k=cal["cell_k"],
+        )
+
+    def calibration(
+        self,
+        spec: ForecastSpec,
+        ctx: BenchContext,
+        seed: int,
+        fit: etas.EtasFit,
+        states: list[dict[str, torch.Tensor]],
+    ) -> dict[str, Any]:
+        """Negative binomial sizes of day totals and cell counts (M3+), fitted on the
+        training split's validation days (never the test). Cached beside the checkpoint."""
+        path = self.folder(ctx, spec, seed) / "calibration.json"
+        if path.is_file():
+            body: dict[str, Any] = json.loads(path.read_text("utf-8"))
+            if body.get("version") == CALIBRATION_VERSION:
+                return body
+        cfg = self.config
+        cut = to_seconds(SPLITS[spec.fit_split].before or "")
+        starts = np.arange(to_seconds(cfg.train.first_day), cut - DAY + 1, DAY)
+        idx = np.arange(len(starts))
+        every = cfg.train.validation_every
+        val = (idx // VALIDATION_BLOCK_DAYS) % every == every - 1
+        days = build_days(fit, ctx.train_events(spec.fit_split), starts[val], spec.grid, cfg, True)
+        assert days.counts is not None
+        mean = predict_members(states, days, spec.grid, cfg).mean(axis=0)
+        n = days.counts[..., 1].astype(np.float64)
+        body = {
+            "version": CALIBRATION_VERSION,
+            **dict(
+                zip(
+                    ("day_k", "day_gamma"),
+                    calibration.fit_day_dispersion(n.sum(axis=1), mean.sum(axis=1)),
+                    strict=True,
+                )
+            ),
+            "cell_k": calibration.fit_cell_dispersion(n > 0, mean),
+            "validation_days": float(val.sum()),
+        }
+        path.write_text(json.dumps(body, indent=2) + "\n", "utf-8")
+        return body
+
+
+def magnitude_shares(fit: etas.EtasFit, grid: csep.Grid) -> FloatArray:
+    """Gutenberg-Richter shares over the grid's bins with ETAS's b-value, nothing above
+    ``MAX_MAGNITUDE``."""
+    gr = csep.gutenberg_richter_bins(fit.b, fit.mc, grid)
+    gr = np.where(grid.magnitudes <= MAX_MAGNITUDE + 1e-9, gr, 0.0)
+    return np.asarray(gr / gr.sum(), dtype=np.float64)
 
 
 def card(meta: dict[str, Any]) -> str:

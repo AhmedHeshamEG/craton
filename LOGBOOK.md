@@ -342,3 +342,58 @@ Decisions: D-058 … D-064.
 
 Next: P7, the locks. Calibration, ensembles (the Field already averages four), the OOD detector, physics
 budgets, locked forecasts and `craton referee`.
+
+## 2026-10-22 — P7 — The 8 locks: knowing when it doesn't know
+
+TLDR: Five new tests a forecaster can fail out loud (calibration, an unseen region, fake
+precursors, physics, the predictability meter), the referee, and locked forecasts: from tonight
+one forecast a day is sealed and published before its day, then graded in public. Craton makes
+you watch 0.84% of space-time to catch 90% of the M4+ quakes, against ETAS's 1.32%, breaks no
+physics (every ETAS floor breaks the slip budget), and is worse calibrated cell by cell than the
+floors. The referee kills the project's own tidal "discovery" of the day before.
+
+Built:
+- `craton/trust`: predictive distributions, calibration, the meter, physics checks, fake-precursor
+  attacks, the input guard, the out-of-distribution detector, the referee, the seal (D-065 … D-073)
+- CB-05, CB-06, CB-07, CB-08, CB-11 in `craton/bench/locks.py`, frozen (growth only)
+- region `southern_italy` (61,086 quakes), read only by CB-06; floors `no_detector`,
+  `fingerprint_knn`
+- the Field: six members grown from P6's four (D-076), no magnitude above 7.3, the guard in front
+  (D-067); negative binomial dispersion fitted on validation days (D-066)
+- `craton/sim` with the ETAS planet (D-075); `craton referee`; `craton live run|bundle|page|verify`,
+  the nightly workflow, `forecasts/`, and a check that refuses edits to locked files (D-074)
+- the meter figure; tests: 329 → 360
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261022-123525-craton-mini`):
+- CB-05 calibration error 0.32 ± 0.08 doublings (new; ETAS 0.22, ETAS-incomplete 0.10, Poisson
+  1.58). ECE on committed cell-days 0.012. Day totals: PIT distance 0.039 (best of all; ETAS
+  0.061), 97% of days inside the 90% interval.
+- CB-06 AUROC 0.997 ± 0.001 (new; fingerprint floor 0.998, no detector 0.5). Trunk alone 0.26
+  average. Abstains on 100% of Calabria and Sicily, 72% of central Italy's sequence days.
+- CB-07 1.002 ± 0.004 (new; ETAS 1.002). GNSS step and duplicates 1.000; magnitude shift 1.006.
+- CB-08 0 violations (new; ETAS, ETAS-aniso, ETAS-incomplete 1 each: the slip budget).
+- CB-11 0.84 ± 0.06% of space-time (new; ETAS 1.32%, Poisson 24%): 213 alert days a year
+  against 282, radius 40 km against 38.
+- CB-02 −6.815 ± 0.013, CB-03 −8.231 ± 0.006 (P6 −6.818, −8.233; champions stay, within noise).
+  CB-01, CB-04, CB-15, CB-17 unchanged.
+
+Surprises / problems:
+- The trunk's own vectors fail the unseen-region test (AUROC 0.12-0.38): central Italy's sequences
+  look stranger to it than Sicily, and it can't see depth. Twelve hand-made numbers do the job.
+- The 2026-10-21 tidal claim, replayed with the computed tide: raw p = 10⁻⁴¹³, declustered
+  10⁻³·³, and it "predicts" 2009 at the same phase (10⁻³·⁹). Shifted tides lock as hard 71% of
+  the time: the tide's phase isn't evenly spread in time. Rejected.
+- First CB-07 design had no teeth: at an alarm level of 1% a day no fake moved any alarm. Now 0.1%.
+- The guard's first magnitude rule fired on 6,800 real quakes; two rounds later, never in a test
+  window (24 stretches in 40 years when run over everything).
+- A single negative binomial size per checkpoint was far too wide inside sequences; the mean-
+  dependent size fixed the day totals.
+- The first P7 run retrained all Fields and came in a few thousandths under P6. Pure GPU noise, but
+  the wrong design: ensembles now grow (D-076).
+- The live mechanics test caught a bug: counting quakes on non-consecutive days.
+- Field training ran 5x slower while CPU-heavy scripts shared the machine.
+
+Decisions: D-065 … D-076.
+
+Next: P8, fake planets: simulated catalogues where the answer is known, plugged into the
+simulator registry that P7 left ready.

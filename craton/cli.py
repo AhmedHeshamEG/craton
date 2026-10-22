@@ -22,6 +22,7 @@ import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from rich import box
 from rich.console import Console
@@ -657,6 +658,12 @@ def cmd_check(args: argparse.Namespace) -> int:
         problems = append_only_problems(root, args.base)
         return not problems, "\n".join(problems)
 
+    def locked_step() -> tuple[bool, str]:
+        from craton.records import locked_problems
+
+        problems = locked_problems(root, args.base)
+        return not problems, "\n".join(problems)
+
     def spec_step() -> tuple[bool, str]:
         problems = spec_problems()
         drift = spec_docs.drift_problem(root)
@@ -704,6 +711,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         Step("tests", _tool("pytest", "-q", "-p", "no:cacheprovider")),
         Step("scoreboard is generated", scoreboard_step),
         Step(f"records append-only vs {args.base}", records_step),
+        Step(f"locked forecasts sealed, never edited vs {args.base}", locked_step),
         Step(f"token spec {SPEC_VERSION} add-only, docs generated", spec_step),
         Step("data cards generated", cards_step),
         Step("benchmarks frozen, no leaks", bench_step),
@@ -728,6 +736,139 @@ def cmd_check(args: argparse.Namespace) -> int:
     console.print(f"[bold {ACCENT}]all green.[/] The foundation holds.")
     console.print()
     return 0
+
+
+# ---------------------------------------------------------------- referee
+
+
+def _verdict_row(t: Table, label: str, v: Any) -> None:
+    mark = "[green]pass[/]" if v.passed else "[red]rejected[/]"
+    tests = " ".join("✓" if ok else "✗" for ok in v.tests.values())
+    t.add_row(
+        label,
+        f"{v.raw.log10_p:.1f}",
+        f"{v.declustered.log10_p:.2f}",
+        f"{v.clock_quantile:.2f}",
+        f"{v.shuffle_quantile:.2f}",
+        "·" if v.holdout is None else f"{v.holdout.log10_p:.2f}",
+        tests,
+        mark,
+    )
+
+
+def cmd_referee(args: argparse.Namespace) -> int:
+    from craton.bench.tasks import BenchContext
+    from craton.spec.timeaxis import to_seconds
+    from craton.trust import referee as ref
+
+    root = find_root()
+    t = Table(box=box.SIMPLE_HEAD, pad_edge=False, header_style="dim")
+    for col in (
+        "claim",
+        "raw log₁₀p",
+        "declustered",
+        "beats clocks",
+        "beats shuffles",
+        "held out",
+        "dec · clocks · shuffle · locked",
+        "verdict",
+    ):
+        t.add_column(col)
+    if args.period_hours is None:
+        _title("referee · the replays")
+        record: dict[str, Any] = {}
+        claim = ref.Claim("M2 tide (12.42 h)", ref.M2_HOURS)
+        cases = [
+            (
+                "fake planet: clustered + day-night detection",
+                ref.artifact_catalogue(0),
+                ref.artifact_catalogue(1),
+            ),
+            (
+                "fake planet: a true 12.42 h signal planted",
+                ref.planted_catalogue(0),
+                ref.planted_catalogue(1),
+            ),
+        ]
+        tide: Any = None
+        try:
+            bctx = BenchContext(root)
+            ev = bctx.events
+            seq = ev.window(to_seconds("2016-08-24T00:00:00Z"), to_seconds("2017-08-24T00:00:00Z"))
+            hold = ev.window(to_seconds("2009-01-01T00:00:00Z"), to_seconds("2010-01-01T00:00:00Z"))
+            tide = ref.tide_phase(bctx.tides.time, bctx.tides.enu[:, 2])
+            cases.insert(0, ("central Italy 2016-17 vs the M2 clock, held out 2009", seq, hold))
+        except FileNotFoundError:
+            console.print("[dim]no central_italy data here: replaying the fake planets only[/]")
+        for label, cat, other in cases:
+            v = ref.judge(claim, cat, other)
+            _verdict_row(t, label, v)
+            record[label] = v.as_dict()
+        if tide is not None:
+            label = "central Italy 2016-17 vs the computed tide (the 2026-10-21 claim)"
+            v = ref.judge(ref.Claim("solid-Earth tide", ref.M2_HOURS), seq, hold, phase_of=tide)
+            _verdict_row(t, label, v)
+            record[label] = v.as_dict()
+        console.print(t)
+        out = root / "results" / "referee" / "replay.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(record, indent=1, default=float) + "\n", "utf-8", newline="\n")
+        console.print(f"wrote {out.relative_to(root).as_posix()}")
+        console.print()
+        return 0
+    ev = BenchContext(root).events
+    cat = ev.window(to_seconds(args.start), to_seconds(args.end))
+    held: Any = None
+    if args.holdout:
+        held = ev.window(to_seconds(args.holdout[0]), to_seconds(args.holdout[1]))
+    claim = ref.Claim(args.name, args.period_hours, args.min_mag)
+    _title(f"referee · {claim.name}")
+    v = ref.judge(claim, cat, held)
+    _verdict_row(t, claim.name, v)
+    console.print(t)
+    if v.lock_hash:
+        console.print(f"[dim]effect locked before the held-out quakes were read: {v.lock_hash}[/]")
+    console.print()
+    return 0 if v.passed else 1
+
+
+# ---------------------------------------------------------------- live
+
+
+def cmd_live(args: argparse.Namespace) -> int:
+    from craton import live
+    from craton.adapters.http import Http
+
+    root = find_root()
+    log = lambda m: console.print(f"[dim]{m}[/]")  # noqa: E731
+    default = root / "data" / "live" / live.bundle_name()
+    bundle = Path(args.bundle) if args.bundle else default
+    if args.action == "bundle":
+        from craton.bench.tasks import BenchContext
+
+        _title("live bundle")
+        tar = live.build_bundle(BenchContext(root), root / "data" / "live" / "bundle", log)
+        size = tar.stat().st_size / 2**20
+        console.print(f"wrote {tar.relative_to(root).as_posix()} · {size:.1f} MiB")
+        return 0
+    if args.action == "run":
+        _title("live run")
+        done = live.run(root, bundle, Http(), time.time(), log)
+        locked = done["locked"] or "· (already locked)"
+        console.print(f"locked {locked} · graded {len(done['graded'])}")
+        return 0
+    if args.action == "page":
+        from craton.trust import lock
+
+        out = lock.page(root, live.REGION)
+        console.print(f"wrote {out.relative_to(root).as_posix()}")
+        return 0
+    problems = live.verify(root)
+    for p in problems:
+        console.print(f"[red]✗[/] {p}")
+    if not problems:
+        console.print("[green]✓[/] every locked forecast matches its seal and the ledger")
+    return 1 if problems else 0
 
 
 # ---------------------------------------------------------------- main
@@ -780,6 +921,20 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--seeds", nargs="*", type=int, help="default: the mini config's seeds")
     b.add_argument("--variants", nargs="*", help="ablate: which variants (default: all four)")
     b.set_defaults(func=cmd_bench)
+
+    rf = sub.add_parser("referee", help="test a periodicity claim; no arguments: the replays")
+    rf.add_argument("--period-hours", type=float, help="the claimed period")
+    rf.add_argument("--name", default="claim")
+    rf.add_argument("--start", default="2016-08-24T00:00:00Z")
+    rf.add_argument("--end", default="2017-08-24T00:00:00Z")
+    rf.add_argument("--holdout", nargs=2, metavar=("START", "END"), help="a held-out catalogue")
+    rf.add_argument("--min-mag", type=float, default=1.5)
+    rf.set_defaults(func=cmd_referee)
+
+    lv = sub.add_parser("live", help="locked daily forecasts: run, bundle, page, verify")
+    lv.add_argument("action", choices=("run", "bundle", "page", "verify"))
+    lv.add_argument("--bundle", help="bundle .tar.gz or folder (default: data/live/)")
+    lv.set_defaults(func=cmd_live)
 
     t = sub.add_parser("train", help="train Craton-mini on a split (checkpoint + model card)")
     t.add_argument("split", choices=("pretrain", "cb02_fit", "cb03_fit", "cb17_fit"))

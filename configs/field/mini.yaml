@@ -22,5 +22,5 @@ train:
   weight_decay: 0.01
   max_epochs: 40
   patience: 5
-  members: 4                          # a forecast is the average of this many Fields
+  members: 6                          # a forecast is the average of this many Fields (P7: 5+ for the spread)
   seeds: [0, 1, 2]
