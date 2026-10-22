@@ -11,31 +11,31 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | | Task | Craton | Floor | Arrives |
 |---|---|---|---|---|
 | **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 15.12 ± 0.36 ↓ (+0.949 vs interpolation) | 16.07 ± 0 ↓ · interpolation | P3 |
-| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −10.88 ± 0.67 ↑ (−3.82 vs etas_incomplete) | −7.059 ± 0 ↑ · etas_incomplete | P3 |
-| **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P6 |
+| **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −6.818 ± 0.016 ↑ (+0.241 vs etas_incomplete) | −7.059 ± 0 ↑ · etas_incomplete | P3 |
+| **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P7 |
 
 ## Every task
 
 | ID | Task | Craton | Floor | Phase |
 |---|---|---|---|---|
 | CB-01 | Geo-perplexity | 15.12 ± 0.36 ↓ · craton-mini | 16.07 ± 0 ↓ · interpolation | P3 |
-| CB-02 | Apennines 2016-17 forecast | −10.88 ± 0.67 ↑ · craton-mini | −7.059 ± 0 ↑ · etas_incomplete | P3 |
-| CB-03 | L'Aquila 2009 era holdout | −15.13 ± 0.79 ↑ · craton-mini | −9.295 ± 0 ↑ · etas_incomplete | P3 |
+| CB-02 | Apennines 2016-17 forecast | −6.818 ± 0.016 ↑ · craton-mini | −7.059 ± 0 ↑ · etas_incomplete | P3 |
+| CB-03 | L'Aquila 2009 era holdout | −8.233 ± 0.006 ↑ · craton-mini | −9.295 ± 0 ↑ · etas_incomplete | P3 |
 | CB-04 | GPS gap-fill | 17.5 ± 0.043 ↓ · craton-mini | 17.77 ± 0 ↓ · idw_trend | P3 |
-| CB-05 | Calibration | · | · | P6 |
-| CB-06 | Unseen region | · | · | P6 |
-| CB-07 | Fake-precursor attack | · | · | P6 |
-| CB-08 | Physics sanity | · | · | P6 |
-| CB-09 | Sim-to-real gap | · | · | P7 |
-| CB-10 | Planted discovery | · | · | P8 |
-| CB-11 | Predictability meter | · | · | P6 |
-| CB-12 | Interpreter faithfulness | · | · | P9 |
-| CB-13 | Microscope | · | · | P10 |
-| CB-14 | Deep time | · | · | P11 |
+| CB-05 | Calibration | · | · | P7 |
+| CB-06 | Unseen region | · | · | P7 |
+| CB-07 | Fake-precursor attack | · | · | P7 |
+| CB-08 | Physics sanity | · | · | P7 |
+| CB-09 | Sim-to-real gap | · | · | P8 |
+| CB-10 | Planted discovery | · | · | P9 |
+| CB-11 | Predictability meter | · | · | P7 |
+| CB-12 | Interpreter faithfulness | · | · | P10 |
+| CB-13 | Microscope | · | · | P11 |
+| CB-14 | Deep time | · | · | P12 |
 | CB-15 | Efficiency | 16.27 ± 0.043 ↑ · craton-mini | · | P4 |
-| CB-16 | Scaling-law fit | · | · | P12 |
+| CB-16 | Scaling-law fit | · | · | P13 |
 | CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
-| CB-18 | Ladder rung 3 | · | · | P12 |
+| CB-18 | Ladder rung 3 | · | · | P13 |
 
 ## The building
 
@@ -47,10 +47,10 @@ Bits per M3+ quake above ETAS. A forecast on floor k gives the real quakes 2^k t
 | oracle · knowing where, to the cell | +2.11 | +2.45 |
 | oracle · knowing where, to ~10 km | +0.60 | +0.66 |
 | oracle · knowing each day's count | +2.10 | +3.55 |
+| **Craton** · craton-mini | +0.30 | +1.16 |
 | etas_incomplete (floor) | +0.06 | +0.10 |
 | etas (floor) | +0.00 | +0.00 |
 | etas_aniso (floor) | −0.00 | −0.00 |
-| **Craton** · craton-mini | −3.76 | −5.73 |
 | poisson (floor) | −7.52 | −7.54 |
 
 ## The floor
@@ -77,6 +77,7 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-22 01:42 | `20261022-014206-craton-mini` | craton-mini | 2 improved, 4 same |
 | 2026-10-21 23:48 | `20261021-234803-etas-incomplete` | etas_incomplete (baseline) | 2 new |
 | 2026-10-21 23:48 | `20261021-232907-etas-aniso` | etas_aniso (baseline) | 2 new |
 | 2026-10-21 23:48 | `20261021-232039-interpolation` | interpolation (baseline) | 1 new |

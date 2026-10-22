@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P5%20of%20P12-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P6%20of%20P13-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -196,6 +196,37 @@ forecasts. The model learns a new region from context alone (7.9 bits from one y
 counting that year still beats it. Step by step, including the training mix that almost hid a loss:
 [`lessons/P5.md`](lessons/P5.md). Every share: [`docs/ablation.md`](docs/ablation.md).
 
+## Above ETAS
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/building-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/building-light.png">
+    <img alt="Two towers of bits above ETAS, for the Apennines 2016-17 and L'Aquila 2009 forecasts. Craton P5 sits below ground; Craton P6, the Field, stands above ETAS at +0.30 and +1.16 bits per quake; oracle floors above show the room left, up to +4.21 and +6.00." src="docs/assets/building-dark.png" width="100%">
+  </picture>
+</p>
+
+Two phases in a row Craton lost to ETAS, by four to five bits per quake. Split, the loss was mostly
+*where*, and the cause was structural: inside a sequence the model's 1,024-quake window reached back less
+than three days, and one vector had to hold a map of 1,050 places.
+
+So the forecast was rebuilt as **the Field**. Every 0.1° cell is a token with a fading memory of its
+quakes, from an hour to twelve years (a power law is a sum of exponentials, so ETAS's whole memory is one
+recipe over these counters). The cells attend to each other. And the Field *starts as ETAS*: it learns
+only a correction, at most 4x either way.
+
+| Test | Craton-mini (P6) | Before (P5) | ETAS | Strongest floor |
+|---|---|---|---|---|
+| **CB-02** Forecast the Apennines 2016-17 | **−6.82 ± 0.02** | −10.98 | −7.12 | ETAS-incomplete −7.06 |
+| **CB-03** Forecast 2009 | **−8.23 ± 0.01** | −14.05 | −9.40 | ETAS-incomplete −9.30 |
+
+Bits per M3+ quake, higher is better. On L'Aquila the real quakes get 2.2 times ETAS's probability; on
+the Apennines, 1.2 times. Most of it is *how many*. *Where* beats ETAS on 2009 and is 0.02 bits behind on
+2016-17, all of it on the two days a new mainshock struck away from the swarm (Norcia, Campotosto); without
+the M5+ days, ETAS still edges the Apennines. Above it all, the oracles: the room up to the roof is +4.2
+and +6.0 bits. The honest GNSS floor arrived too: drawing a line between a station's neighbouring days
+(9.65 bits) beats Craton's 9.75. Step by step: [`lessons/P6.md`](lessons/P6.md).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -233,7 +264,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 ## Roadmap
 
 ```
-CORE       ██████████████████████████░░░░   6/7    foundation → a model that knows when it doesn't know
+CORE       ██████████████████████████░░░░   7/8    foundation → beat ETAS → a model that knows when it doesn't know
 DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    fake planets, the ghost channel, the translator, the microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon, then mini → regional → planet
 ```
@@ -246,13 +277,14 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P3** CratonBench + baselines, before any model | the eval harness |
 | ✅ | **P4** Craton-mini v0, the first transformer | the GPT-2 small run |
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
-| ◻️ | **P6** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P7** Fake planets: pretraining on simulated millennia | synthetic data |
-| ◻️ | **P8** The ghost channel: forces we forgot | register tokens |
-| ◻️ | **P9** The translator: plain-language answers, numbers only from the model | tool use |
-| ◻️ | **P10** The microscope: what the model learned | sparse autoencoders |
-| ◻️ | **P11** Any horizon, from next week to a million years | long context |
-| ◻️ | **P12** Scale-ready, open to every dataset | scaling laws, LoRA |
+| ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
+| ◻️ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
+| ◻️ | **P8** Fake planets: pretraining on simulated millennia | synthetic data |
+| ◻️ | **P9** The ghost channel: forces we forgot | register tokens |
+| ◻️ | **P10** The translator: plain-language answers, numbers only from the model | tool use |
+| ◻️ | **P11** The microscope: what the model learned | sparse autoencoders |
+| ◻️ | **P12** Any horizon, from next week to a million years | long context |
+| ◻️ | **P13** Scale-ready, open to every dataset | scaling laws, LoRA |
 
 The full plan, with every benchmark and exit test: [`ROADMAP.md`](ROADMAP.md).
 

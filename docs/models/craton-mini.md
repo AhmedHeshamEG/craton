@@ -2,7 +2,7 @@
 
 # Model cards
 
-One card per checkpoint: three seeds for each split a CratonBench task trains on. The checkpoints themselves stay out of git; `craton train SPLIT` rebuilds any of them.
+One card per checkpoint: three seeds for each split a CratonBench task trains on, then the Fields that forecast CB-02 and CB-03. The checkpoints themselves stay out of git; `craton train SPLIT` rebuilds any of them.
 
 ## mini-v0.4-cb02_fit-bcf9ffb66b6f-fbecfe06-s0
 
@@ -26,7 +26,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -52,7 +52,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -78,7 +78,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -104,7 +104,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -130,7 +130,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -156,7 +156,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -182,7 +182,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -208,7 +208,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -234,7 +234,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -260,7 +260,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -286,7 +286,7 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
 
@@ -312,6 +312,60 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 
 **Intended use.** Research and teaching: benchmark runs on CratonBench, and a first point on Craton's learning curve.
 
-**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P6).
+**Not for.** Any decision about safety. The model has seen one region, and it has not been calibrated (that is P7).
 
 **Known limits.** Magnitudes are the catalogue's preferred value of any type (Md before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's daily solutions, which already have the solid-Earth tide modelled out. The tide it reads is one hourly series at the region's centre.
+
+## Field · CB-02 · seed 0
+
+- **What it does:** daily forecasts for CB-02, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 4 members averaged.
+- **Training:** epochs per member 15, 8, 19, 22; validation gain over ETAS (nats per quake) 0.1099, 0.0790, 0.1041, 0.1151; 26.0 min.
+- **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
+- **Code:** Craton 0.6.0, Field f0.1, config hash `3c7025e4d9a1bf8c`.
+
+## Field · CB-02 · seed 1
+
+- **What it does:** daily forecasts for CB-02, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 4 members averaged.
+- **Training:** epochs per member 13, 16, 13, 17; validation gain over ETAS (nats per quake) 0.0966, 0.1020, 0.1060, 0.1190; 24.0 min.
+- **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
+- **Code:** Craton 0.6.0, Field f0.1, config hash `3c7025e4d9a1bf8c`.
+
+## Field · CB-02 · seed 2
+
+- **What it does:** daily forecasts for CB-02, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 4 members averaged.
+- **Training:** epochs per member 18, 10, 14, 18; validation gain over ETAS (nats per quake) 0.1178, 0.0901, 0.1081, 0.1096; 24.4 min.
+- **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
+- **Code:** Craton 0.6.0, Field f0.1, config hash `3c7025e4d9a1bf8c`.
+
+## Field · CB-03 · seed 0
+
+- **What it does:** daily forecasts for CB-03, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb03_fit`, 6,575 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 4 members averaged.
+- **Training:** epochs per member 12, 23, 15, 9; validation gain over ETAS (nats per quake) 0.1788, 0.1802, 0.1595, 0.1512; 22.6 min.
+- **Starting line:** ETAS with mu 0.604, k 0.8269, a 1.035, c 0.00592, p 1.039, d 1.822, gamma 0.1932, q 2.209, b 1.311, mc 2.
+- **Code:** Craton 0.6.0, Field f0.1, config hash `3c7025e4d9a1bf8c`.
+
+## Field · CB-03 · seed 1
+
+- **What it does:** daily forecasts for CB-03, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb03_fit`, 6,575 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 4 members averaged.
+- **Training:** epochs per member 9, 20, 8, 8; validation gain over ETAS (nats per quake) 0.1576, 0.1772, 0.1415, 0.1677; 13.0 min.
+- **Starting line:** ETAS with mu 0.604, k 0.8269, a 1.035, c 0.00592, p 1.039, d 1.822, gamma 0.1932, q 2.209, b 1.311, mc 2.
+- **Code:** Craton 0.6.0, Field f0.1, config hash `3c7025e4d9a1bf8c`.
+
+## Field · CB-03 · seed 2
+
+- **What it does:** daily forecasts for CB-03, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb03_fit`, 6,575 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 4 members averaged.
+- **Training:** epochs per member 7, 9, 21, 11; validation gain over ETAS (nats per quake) 0.1556, 0.1467, 0.1999, 0.1582; 13.9 min.
+- **Starting line:** ETAS with mu 0.604, k 0.8269, a 1.035, c 0.00592, p 1.039, d 1.822, gamma 0.1932, q 2.209, b 1.311, mc 2.
+- **Code:** Craton 0.6.0, Field f0.1, config hash `3c7025e4d9a1bf8c`.

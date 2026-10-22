@@ -774,3 +774,24 @@ so a Field change never retrains the trunk's twelve. `craton-mini`'s CB-01, CB-0
 from the same trunk checkpoints as P5. ETAS's daily rates for the Field's ~4,600 training days run
 on the GPU (`craton/field/base.py`), equal to the CPU code to 5·10⁻¹², about a hundred times
 faster. The `etas` baseline keeps its CPU path, so its frozen numbers cannot move.
+
+### D-064 · 2026-10-22 · P6 — The Field learns from 1991; the *where* exit test is missed, and kept
+
+The Field's training days start on 1 January 1991, not 2005: it sees Colfiorito 1997 (in the older Md
+magnitudes) as well as L'Aquila 2009, with ETAS's 2005 fit as the starting line throughout. Seed 0,
+four members: CB-02 −7.02 → −6.85, CB-03 −8.61 → −8.25, and CB-03's *where* went from a tie to
++0.12 over ETAS.
+
+Final, 3 seeds: CB-02 −6.818 ± 0.016, CB-03 −8.233 ± 0.006. *Where* against ETAS: CB-03 +0.15,
+CB-02 −0.018. The CB-02 shortfall is all on two days, 30 October 2016 (Norcia, −38.8 bits) and
+18 January 2017 (Campotosto, −18.2 bits), when a new mainshock struck away from the swarm the Field
+was leaning on; on every other day the Field's map is ahead (+0.02 bits per quake). P6 ships with
+this exit test unmet, said here, in the logbook and in the lesson.
+
+**Why.** More sequences are the cheapest teacher there is. The rest of the plan (above ETAS beyond
+noise on both, above the stronger floors) is met, and blending ETAS's map back in only made CB-02's
+*where* worse at every mix (checked, not tuned on the test). Seeing a mainshock coming is the
+mainshock-day work later in the plan, not something a map of recent activity can do.
+
+**Rejected.** Mixing ETAS's map into the Field's by a weight chosen on the test (that is fitting the
+answer). Holding the release until *where* ties on CB-02 (no honest lever left inside this phase).

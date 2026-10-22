@@ -135,7 +135,7 @@ def render_card(meta: dict[str, Any]) -> str:
         "first point on Craton's learning curve.",
         "",
         "**Not for.** Any decision about safety. The model has seen one region, and it has "
-        "not been calibrated (that is P6).",
+        "not been calibrated (that is P7).",
         "",
         "**Known limits.** Magnitudes are the catalogue's preferred value of any type (Md "
         "before 2005, ML after). Forecasts are daily, on the CB-02 grid. GNSS days are NGL's "
@@ -153,8 +153,10 @@ READS = {
 }
 
 
-def write_index(root: Path, folders: list[Path], out: Path) -> Path:
-    """One public page holding the model card of every checkpoint behind a benchmark run."""
+def write_index(root: Path, folders: list[Path], out: Path, extra: list[str] | None = None) -> Path:
+    """One public page holding the model card of every checkpoint behind a benchmark run.
+
+    ``extra`` cards (Markdown, each starting with a level-1 title) are appended as they are."""
     cards = []
     for f in sorted(folders):  # re-rendered from the metadata, so no card is ever stale
         meta = json.loads((f / "card.json").read_text(encoding="utf-8"))
@@ -165,11 +167,13 @@ def write_index(root: Path, folders: list[Path], out: Path) -> Path:
         "",
         "# Model cards",
         "",
-        "One card per checkpoint: three seeds for each split a CratonBench task trains on. "
+        "One card per checkpoint: three seeds for each split a CratonBench task trains on, "
+        "then the Fields that forecast CB-02 and CB-03. "
         "The checkpoints themselves stay out of git; `craton train SPLIT` rebuilds any of them.",
         "",
     ]
     body = [c.replace("# Model card · ", "## ", 1) + "\n" for c in cards]
+    body += [c.strip().replace("# ", "## ", 1) + "\n" for c in extra or []]
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(head + body), encoding="utf-8", newline="\n")
     return out

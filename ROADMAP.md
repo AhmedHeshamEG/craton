@@ -1,18 +1,18 @@
 # Roadmap
 
-Thirteen phases, P0 → P12. Each one ends with hard exit tests, a lesson in [`lessons/`](lessons/), a figure,
+Fourteen phases, P0 → P13. Each one ends with hard exit tests, a lesson in [`lessons/`](lessons/), a figure,
 and a release. A phase isn't done if any exit test fails. Live numbers are in [`SCOREBOARD.md`](SCOREBOARD.md);
 the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
-CORE       ██████████████████████████░░░░   6/7    P0–P6   foundation → a model that knows when it doesn't know
-DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P7–P10  fake planets, the ghost, the translator, the microscope
-SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P11–P12 any time horizon, then mini → regional → planet
-ALL        ██████████████░░░░░░░░░░░░░░░░   6/13
+CORE       ██████████████████████████░░░░   7/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
+DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/4    P8–P11  fake planets, the ghost, the translator, the microscope
+SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P12–P13 any time horizon, then mini → regional → planet
+ALL        ███████████████░░░░░░░░░░░░░░░   7/14
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
-here first) and **Craton** regional → planet (same code, bigger config files, unlocked in P12).
+here first) and **Craton** regional → planet (same code, bigger config files, unlocked in P13).
 
 Each phase lists its **Goal**, **Why**, the **LLM analogy** it borrows, what it builds, its **Benchmarks**, what
 is deliberately **not** in it, the exit tests (**Done when**) and what its lesson teaches (**Learn**).
@@ -40,20 +40,20 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-02 | **Apennines 2016–17 forecast** | Daily forecasts for Amatrice / Visso / Norcia / Campotosto, CSEP-style (pyCSEP N, S, M tests, log-likelihood, information gain per earthquake) at M≥3 and M≥1.5 | ETAS; the neural point process of arXiv 2301.09948 | P3 |
 | CB-03 | **L'Aquila 2009 era holdout** | As CB-02, training only on data ≤ 2008, testing on 2009 | ETAS | P3 |
 | CB-04 | **GPS gap-fill** | Hide whole GNSS stations, rebuild daily positions; RMSE (mm) | Inverse-distance weighting + linear trend | P3 |
-| CB-05 | **Calibration** | Reliability diagram, ECE, PIT uniformity, CRPS | Uncalibrated model | P6 |
-| CB-06 | **Unseen region** | Train without Calabria + Sicily, test there; AUROC of the "never seen this" detector | Same model, no OOD detector | P6 |
-| CB-07 | **Fake-precursor attack** | False-alarm rate with injected fake GPS jumps / fake swarms | ≤ the clean false-alarm rate | P6 |
-| CB-08 | **Physics sanity** | Outputs breaking the slip budget, Gutenberg–Richter, Omori decay, non-negative rates | 0 hard violations | P6 |
-| CB-09 | **Sim-to-real gap** | Synthetic-test vs real-test score gap, per generator, tracked over versions | — | P7 |
-| CB-10 | **Planted discovery** | Tides removed on purpose: does the ghost recover the 12.42 h / 24 h / 14.8 d periods? | Random residual | P8 |
-| CB-11 | **Predictability meter** | 90%-coverage window width in time (days), space (km), magnitude, for M≥4 | ETAS window width | P6 |
-| CB-12 | **Interpreter faithfulness** | ~200 fixed questions: numeric agreement with tool outputs, citation coverage, hallucination rate, correct abstention | Plain LLM, no tools | P9 |
-| CB-13 | **Microscope** | SAE reconstruction + recovery of a planted hidden variable + share of features with validated labels | Random directions | P10 |
-| CB-14 | **Deep time** | Plate positions vs published GPlates reconstructions at past ages; angular error | Constant-velocity extrapolation | P11 |
+| CB-05 | **Calibration** | Reliability diagram, ECE, PIT uniformity, CRPS | Uncalibrated model | P7 |
+| CB-06 | **Unseen region** | Train without Calabria + Sicily, test there; AUROC of the "never seen this" detector | Same model, no OOD detector | P7 |
+| CB-07 | **Fake-precursor attack** | False-alarm rate with injected fake GPS jumps / fake swarms | ≤ the clean false-alarm rate | P7 |
+| CB-08 | **Physics sanity** | Outputs breaking the slip budget, Gutenberg–Richter, Omori decay, non-negative rates | 0 hard violations | P7 |
+| CB-09 | **Sim-to-real gap** | Synthetic-test vs real-test score gap, per generator, tracked over versions | — | P8 |
+| CB-10 | **Planted discovery** | Tides removed on purpose: does the ghost recover the 12.42 h / 24 h / 14.8 d periods? | Random residual | P9 |
+| CB-11 | **Predictability meter** | 90%-coverage window width in time (days), space (km), magnitude, for M≥4 | ETAS window width | P7 |
+| CB-12 | **Interpreter faithfulness** | ~200 fixed questions: numeric agreement with tool outputs, citation coverage, hallucination rate, correct abstention | Plain LLM, no tools | P10 |
+| CB-13 | **Microscope** | SAE reconstruction + recovery of a planted hidden variable + share of features with validated labels | Random directions | P11 |
+| CB-14 | **Deep time** | Plate positions vs published GPlates reconstructions at past ages; angular error | Constant-velocity extrapolation | P12 |
 | CB-15 | **Efficiency** | Model FLOPs utilisation of the pretraining run on the RTX 2060; tokens/s, peak VRAM, wall-clock alongside | Must fit in 6 GB (a hard gate) | P4 |
-| CB-16 | **Scaling-law fit** | Loss vs params and tokens over 4–5 sizes; predict the next size before training it | — | P12 |
+| CB-16 | **Scaling-law fit** | Loss vs params and tokens over 4–5 sizes; predict the next size before training it | — | P13 |
 | CB-17 | **In-context adaptation** | Only the first N days of a new region in context, no retraining: does CB-01 improve as N grows? | Empty context | P5 |
-| CB-18 | **Ladder rung 3** | Timing of the next event on repeating-earthquake patches | Periodic / Poisson | P12 (spec only) |
+| CB-18 | **Ladder rung 3** | Timing of the next event on repeating-earthquake patches | Periodic / Poisson | P13 (spec only) |
 
 ---
 
@@ -260,7 +260,7 @@ learning.
 
 **Benchmarks:** CB-01 … CB-04, **CB-17 (in-context adaptation, new)**.
 
-**Not in this phase:** calibration and the locks (P6).
+**Not in this phase:** calibration and the locks (P7).
 
 **Done when**
 - beats P4 on CB-01 and CB-04 beyond noise
@@ -274,7 +274,51 @@ learning.
 three instruments and a 4.7M trunk there is nothing to route yet (D-048). Cross-modal masking is built
 and switched off for the general models after it measurably cost the quakes (D-056).
 
-## P6 · The 8 locks (trustworthiness) → v0.7.0
+## P6 · Beat ETAS: the Field → v0.7.0
+**Goal:** Craton above ETAS on CB-02 and CB-03, beyond noise.
+
+**Why:** P4 and P5 lost to ETAS by four to five bits per quake. Split, the loss was mostly *where*, and
+the cause was structural: the 1,024-quake window reached back less than three days inside a sequence,
+and one vector had to hold a map of 1,050 cells. Every later phase builds on a forecaster at least as
+good as the 1988 standard.
+
+**LLM analogy:** state-space layers (long memory at constant cost), attention over a grid (vision
+transformers), residual learning on a strong base, deep ensembles.
+
+**Build**
+1. The bit split: CB-02 and CB-03 report how-many / where / how-big bits, and the score without the
+   M5+ days. Extras only; the frozen test data doesn't move.
+2. The building: oracle floors above ETAS (the true count, the true map to ~10 km and to the cell, the
+   roof), measured once and drawn on the scoreboard.
+3. Stronger floors: same-station interpolation for CB-01's GNSS half; ETAS with stretched aftershock
+   zones; ETAS with short-term incompleteness (blind time).
+4. The Field: Omori memory (fading counters per cell, 1 hour → 12 years), the forecast cells as tokens
+   with attention between them, ETAS as the starting line (a bounded learned correction, zero at
+   the start), small quakes in, M3+ scored.
+5. Figure: the building, with Craton P5 in the basement and the Field where it lands.
+
+**Benchmarks:** CB-02 and CB-03 with the new extras; every earlier task through the ratchet, and no
+number or CB-01 half below P5.
+
+**Not in this phase:** calibration and the locks (P7), other regions (P8).
+
+**Done when**
+- CB-02 and CB-03 above ETAS beyond noise (3 seeds)
+- Craton's *where* bits ≥ ETAS's on both
+- above the stronger floors too, or the gap documented
+- the building figure on the README
+- `lessons/P6.md` written
+
+**Learn:** point processes and ETAS from the inside, Omori as a sum of exponentials, state-space layers,
+residual learning, reading a loss split.
+
+**Where it landed (v0.7.0):** CB-02 −10.98 → **−6.82** (ETAS −7.12, ETAS-incomplete −7.06), CB-03
+−14.05 → **−8.23** (ETAS −9.40): above ETAS on both, beyond noise. Almost all of it is how many. *Where*
+beats ETAS on CB-03 (+0.15) and misses on CB-02 by 0.02, all of it on the Norcia and Campotosto days: the
+one exit test not met, left to the mainshock days work. Stretched aftershock zones add nothing; ETAS with
+a blind time picks a blind time of zero (D-060). The trunk's P5 place context was not needed (D-061).
+
+## P7 · The 8 locks (trustworthiness) → v0.8.0
 **Goal:** the model knows when it doesn't know.
 
 **Why:** a confidently wrong earthquake model is worse than none.
@@ -288,7 +332,7 @@ unsure.
 3. OOD detector: distance of the context from training data in latent space; past a threshold → mandatory
    abstention.
 4. Physics budgets: slip budget, Gutenberg–Richter, Omori, non-negativity; violations flagged and counted.
-5. A multi-simulator hook, ready for P7.
+5. A multi-simulator hook, ready for P8.
 6. Region holdout (Calabria + Sicily) frozen.
 7. Fake-precursor injector: synthetic GPS jumps, fake swarms, sensor glitches.
 8. **Locked forecasts:** written with timestamp + hash **before** the evaluation period is read, graded after,
@@ -297,7 +341,7 @@ unsure.
 
 **Benchmarks:** **CB-05, CB-06, CB-07, CB-08, CB-11 (new)**.
 
-**Not in this phase:** synthetic pretraining (P7).
+**Not in this phase:** synthetic pretraining (P8).
 
 **Done when**
 - ECE below a documented threshold; PIT roughly uniform
@@ -305,7 +349,7 @@ unsure.
 - fake-precursor false alarms ≤ clean false alarms
 - zero hard physics violations
 - the predictability meter on the scoreboard
-- `lessons/P6.md` written
+- `lessons/P7.md` written
 
 **Learn:** aleatoric vs epistemic uncertainty, calibration, ensembles, OOD, prospective testing; why an honest
 "I don't know" is a feature.
@@ -314,7 +358,7 @@ unsure.
 
 # DISCOVERY
 
-## P7 · Fake planets (synthetic pretraining) → v0.8.0
+## P8 · Fake planets (synthetic pretraining) → v0.9.0
 **Goal:** pretrain on millions of simulated years, then fine-tune on the real Earth.
 
 **Why:** fixes rarity (many full fault cycles) and gives enough tokens to justify a bigger model.
@@ -339,11 +383,11 @@ unsure.
   evidence
 - model size raised to ~2–5M only if the scaling evidence supports it
 - the sim-to-real gap tracked per generator
-- `lessons/P7.md` written
+- `lessons/P8.md` written
 
 **Learn:** simulators, rate-and-state friction (intuition), synthetic data, curriculum, transfer.
 
-## P8 · Ghost channel + the atlas → v0.9.0
+## P9 · Ghost channel + the atlas → v0.10.0
 **Goal:** let the model point at forces we didn't give it.
 
 **Why:** no list of forces is provably complete; the ghost turns "missing input" into a discovery signal.
@@ -366,11 +410,11 @@ unsure.
 **Done when**
 - CB-10 recovers the planted tide with a clear spectral peak
 - every atlas entry has a status
-- `lessons/P8.md` written
+- `lessons/P9.md` written
 
 **Learn:** residuals, spectral analysis, the Neptune story; why null tests matter.
 
-## P9 · Interpreter A: the translator → v0.10.0
+## P10 · Interpreter A: the translator → v0.11.0
 **Goal:** ask Craton questions in plain language.
 
 **Why:** nobody reads a 256-number vector.
@@ -392,11 +436,11 @@ unsure.
 **Done when**
 - hallucinated-number rate = 0 on CB-12
 - beats the plain-LLM baseline on faithfulness
-- `lessons/P9.md` written
+- `lessons/P10.md` written
 
 **Learn:** tool calling, grounding, why the LLM never does the physics.
 
-## P10 · Interpreter B: the microscope → v0.11.0
+## P11 · Interpreter B: the microscope → v0.12.0
 **Goal:** break the model's internal vectors into named concepts.
 
 **Why:** where the "theory" gets pulled out of the simulator.
@@ -416,7 +460,7 @@ unsure.
 **Done when**
 - the planted variable recovered
 - a handful of features validated with numbers, unknown ones listed for investigation
-- `lessons/P10.md` written
+- `lessons/P11.md` written
 
 **Learn:** activations, superposition, sparse dictionaries, how labs read LLM internals.
 
@@ -424,7 +468,7 @@ unsure.
 
 # SCALE
 
-## P11 · Long horizons + multi-scale zoom → v0.12.0
+## P12 · Long horizons + multi-scale zoom → v0.13.0
 **Goal:** any (place, time) question answered at the right resolution, from seconds to millions of years.
 
 **Why:** the prompt to Craton is a place, a time and some context. The time can be next week, 1349, or a million years from now.
@@ -444,11 +488,11 @@ compute (sampling many futures).
 **Done when**
 - T = +1 Myr returns plate-scale output with its resolution stated; T = +7 days returns event rates
 - CB-14 beats constant-velocity extrapolation
-- `lessons/P11.md` written
+- `lessons/P12.md` written
 
 **Learn:** multi-scale modelling, plate reconstructions, why resolution shrinks with horizon.
 
-## P12 · Scale-ready + open platform → v0.13.0
+## P13 · Scale-ready + open platform → v0.14.0
 **Goal:** mini → regional → planet with a config switch, and strangers can contribute safely.
 
 **Why:** same project; when stronger GPUs or new techniques arrive, it grows without a redesign.
@@ -472,7 +516,7 @@ compute (sampling many futures).
 - the scaling prediction lands within a documented error
 - the regional config passes a smoke run
 - a new adapter added by following CONTRIBUTING alone passes every check without touching core code
-- `lessons/P12.md` + the final report written
+- `lessons/P13.md` + the final report written
 
 **Learn:** scaling laws, distributed training, LoRA, how an open research platform runs.
 
@@ -495,6 +539,6 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 ## Tracker
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
-- [x] P4 Craton-mini v0 · [x] P5 Fusion · [ ] P6 The 8 locks
-- [ ] P7 Fake planets · [ ] P8 Ghost + atlas · [ ] P9 Translator · [ ] P10 Microscope
-- [ ] P11 Long horizons · [ ] P12 Scale + open platform
+- [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [ ] P7 The 8 locks
+- [ ] P8 Fake planets · [ ] P9 Ghost + atlas · [ ] P10 Translator · [ ] P11 Microscope
+- [ ] P12 Long horizons · [ ] P13 Scale + open platform

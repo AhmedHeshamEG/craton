@@ -11,8 +11,8 @@ authors:
     family-names: Hesham
 repository-code: "https://github.com/AhmedHeshamEG/craton"
 license: Apache-2.0
-version: 0.6.0
-date-released: 2026-10-21
+version: 0.7.0
+date-released: 2026-10-22
 keywords:
   - seismology
   - earthquakes

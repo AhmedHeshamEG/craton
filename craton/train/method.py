@@ -579,10 +579,27 @@ class CratonMini:
         return GriddedForecast(np.concatenate(rates), mag[:, None, :])
 
     def write_cards(self, root: Any) -> Any:
-        """docs/models/<config>.md: the cards of every checkpoint this method has loaded."""
-        folders = [self.key_from_meta(meta).folder(root) for meta in self._meta.values()]
+        """docs/models/<config>.md: the card of every trunk checkpoint of this config on disk,
+        then every Field checkpoint's card."""
+        cdir = checkpoint.checkpoints_dir(root)
+        prefix = f"{self.config.name}-{checkpoint.TRAIN_VERSION}-"
+        suffix = f"-{self.config_hash[:8]}-s"
+        folders = [
+            f for f in cdir.glob(f"{prefix}*") if suffix in f.name and (f / "card.json").is_file()
+        ]
+        folders += [self.key_from_meta(meta).folder(root) for meta in self._meta.values()]
+        fields = []
+        if self.field_config:
+            fields = [
+                (f / "card.md").read_text("utf-8")
+                for f in sorted(cdir.glob(f"field-{self.field_config}-*"))
+                if (f / "card.md").is_file()
+            ]
         return checkpoint.write_index(
-            root, folders, root / "docs" / "models" / f"craton-{self.config_name}.md"
+            root,
+            sorted(set(folders)),
+            root / "docs" / "models" / f"craton-{self.config_name}.md",
+            fields,
         )
 
     def key_from_meta(self, meta: dict[str, Any]) -> checkpoint.CheckpointKey:
