@@ -12,7 +12,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 |---|---|---|---|---|
 | **Geo-perplexity** | CB-01 · bits per masked token in the held-out eras | 15.12 ± 0.36 ↓ (+0.949 vs interpolation) | 16.07 ± 0 ↓ · interpolation | P3 |
 | **Apennines 2016-17 forecast** | CB-02 · bits per M3+ quake, daily CSEP-style forecasts | −6.818 ± 0.016 ↑ (+0.241 vs etas_incomplete) | −7.059 ± 0 ↑ · etas_incomplete | P3 |
-| **Predictability meter** | CB-11 · width of the 90% window in days, km, magnitude | not measured yet | · | P7 |
+| **Predictability meter** | CB-11 · share of space-time (%) watched to catch 90% of the M4+ quakes | 0.843 ± 0.06 ↓ (+0.474 vs etas_aniso) | 1.317 ± 0 ↓ · etas_aniso | P7 |
 
 ## Every task
 
@@ -22,13 +22,13 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-02 | Apennines 2016-17 forecast | −6.818 ± 0.016 ↑ · craton-mini | −7.059 ± 0 ↑ · etas_incomplete | P3 |
 | CB-03 | L'Aquila 2009 era holdout | −8.233 ± 0.006 ↑ · craton-mini | −9.295 ± 0 ↑ · etas_incomplete | P3 |
 | CB-04 | GPS gap-fill | 17.5 ± 0.043 ↓ · craton-mini | 17.77 ± 0 ↓ · idw_trend | P3 |
-| CB-05 | Calibration | · | · | P7 |
-| CB-06 | Unseen region | · | · | P7 |
-| CB-07 | Fake-precursor attack | · | · | P7 |
-| CB-08 | Physics sanity | · | · | P7 |
+| CB-05 | Calibration | 0.3167 ± 0.075 ↓ · craton-mini | 0.1043 ± 0 ↓ · etas_incomplete | P7 |
+| CB-06 | Unseen region | 0.9972 ± 0.00065 ↑ · craton-mini | 0.9982 ± 0 ↑ · fingerprint_knn | P7 |
+| CB-07 | Fake-precursor attack | 1.002 ± 0.0039 ↓ · craton-mini | 1 ± 0 ↓ · poisson | P7 |
+| CB-08 | Physics sanity | 0 ± 0 ↓ · craton-mini | 0 ± 0 ↓ · poisson | P7 |
 | CB-09 | Sim-to-real gap | · | · | P8 |
 | CB-10 | Planted discovery | · | · | P9 |
-| CB-11 | Predictability meter | · | · | P7 |
+| CB-11 | Predictability meter | 0.843 ± 0.06 ↓ · craton-mini | 1.317 ± 0 ↓ · etas_aniso | P7 |
 | CB-12 | Interpreter faithfulness | · | · | P10 |
 | CB-13 | Microscope | · | · | P11 |
 | CB-14 | Deep time | · | · | P12 |
@@ -70,6 +70,24 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-03 | etas_aniso | −9.401 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
 | CB-03 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
 | CB-04 | idw_trend | 17.77 ± 0 ↓ | RMSE (mm), hidden stations, offset per station and component removed | east 24.2 · north 15.2 · up 11.4 mm over 29 stations, 86,373 days |
+| CB-05 | etas_incomplete | 0.1043 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
+| CB-05 | etas | 0.2217 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
+| CB-05 | etas_aniso | 0.2688 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
+| CB-05 | poisson | 1.577 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
+| CB-06 | fingerprint_knn | 0.9982 ± 0 ↑ | AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras |  |
+| CB-06 | no_detector | 0.5 ± 0 ↑ | AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras |  |
+| CB-07 | poisson | 1 ± 0 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
+| CB-07 | etas | 1.002 ± 0.0002 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
+| CB-07 | etas_aniso | 1.003 ± 0.00021 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
+| CB-07 | etas_incomplete | 1.003 ± 0.00056 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
+| CB-08 | poisson | 0 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
+| CB-08 | etas | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
+| CB-08 | etas_aniso | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
+| CB-08 | etas_incomplete | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
+| CB-11 | etas_aniso | 1.317 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
+| CB-11 | etas_incomplete | 1.32 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
+| CB-11 | etas | 1.324 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
+| CB-11 | poisson | 24.03 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-17 | context_kde | 19.03 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
 | CB-17 | climatology | 27.72 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
 
@@ -77,6 +95,13 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-22 12:35 | `20261022-123525-craton-mini` | craton-mini | 5 new, 6 same |
+| 2026-10-22 11:30 | `20261022-112953-etas-incomplete` | etas_incomplete (baseline) | 4 new, 2 same |
+| 2026-10-22 11:30 | `20261022-105940-etas-aniso` | etas_aniso (baseline) | 4 new, 2 same |
+| 2026-10-22 11:30 | `20261022-104920-etas` | etas (baseline) | 4 new, 2 same |
+| 2026-10-22 11:30 | `20261022-103809-fingerprint-knn` | fingerprint_knn (baseline) | 1 new |
+| 2026-10-22 11:30 | `20261022-103746-no-detector` | no_detector (baseline) | 1 new |
+| 2026-10-22 11:30 | `20261022-103737-poisson` | poisson (baseline) | 4 new, 2 same |
 | 2026-10-22 01:42 | `20261022-014206-craton-mini` | craton-mini | 2 improved, 4 same |
 | 2026-10-21 23:48 | `20261021-234803-etas-incomplete` | etas_incomplete (baseline) | 2 new |
 | 2026-10-21 23:48 | `20261021-232907-etas-aniso` | etas_aniso (baseline) | 2 new |
@@ -101,3 +126,9 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | `iers_tides` | 686,709 | 1985-01-01 → 2026-09-30 | 0 | 320,757 at earthquakes + 365,952 hourly; peak 0.319 m up, 0.080 m north, 0.079 m east |
 | `ingv_catalog` | 320,757 | 1985-01-02 → 2026-09-30 | 126 (magnitude_type:M 120, event_type:controlled explosion 5) | largest Mw 6.5 on 2016-10-30; ML 290,892, Md 29,466, Mw 399; completeness ML 1.5 in 2005, 1.2 in 2015, 1.1 in 2025; Md 2.6 in 1985, 2.6 in 1995, 2.4 in 2005, 1.5 in 2015; longest quiet spell 10.93 days |
 | `ngl_gnss` | 751,394 | 1995-06-27 → 2026-09-30 | 0 | 293 stations, median 1,927 days each, median coverage 83%, 964 gaps over 30 days |
+
+### southern_italy · snapshot `6dd8efd2fbc23ce6` · 1985-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `ingv_catalog` | 61,086 | 1985-01-06 → 2026-09-30 | 154 (event_type:experimental explosion 88, magnitude_type:M 57) | largest Mw 6.1 on 2026-06-01; ML 49,241, Md 11,608, Mw 228, mb 9; completeness ML 2.3 in 2005, 1.6 in 2015, 1.6 in 2025; Md 2.9 in 1985, 2.6 in 1995, 3.0 in 2005, 1.6 in 2015; longest quiet spell 16.14 days |

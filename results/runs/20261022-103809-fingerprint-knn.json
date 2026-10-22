@@ -1,0 +1,68 @@
+{
+  "run_id": "20261022-103809-fingerprint-knn",
+  "model": "fingerprint_knn",
+  "kind": "baseline",
+  "config_hash": "baseline",
+  "git_commit": "ade7d84f168b",
+  "created": "2026-10-22T10:38:09Z",
+  "results": [
+    {
+      "task_id": "CB-06",
+      "metric": "AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras",
+      "direction": "higher",
+      "fingerprint": "6f6037c07e3eb0525ae9c8a4ecb57efb1cfe83c464fd1b57a7cd8932d6667363",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "values": [
+        0.9981544416308025,
+        0.9981544416308025,
+        0.9981544416308025
+      ],
+      "extras": {
+        "auroc_reference_vs_unseen": [
+          0.9999676647481084,
+          0.9999676647481084,
+          0.9999676647481084
+        ],
+        "auroc_reference_vs_in_region": [
+          0.9064078667273864,
+          0.9064078667273864,
+          0.9064078667273864
+        ],
+        "abstain_reference": [
+          0.05015197568389058,
+          0.05015197568389058,
+          0.05015197568389058
+        ],
+        "abstain_in_region": [
+          0.5470383275261324,
+          0.5470383275261324,
+          0.5470383275261324
+        ],
+        "abstain_unseen": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "contexts_reference": [
+          1316.0,
+          1316.0,
+          1316.0
+        ],
+        "contexts_in_region": [
+          287.0,
+          287.0,
+          287.0
+        ],
+        "contexts_unseen": [
+          893.0,
+          893.0,
+          893.0
+        ]
+      }
+    }
+  ]
+}
