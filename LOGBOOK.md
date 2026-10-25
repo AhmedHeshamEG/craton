@@ -397,3 +397,51 @@ Decisions: D-065 … D-076.
 
 Next: P8, fake planets: simulated catalogues where the answer is known, plugged into the
 simulator registry that P7 left ready.
+
+## 2026-10-25 — P8a — Two fake planets
+
+TLDR: P8 is split into six parts (D-078), and this is the first: two kinds of simulated planet,
+where the truth is known, and CB-09 to score on them. On the ETAS planet (Italy's own fitted ETAS
+is the whole truth) Craton ties: 0.02 bits per quake below fitted ETAS, 0.002 below the truth. On
+the physics planet (rate-and-state faults, stress shadows, a hidden fluid source) it beats ETAS
+by +0.19 bits per quake on all three planets, all of it in *where*. That's beyond noise, and a
+fifth of the +1 the plan hoped for. Every older number is unchanged.
+
+Built:
+- `craton/sim/rate_state.py`: the physics planet. Dieterich (1994) seismicity on ~1,500 patches
+  along 36 Apennine-shaped faults plus a diffuse grid, Coulomb stress steps from every M2.5+, one
+  or two fluid sources, an exact integrator and sampler (D-079)
+- `etas_italy`, the ETAS planet: the `etas` floor's CB-02 fit, rounded (D-080)
+- `craton/bench/planets.py`: CB-09 on six frozen planets with CB-02's calendar, `PlanetContext`,
+  the truth forecast, the sim-to-real gap (D-081, D-082)
+- the planets figure; `lessons/P8.md` (P8a); tests: 360 → 378
+
+Scores (mean ± std over seeds 0, 1, 2 = planets 0, 1, 2; run `20261025-132227-craton-mini`):
+- CB-09 −14.38 ± 0.42 bits per M3+ quake on the physics planet (new; ETAS and
+  ETAS-aniso −14.57, Poisson −14.73). Craton − ETAS per planet: +0.165, +0.220, +0.195.
+- ETAS planet: Craton −14.146, fitted ETAS −14.124, the truth −14.143. |Δ| = 0.022 < 0.05.
+- Bit split on the physics planet: *where* +0.19, *how many* +0.00, *how big* 0.00.
+- Sim-to-real gap: ETAS planets 1.32 doublings off the real Apennines, physics planets 0.88.
+- CB-01 … CB-17: every number identical to P7 (the Field checkpoints are reused).
+
+Surprises / problems:
+- The QDYN spike failed: no Fortran toolchain, and it simulates one fault's cycle, where a
+  forecaster needs a region's catalogue. The population form of rate-and-state does that job.
+- The first freeze gave the ETAS planet b = 1.02 against a truth of 1.16. Magnitudes were simulated
+  from exactly 2.0 and rounded, which half-empties the first bin. Caught by the gap table before
+  any commit; planets now start half a step lower and the record was re-frozen.
+- The P7 ETAS planet was too weak to be a test (0.7 quakes a day, test windows of 5-18 M3+).
+  The new one is Italy as ETAS sees it.
+- Fitted ETAS scores slightly above the truth on all three ETAS planets (+0.02): over one
+  16-month window the truth is only the best forecast on average.
+- On the physics planet a map of the past (Poisson) is only 0.16 bits behind ETAS; on the ETAS
+  planet it is 2.6 behind. Small quakes trigger almost nothing there, so clustering is weak and
+  there is less for any forecaster to win.
+- Both planets are far smoother than the Earth: the busiest 1% of days hold 31% of the real
+  quakes and 5-10% of a planet's.
+- The Field's validation on the ETAS planet barely moves off its ETAS start, as it should
+  where there is nothing to learn.
+
+Decisions: D-078 … D-082.
+
+Next: P8b, CB-19: a 30-day forecast, where GPS strain is known to pay.

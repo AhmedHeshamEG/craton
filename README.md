@@ -267,6 +267,29 @@ tide. `craton referee` replays it: raw p = 10⁻⁴¹³; with the aftershocks re
 hard 71% of the time. The tide's phase isn't spread evenly over time, and the test assumed it was. Rejected. A
 planted 12.42-hour signal passes all five tests. Step by step: [`lessons/P7.md`](lessons/P7.md).
 
+## Two fake planets
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/planets-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/planets-light.png">
+    <img alt="Every M3+ quake from 1985 to 2017, placed along the Apennine chain, in three bands: the real INGV catalogue, a planet where Italy's own fitted ETAS is the whole truth, and a physics planet with faults, stress transfer and a hidden fluid source. The real quakes come in tight bursts in 1997, 2009 and 2016-17; both planets scatter." src="docs/assets/planets-dark.png" width="100%">
+  </picture>
+</p>
+
+Central Italy has three big sequences in forty years, so any score on it is part luck, and there's no way to
+tell which part. On a simulated planet the truth is known. CB-09 copies CB-02's calendar onto six of them and
+scores every forecaster through exactly the same calls it makes on Italy.
+
+| Planet | What makes the quakes | Craton − ETAS, bits per M3+ quake | Has to |
+|---|---|---|---|
+| **ETAS planet** | ETAS with Italy's own fitted numbers | −0.02 (the truth itself: −0.002) | tie: nothing beats the truth on average |
+| **Physics planet** | Dieterich rate-and-state on 36 faults, stress transfer with shadows, a hidden fluid source | **+0.19**, on all three planets | beat ETAS |
+
+The tie holds, and the win is real but small: all of it is in *where* the quakes land, a fifth of the +1 the
+plan hoped for. Both planets are also far smoother than the Earth. The real Apennines put 31% of their quakes
+on the busiest 1% of days; the planets 5-10%. Step by step: [`lessons/P8.md`](lessons/P8.md).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -319,7 +342,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
+| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (1 of 6 parts in: the two fake planets) | more pretraining data, synthetic data |
 | ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |

@@ -5,7 +5,21 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+### Added
+- **CB-09, the two-planet test** (`craton/bench/planets.py`, D-081): CB-02's calendar and scoring
+  on three frozen ETAS planets and three physics planets. The number is bits per M3+ quake on the
+  physics planet; the ETAS planet's bits, the truth's bits and their split are extras.
+- **The physics planet** (`craton/sim/rate_state.py`, D-079): Dieterich (1994) rate-and-state
+  seismicity on ~1,500 patches along 36 Apennine-shaped faults, Coulomb stress transfer with
+  shadows, hidden fluid sources, an exact integrator checked against the closed form.
+- **The ETAS planet** `etas_italy` (D-080): central Italy as the `etas` floor fits it.
+- **The sim-to-real gap** (D-082): five plain catalogue statistics against the real Apennines,
+  stored with each planet in the frozen record.
+- `PlanetContext`: any forecaster runs on a planet through the calls it makes on a region.
+- `docs/assets/planets-*.png`, `scripts/figures/planets.py`, `lessons/P8.md` (P8a).
+
 ### Changed
+- **P8 is built in six parts** (D-078); the version stays 0.8.x until the last one.
 - **The roadmap grows to 17 phases** (D-077): P8 Other planets, P9 The hidden state, P10 Listening,
   P11 The storm detector, then the ghost (P12), the translator (P13), the microscope and the law
   (P14), long horizons with the predictability horizon (P15) and scale (P16). Each phase now carries
