@@ -74,7 +74,12 @@ CATALOG: tuple[PlannedTask, ...] = (
     PlannedTask(
         "CB-21", "L'Aquila, enhanced inputs", "CB-03 scored with the ML catalogue as input", "P8"
     ),
-    PlannedTask("CB-22", "World sequences", "share of held-out world sequences above ETAS", "P8"),
+    PlannedTask(
+        "CB-22",
+        "World sequences",
+        "bits per quake above ETAS on never-seen regions; share of sequences above it",
+        "P8",
+    ),
     PlannedTask(
         "CB-23", "Hidden-state truth", "inferred stress axes vs stress inversions (degrees)", "P9"
     ),
@@ -92,6 +97,9 @@ CATALOG: tuple[PlannedTask, ...] = (
         "CB-27", "Predictability horizon", "lead time where skill over ETAS reaches zero", "P15"
     ),
     PlannedTask("CB-28", "Velocity gap-fill", "rebuild a hidden station's dv/v series", "P10"),
+    PlannedTask(
+        "CB-29", "EarthquakeNPP", "their California benchmark, their ETAS: nats per quake", "P8"
+    ),
 )
 
 BY_ID = {t.task_id: t for t in CATALOG}
