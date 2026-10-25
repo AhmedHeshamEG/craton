@@ -271,19 +271,14 @@ class ContextKde:
 
 def _fit_catalog(spec: ForecastSpec, ctx: BenchContext) -> tuple[Events, float, float]:
     """Quakes to fit on (from the split), the fit start and the fit end (seconds)."""
-    t0 = to_seconds(FIT_FROM)
+    t0 = to_seconds(spec.fit_from)
     split = ctx.train_events(spec.fit_split)
-    t1 = to_seconds(ctx_split_end(spec))
+    t1 = to_seconds(spec.fit_end)
     return split.window(t0, t1), t0, t1
 
 
 def ctx_split_end(spec: ForecastSpec) -> str:
-    from craton.bench.splits import SPLITS
-
-    before = SPLITS[spec.fit_split].before
-    if before is None:
-        raise ValueError(f"{spec.fit_split} has no cut-off; a forecast must fit on the past")
-    return before
+    return spec.fit_end
 
 
 def _shares(b: float, mc: float, grid: csep.Grid) -> tuple[float, FloatArray]:
@@ -303,13 +298,13 @@ class PoissonClimatology:
     def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
         grid = spec.grid
         ev, t0, t1 = _fit_catalog(spec, ctx)
-        ev = ev.above(FIT_MC)
+        ev = ev.above(spec.mc)
         proj = etas.Projection.for_grid(grid)
         x, y = proj.to_km(ev.lat, ev.lon)
         bg = etas.Background(x, y, np.ones(len(ev)), etas.box_km(grid, proj))
         per_day = len(ev) / ((t1 - t0) / DAY)
-        b = csep.b_value(ev.mag, FIT_MC)
-        scale, shares = _shares(b, FIT_MC, grid)
+        b = csep.b_value(ev.mag, spec.mc)
+        scale, shares = _shares(b, spec.mc, grid)
         cells = per_day * spec.period_days * scale * bg.cell_mass(grid, proj)
         rates = np.tile(cells, (len(spec.day_starts), 1))
         return GriddedForecast(rates, shares)
@@ -333,7 +328,7 @@ class Etas:
             cat = etas.to_catalog(ev.time, ev.lat, ev.lon, ev.mag, proj, t0)
             window = etas.FitWindow(etas.BURN_IN_DAYS, (t1 - t0) / DAY)
             ctx._cache[key] = etas.fit(
-                cat, FIT_MC, window, etas.box_km(spec.grid, proj), t0, seed=seed
+                cat, spec.mc, window, etas.box_km(spec.grid, proj), t0, seed=seed
             )
         out: etas.EtasFit = ctx._cache[key]
         return out

@@ -482,6 +482,32 @@ class ForecastSpec:
     window: Window
     grid: csep.Grid
     period_days: int = 1
+    # The region's own terms (P8d, any region on Earth); the defaults are central Italy's.
+    #: Completeness: ETAS fits on quakes from here, the Field learns from here.
+    mc: float = 2.0
+    #: Where ETAS's fit window starts (central Italy: where INGV's ML catalogue starts).
+    fit_from: str = "2005-01-01T00:00:00Z"
+    #: The fit's cut-off; None reads it from ``fit_split``.
+    cut: str | None = None
+    #: Magnitudes scored, the first one primary.
+    thresholds: tuple[float, ...] = (3.0, 1.5)
+    #: The largest magnitude a forecast may give any probability to.
+    max_magnitude: float = 7.3
+
+    @property
+    def fit_end(self) -> str:
+        """The moment nothing at or after may be fitted on."""
+        if self.cut is not None:
+            return self.cut
+        before = SPLITS[self.fit_split].before
+        if before is None:
+            raise ValueError(f"{self.fit_split} has no cut-off; a forecast must fit on the past")
+        return before
+
+    @property
+    def scored(self) -> float:
+        """The primary scored magnitude."""
+        return self.thresholds[0]
 
     @property
     def period(self) -> float:
@@ -690,7 +716,7 @@ def score_forecast(fc: GriddedForecast, obs: Events, spec: ForecastSpec, seed: i
     mbin = g.mag_bin_of(obs.mag)
     extras: dict[str, float] = {}
     primary = math.nan
-    for thr in THRESHOLDS:
+    for thr in spec.thresholds:
         first = int(g.mag_bin_of(np.array([thr]))[0])
         sel = mbin >= first
         keys = (day[sel] * g.n_cells + cell[sel]) * g.n_mags + mbin[sel]
@@ -731,7 +757,7 @@ def score_forecast(fc: GriddedForecast, obs: Events, spec: ForecastSpec, seed: i
         mt = csep.m_test(summed, counts_cm, N_SIMS, seed)
         extras[f"{tag}.s_test_quantile"] = s.quantile
         extras[f"{tag}.m_test_quantile"] = mt.quantile
-        if thr == THRESHOLDS[0]:
+        if thr == spec.thresholds[0]:
             primary = bits
     return Score(primary, extras)
 

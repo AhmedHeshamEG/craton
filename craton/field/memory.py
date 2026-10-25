@@ -46,6 +46,9 @@ class MemorySpec:
 
     m_min: float = 1.5
     start: float = 631_152_000.0  # 1990-01-01
+    #: The magnitude whose quake weighs 1 in the productivity counters (central Italy: M2,
+    #: its completeness; any region: its own).
+    m_ref: float = M_REF
     lifetimes: tuple[float, ...] = LIFETIMES_DAYS
     spreads: tuple[float, ...] = SPREADS
 
@@ -65,7 +68,7 @@ def memory(events: Events, grid: Grid, midnights: FloatArray, spec: MemorySpec) 
     cell = grid.cell_of(ev.lat, ev.lon)
     keep = cell >= 0
     t, c, m = ev.time[keep], cell[keep], ev.mag[keep]
-    weights = np.stack([np.ones_like(m), 10.0 ** (PRODUCTIVITY * (m - M_REF))], axis=1)
+    weights = np.stack([np.ones_like(m), 10.0 ** (PRODUCTIVITY * (m - spec.m_ref))], axis=1)
     taus = np.asarray(spec.lifetimes)
     k, w = len(taus), weights.shape[1]
     state = np.zeros((grid.n_cells, k, w))
