@@ -145,6 +145,12 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 Measured on the latest build of each region by `craton data build`. The snapshot id is the hash of every token file, so it only changes if a byte of the data does.
 
+### california · snapshot `2e933cc433533857` · 1981-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 250,864 | 1981-01-01 → 2026-09-30 | 165 (magnitude_type:ma 152, magnitude_type:mdl 12) | largest Mw 7.3 on 1992-06-28; ML 90,786, Mc 58,534, Md 92,974, Mh 5,740, Ms 1, Mw 2,510, mb 319; completeness ML 3.2 in 1985, 2.6 in 1995, 2.3 in 2005, 2.3 in 2015, 2.3 in 2025; Md 2.3 in 1985, 2.3 in 1995, 2.3 in 2005, 2.3 in 2015, 2.3 in 2025; longest quiet spell 1.59 days |
+
 ### central_italy · snapshot `96a163f798d8f9cc` · 1985-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
@@ -153,11 +159,23 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | `ingv_catalog` | 320,757 | 1985-01-02 → 2026-09-30 | 126 (magnitude_type:M 120, event_type:controlled explosion 5) | largest Mw 6.5 on 2016-10-30; ML 290,892, Md 29,466, Mw 399; completeness ML 1.5 in 2005, 1.2 in 2015, 1.1 in 2025; Md 2.6 in 1985, 2.6 in 1995, 2.4 in 2005, 1.5 in 2015; longest quiet spell 10.93 days |
 | `ngl_gnss` | 751,394 | 1995-06-27 → 2026-09-30 | 0 | 293 stations, median 1,927 days each, median coverage 83%, 964 gaps over 30 days |
 
+### earthquakenpp_comcat · snapshot `960204e6f5819c99` · 1971-01-01 → 2020-01-17
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `earthquakenpp` | 92,263 | 1971-01-01 → 2020-01-16 | 0 | largest M 7.3 on 1992-06-28; M 92,263; longest quiet spell 8.11 days |
+
 ### japan · snapshot `646e06efcb8292d8` · 1983-01-01 → 2025-01-01
 
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `jma_hypocenter` | 335,667 | 1983-01-01 → 2024-12-31 | 4,948,419 (below_min_magnitude 4,386,385, no_magnitude 189,931) | largest Mw 9 on 2011-03-11; Mj 335,666, Mw 1; longest quiet spell 1.44 days |
+
+### new_zealand · snapshot `0ad42fd967748d63` · 1987-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 229,726 | 1987-01-01 → 2026-09-30 | 25 (magnitude_type:Mw(mB) 24, magnitude_type:Ms(BB) 1) | largest Mw 7.8 on 2009-07-15; M 35,427, ML 175,680, MLv 17,457, Mw 1,160, mb 2; completeness ML 2.8 in 1995, 2.8 in 2005; longest quiet spell 2.05 days |
 
 ### southern_italy · snapshot `6dd8efd2fbc23ce6` · 1985-01-01 → 2026-10-01
 
