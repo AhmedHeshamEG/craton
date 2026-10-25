@@ -91,7 +91,7 @@ def _log_bins(mass: np.ndarray, s: float) -> np.ndarray:
 def pool_dir(world: WorldField, eng: Engine) -> Path:
     cfg = world.config
     assert cfg.world is not None
-    body = {"v": NPP_VERSION, "engine": eng.folder.name, "world": cfg.world.model_dump(mode="json")}
+    body = {"v": NPP_VERSION, "engine": eng.folder.name, "pool": world.pool_id()}
     h = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:12]
     return eng.folder.parent / f"cb29-pool-{h}"
 

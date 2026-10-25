@@ -205,7 +205,7 @@ class WorldField:
         assert cfg.world is not None
         body = {
             "version": WORLD_VERSION,
-            "world": cfg.world.model_dump(mode="json"),
+            "world": cfg.world.model_dump(mode="json", exclude={"steps_per_epoch"}),
             "memory_start": cfg.memory.start,
             "first_day": cfg.train.first_day,
             "validation_every": cfg.train.validation_every,
