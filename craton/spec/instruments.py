@@ -10,9 +10,46 @@ from craton.spec.registry import Channel, Instrument, Qualifier, Registry
 
 _ID = r"[A-Za-z0-9_.:/-]{1,128}"
 
-MAGNITUDE_TYPES = ("ML", "Mw", "Md", "mb", "mB", "Ms", "Mwp", "MwL", "Mwpd", "Mc", "Mmacro")
+MAGNITUDE_TYPES = (
+    "ML",
+    "Mw",
+    "Md",
+    "mb",
+    "mB",
+    "Ms",
+    "Mwp",
+    "MwL",
+    "Mwpd",
+    "Mc",
+    "Mmacro",
+    # 1.1.0 (the world's catalogues): the agency's unspecified magnitude, JMA's magnitude, a
+    # hand-read magnitude (ComCat), Nuttli's mb from Lg waves, and ML from vertical components.
+    "M",
+    "Mj",
+    "Mh",
+    "mb_Lg",
+    "MLv",
+)
 """Magnitude scales are not interchangeable: an ML 4.0 and an Mw 4.0 are different numbers.
 Every magnitude carries its type, and nothing mixes them silently."""
+
+#: Vocabulary words added after 1.0.0, with the spec version that added them. A token that
+#: uses one must be written under that version or later; a token that uses none stays 1.0.0,
+#: so data made before a word existed keeps its bytes (and its hash) when the spec grows.
+WORDS_ADDED: dict[str, dict[str, str]] = {
+    "magnitude_type": {w: "1.1.0" for w in ("M", "Mj", "Mh", "mb_Lg", "MLv")},
+}
+
+
+def word_added_in(qualifier: str, value: str) -> str:
+    """The spec version that added ``value`` to ``qualifier``'s vocabulary."""
+    return WORDS_ADDED.get(qualifier, {}).get(value, "1.0.0")
+
+
+def spec_for_magnitude(magnitude_type: str) -> str:
+    """The oldest spec under which a catalogue token with this magnitude type is valid."""
+    return word_added_in("magnitude_type", magnitude_type)
+
 
 SEISMIC_CATALOG = Instrument(
     name="seismic_catalog",

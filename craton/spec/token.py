@@ -31,11 +31,14 @@ from pydantic import (
 )
 from pydantic_core import PydanticCustomError
 
-from craton.spec.instruments import REGISTRY
+from craton.spec.instruments import REGISTRY, word_added_in
 from craton.spec.registry import Kind, Registry
 from craton.spec.timeaxis import EARTH_AGE_S, to_seconds
 
-SPEC_VERSION = "1.0.0"
+SPEC_VERSION = "1.1.0"
+#: What a token says when it asks for nothing newer: tokens are written under the oldest spec
+#: that accepts them (``craton.spec.instruments.WORDS_ADDED``).
+BASE_SPEC = "1.0.0"
 EARTH_RADIUS_KM = 6371.0
 HALF_CIRCUMFERENCE_KM = 20_038.0
 MAX_ABOVE_ELLIPSOID_KM = 10.0
@@ -53,6 +56,10 @@ UncertaintyBasis = Literal["reported", "derived", "assumed"]
 
 def _fail(code: str, message: str, **ctx: Any) -> PydanticCustomError:
     return PydanticCustomError(code, message, ctx or None)
+
+
+def _version(v: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in v.split("."))
 
 
 def _finite(v: float, what: str) -> float:
@@ -150,7 +157,7 @@ class Token(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
-    spec: str = Field(default=SPEC_VERSION, description="Token Spec version it was written under.")
+    spec: str = Field(default=BASE_SPEC, description="Token Spec version it was written under.")
     kind: Kind
     instrument: str
     lat: float = Field(description="WGS84 latitude, degrees, [-90, 90].")
@@ -294,6 +301,16 @@ class Token(BaseModel):
             why = q.problem(text)
             if why:
                 raise _fail("qualifier_value", "qualifier {k}: {why}", k=key, why=why)
+            added = word_added_in(key, text)
+            if _version(added) > _version(self.spec):
+                raise _fail(
+                    "spec_too_old",
+                    "{k} '{v}' arrived in spec {a}; this token says {s}",
+                    k=key,
+                    v=text,
+                    a=added,
+                    s=self.spec,
+                )
         for q in inst.qualifiers:
             if q.required and q.name not in self.qualifiers:
                 raise _fail(

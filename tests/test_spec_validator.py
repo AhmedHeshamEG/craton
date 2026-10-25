@@ -93,7 +93,9 @@ CASES: list[tuple[str, Mutation, str, str]] = [
     ("norcia_2016", setter("location_uncertainty.depth", 1.0), "unknown_field", "typo'd key"),
     # qualifiers
     ("norcia_2016", setter("qualifiers", {}), "missing_qualifier", "magnitude type required"),
-    ("norcia_2016", setter("qualifiers.magnitude_type", "M"), "qualifier_value", "which M?"),
+    ("norcia_2016", setter("qualifiers.magnitude_type", "Mx"), "qualifier_value", "which Mx?"),
+    # "M" joined the vocabulary in 1.1.0: a token that says 1.0.0 may not use it.
+    ("norcia_2016", setter("qualifiers.magnitude_type", "M"), "spec_too_old", "M under 1.0.0"),
     ("norcia_2016", setter("qualifiers.colour", "red"), "unknown_qualifier", "not declared"),
     ("norcia_2016", setter("qualifiers.event_id", ""), "qualifier_value", "empty label"),
     ("norcia_2016", setter("qualifiers.event_id", 8863681), "wrong_type", "label as number"),
