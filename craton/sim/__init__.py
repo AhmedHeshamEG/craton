@@ -101,6 +101,19 @@ def register_simulator(sim: Simulator) -> Simulator:
 
 register_simulator(EtasPlanet())
 
+#: Central Italy as ETAS sees it: the ``etas`` floor's fit on CB-02's split (M ≥ 2, 2005 to
+#: Amatrice), rounded. A planet where those numbers are the whole truth (CB-09).
+ITALY_AS_ETAS = etas.EtasParams(
+    mu=0.575, k=0.477, a=1.225, c=0.018, p=1.186, d=0.541, gamma=0.695, q=2.035
+)
+
+register_simulator(EtasPlanet(name="etas_italy", params=ITALY_AS_ETAS, b=1.16))
+
+# The physics planet (P8) registers through the same hook.
+from craton.sim.rate_state import RateStatePlanet  # noqa: E402
+
+register_simulator(RateStatePlanet())
+
 
 def thin_periodic(
     ev: Events, period_days: float, amplitude: float, seed: int, phase: float = 0.0
