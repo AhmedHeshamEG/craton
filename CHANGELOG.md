@@ -6,6 +6,13 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 ## [Unreleased]
 
 ### Added
+- **CB-19, the 30-day forecast** (D-083): CB-02's sequence, split and score, one forecast per 30
+  days, sixteen periods. `ForecastSpec.period_days`; ETAS over any span with the cascade stretched
+  to it (CPU and GPU); the Field trained on 30-day answers with purged training starts (D-084);
+  `long_periods` says which forecasters can answer it.
+- **The GPS ablation at 30 days** (`scripts/ablations/gps_thirty_days.py`, D-085): +0.13 bits per
+  quake on every seed, kept for P8f.
+- `docs/assets/thirty-days-*.png`, `scripts/figures/thirty_days.py`, `lessons/P8.md` (P8b).
 - **CB-09, the two-planet test** (`craton/bench/planets.py`, D-081): CB-02's calendar and scoring
   on three frozen ETAS planets and three physics planets. The number is bits per M3+ quake on the
   physics planet; the ETAS planet's bits, the truth's bits and their split are extras.
@@ -19,6 +26,8 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 - `docs/assets/planets-*.png`, `scripts/figures/planets.py`, `lessons/P8.md` (P8a).
 
 ### Changed
+- The roadmap no longer says GPS strain is known to beat ETAS at 30 days: the paper it cited can't
+  be found (D-083).
 - **P8 is built in six parts** (D-078); the version stays 0.8.x until the last one.
 - **The roadmap grows to 17 phases** (D-077): P8 Other planets, P9 The hidden state, P10 Listening,
   P11 The storm detector, then the ghost (P12), the translator (P13), the microscope and the law

@@ -1117,3 +1117,66 @@ bursty (the real busiest 1% of days hold 31% of the quakes; the planets 5-10%).
 
 **Rejected.** Distances between whole distributions (KS on inter-event times and the like): each
 needs a choice of what to compare, and five numbers a reader can check beat one they can't.
+
+### D-083 · 2026-10-25 · P8 — CB-19: CB-02 in sixteen whole 30-day periods
+
+- **Calendar.** CB-02's sequence, fit split and grid, with one forecast per 30 days from
+  2016-08-25. Sixteen whole periods fit before the end of 2017; the last 14 days (one M3+ quake)
+  are left out rather than scored as a short period. Each forecast reads only the quakes before its
+  period starts, so the one holding Visso and Norcia (24 October to 23 November 2016) is forecast
+  from a sequence that was fading.
+- **Score.** The same Poisson log-likelihood per M3+ quake as CB-02, read per (period, cell). The
+  how-many, where and how-big split and the CSEP tests come out the same way.
+- **ETAS over 30 days.** The expected count of the Omori integrals over the whole period, plus 30
+  days of background, times the mean-field cascade stretched to 30 days. The direct part of a
+  period is exactly its 30 days added up (tested); the cascade is ETAS's own arithmetic, so the
+  floor is ETAS's expectation and nothing kinder.
+- **The claim it was built on doesn't check out.** The plan said GPS strain is "known to beat ETAS"
+  at 30 days and cited a 2026 paper. No such paper can be found. What exists: GNSS strain rate as a
+  time-varying ETAS background at Campi Flegrei, judged by AIC (Petrillo & Taroni 2025, *Seismica*);
+  geodetic forecasts of Italy's long-term rate (*Sci. Rep.* 2024); no pre-seismic GNSS motion before
+  Amatrice or Norcia on the Mt. Vettore pairs; a seismic-velocity change before Norcia (Chiarabba et
+  al. 2020). So CB-19 tests whether GPS pays at 30 days. Nobody has shown that it does here.
+
+**Rejected.** Overlapping 30-day windows issued every day (30 times the scoring for numbers that
+aren't independent). Simulated ETAS (the Poisson score reads only the expected count, and the
+mean-field cascade gives it without the sampling noise). Scoring the short last period.
+
+### D-084 · 2026-10-25 · P8 — The Field at 30 days
+
+The same configuration as CB-02 (`configs/field/mini.yaml`, six members), with its own checkpoints.
+Three things change, and nothing for the daily tasks:
+
+- the start line is ETAS's 30-day forecast (D-083);
+- every training midnight answers with the next 30 days' counts per cell (a running sum of daily
+  counts, so the 9,338 starts cost one pass);
+- a training start whose 30 days reach into a validation block is dropped, so no member is
+  trained on the quakes it is checked against.
+
+The daily calibration (`predictive`) stays daily; CB-19 reads the forecast only.
+
+**Rejected.** One Field for both horizons (every daily checkpoint would retrain, and a FIELD_VERSION
+bump moves CB-02, 03 and 09). Training on non-overlapping periods only (about 300 examples).
+
+### D-085 · 2026-10-25 · P8 — GPS at 30 days: a small gain, kept for P8f
+
+The ablation (`scripts/ablations/gps_thirty_days.py`) adds three GNSS features per cell to the
+Field's memory: the 30-day horizontal and vertical departure of the nearby stations from their
+own one-year trend, and how well the cell is covered. CB-04's held-out stations are left out.
+Same seeds, same everything else.
+
+- **Result.** −6.096 bits per M3+ quake with GPS, −6.226 without: **+0.13**, positive on all three
+  seeds (+0.06, +0.22, +0.11). All of it is in *how many*; *where* is a little worse. With GPS
+  the Field is still 0.09 behind ETAS on average, ahead of it on one seed (−5.978).
+- **What it is reading.** A 30-day departure includes the jumps the big quakes themselves put in
+  the stations, and the slow slip after them. So GPS is most likely telling the Field how big the
+  sequence's last shocks were, plus their afterslip, sooner and more directly than the catalogue
+  does. That's useful information. It is not a precursor, and nothing here says GPS saw anything
+  before a quake.
+- **Kept for P8f.** Adding the features changes the Field's configuration, which retrains CB-02,
+  CB-03 and CB-09 and moves their numbers. P8f retrains every Field on the curriculum anyway, so
+  GPS joins there, with a coseismic-jump-removed version tested next to it.
+
+**Rejected.** Shipping the GPS Field as CB-19's number now (one task's configuration diverging
+from the rest, for +0.13 inside a 0.13 spread). Dropping GPS for missing ETAS (the paired gain
+is consistent on every seed).

@@ -55,7 +55,7 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-16 | **Scaling-law fit** | Loss vs params and tokens over 4–5 sizes; predict the next size before training it | — | P16 |
 | CB-17 | **In-context adaptation** | Only the first N days of a new region in context, no retraining: does CB-01 improve as N grows? | Empty context | P5 |
 | CB-18 | **Ladder rung 3** | Timing of the next event on repeating-earthquake patches | Periodic / Poisson | P16 (spec only) |
-| CB-19 | **30-day forecast** | As CB-02, one forecast per 30 days: the horizon where GPS strain is known to pay | ETAS | P8 |
+| CB-19 | **30-day forecast** | As CB-02, one forecast per 30 days: the horizon where GPS strain might pay | ETAS | P8 |
 | CB-20 | **Apennines, enhanced inputs** | CB-02's scoring, with the 2016–17 ML catalogue as input (relocated with hindsight, so its own task) | ETAS on the same inputs | P8 |
 | CB-21 | **L'Aquila, enhanced inputs** | CB-03's scoring, with the 2009 ML catalogue as input | ETAS on the same inputs | P8 |
 | CB-22 | **World sequences** | Daily forecasts on held-out sequences in California, Japan, New Zealand; share where Craton beats ETAS + mean gain | ETAS fitted per region | P8 |
@@ -419,7 +419,7 @@ scale follow, renumbered.
    a physics planet (`SPIKE`: QDYN or a quasi-dynamic rate-and-state code on Windows / WSL; fallback a
    verified spring-block model in NumPy) with real fault geometry, stress transfer and a fluid source (Craton
    must beat ETAS). Then fake data pretrains the correction only.
-5. **CB-19, a 30-day forecast:** where GPS strain is known to beat ETAS (Santibáñez-Leal 2026).
+5. **CB-19, a 30-day forecast:** the horizon where GPS strain has the best chance to pay (D-083).
 6. Curriculum: planets → regions → central Italy fine-tune.
 7. Figure: one fake planet's 10,000 years next to the real Apennines; and the world map of sequences Craton
    learned from.
@@ -435,6 +435,11 @@ Japan and New Zealand, CB-22 · P8e Groningen and Oklahoma · P8f the curriculum
 Apennine-shaped fault network (the QDYN spike failed, D-079). ETAS planet: Craton −0.02 bits from
 fitted ETAS (tie ✓). Physics planet: **+0.19** over ETAS on all three planets (beaten beyond noise ✓,
 short of the +1 hoped for). Sim-to-real gap: ETAS planets 1.32 doublings off, physics planets 0.88.
+
+**P8b, done (2026-10-25):** CB-19, sixteen 30-day forecasts of the 2016-17 sequence (D-083, D-084).
+ETAS wins: Craton −0.22 bits per quake (expected ≈ +0.2), level without the months that hold an M5+.
+GPS adds +0.13 on every seed, all in the count, most likely from coseismic jumps and afterslip; it joins
+the Fields in P8f (D-085).
 
 **Not in this phase:** the hidden-state layer (P9).
 

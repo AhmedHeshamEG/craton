@@ -290,6 +290,25 @@ The tie holds, and the win is real but small: all of it is in *where* the quakes
 plan hoped for. Both planets are also far smoother than the Earth. The real Apennines put 31% of their quakes
 on the busiest 1% of days; the planets 5-10%. Step by step: [`lessons/P8.md`](lessons/P8.md).
 
+## Thirty days ahead
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/thirty-days-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/thirty-days-light.png">
+    <img alt="Sixteen 30-day periods of the 2016-17 Apennine sequence: M3+ quakes that happened as bars on a log scale, with ETAS's and Craton's expected counts as ticks. The month of Visso and Norcia holds 598 quakes; ETAS expected 14 and Craton 9. In the quiet months of 2017 Craton's ticks sit closer to the bars." src="docs/assets/thirty-days-dark.png" width="100%">
+  </picture>
+</p>
+
+CB-19 asks CB-02's question a month at a time. ETAS wins it: Craton is **0.22 bits per quake behind**
+(−6.226 against −6.002), behind on every seed. Without the months that hold an M5+ the two are level, and
+Craton is closer in most quiet months. The loss is two surprises no earlier data foresaw: Norcia's 6.5, and
+four M5s at Campotosto at the sequence's southern end.
+
+GPS was the reason to try a month. Added to the Field it gains +0.13 bits per quake on every seed, all of it
+in *how many*: most likely the stations measuring the big shocks and the slow slip after them. That's useful,
+and it isn't a precursor. It joins every Field in P8f, next to a version with those jumps removed.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -342,7 +361,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (1 of 6 parts in: the two fake planets) | more pretraining data, synthetic data |
+| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (2 of 6 parts in: the two fake planets, the 30-day forecast) | more pretraining data, synthetic data |
 | ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
