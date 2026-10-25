@@ -628,11 +628,13 @@ def forecast_days(
     grid: Grid,
     proj: Projection,
     anisotropic: bool = False,
+    span: float = 1.0,
 ) -> DailyForecast:
     """Daily ETAS forecasts. ``history`` holds every quake known by each day (model units).
 
-    Day ``d`` covers [day_starts[d], day_starts[d] + 1) and sees only quakes before it starts.
-    With ``anisotropic``, big parents get elliptical zones (``learn_shapes``) once known.
+    Day ``d`` covers [day_starts[d], day_starts[d] + span) and sees only quakes before it
+    starts (``span`` 1 for daily forecasts, 30 for CB-19's thirty-day ones). With
+    ``anisotropic``, big parents get elliptical zones (``learn_shapes``) once known.
     """
     pr = fit.params
     parents = history.select(history.m >= fit.mc - 1e-9)
@@ -641,7 +643,7 @@ def forecast_days(
     t0 = day_starts[:, None]
     seen = parents.t[None, :] < t0
     w = prod[None, :] * (
-        omori_integral(t0 + 1 - parents.t[None, :], pr.c, pr.p)
+        omori_integral(t0 + span - parents.t[None, :], pr.c, pr.p)
         - omori_integral(t0 - parents.t[None, :], pr.c, pr.p)
     )
     w = np.where(seen, w, 0.0)
@@ -655,8 +657,8 @@ def forecast_days(
         triggered = np.asarray((smat.T @ w.T).T + (shaped.T @ w_shaped.T).T)
     else:
         triggered = np.asarray((smat.T @ w.T).T)
-    background = pr.mu * fit.background.cell_mass(grid, proj)
-    factor = cascade_factor(pr, fit.b, fit.mc, 1.0)
+    background = span * pr.mu * fit.background.cell_mass(grid, proj)
+    factor = cascade_factor(pr, fit.b, fit.mc, span)
     return DailyForecast((background[None, :] + triggered) * factor, fit.mc, fit.b)
 
 

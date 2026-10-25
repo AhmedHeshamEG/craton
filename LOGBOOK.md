@@ -445,3 +445,41 @@ Surprises / problems:
 Decisions: D-078 … D-082.
 
 Next: P8b, CB-19: a 30-day forecast, where GPS strain is known to pay.
+
+## 2026-10-25 — P8b — Thirty days ahead
+
+TLDR: CB-19 is CB-02 a month at a time: sixteen 30-day forecasts of the 2016-17 sequence. ETAS wins
+it. Craton is 0.22 bits per quake behind, on every seed, against an expected +0.2. Without the
+months that hold an M5+ the two are level; the loss is Norcia's month and Campotosto's. GPS added to
+the Field gains +0.13 on every seed, all of it in the count, most likely from coseismic jumps and
+afterslip; it joins every Field in P8f. Every older number is unchanged.
+
+Built:
+- `ForecastSpec.period_days` and CB-19 (D-083): sixteen whole periods, the last 14 days left out
+- ETAS over any span, cascade stretched to it, on the CPU and the GPU (tested equal)
+- the Field at 30 days (D-084): ETAS's 30-day start, 30-day answers by a running sum, training
+  starts that reach a validation block dropped; `long_periods` on the forecasters that can answer
+- `scripts/ablations/gps_thirty_days.py` (D-085); the thirty-days figure; `lessons/P8.md` (P8b);
+  tests: 378 → 383
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261025-195238-craton-mini`):
+- CB-19 −6.226 ± 0.13 bits per M3+ quake (new; ETAS −6.002, Poisson −10.517). Craton − ETAS per
+  seed: −0.232, −0.352, −0.088.
+- Bit split against ETAS: *how many* −0.10, *where* −0.12. Months without an M5+: −4.267 vs −4.254.
+- With GPS (ablation, not on the board): −6.096 ± 0.10; per seed +0.06, +0.22, +0.11 over the Field.
+- CB-01 … CB-17: every number identical to P8a (the Field checkpoints are reused).
+
+Surprises / problems:
+- The plan's source for "GPS strain is known to pay at 30 days" can't be found. The real evidence
+  is GNSS strain rate as an ETAS background at Campi Flegrei (Petrillo & Taroni 2025), no
+  pre-seismic GNSS motion before Amatrice or Norcia, and a seismic-velocity change before Norcia
+  (Chiarabba et al. 2020). The roadmap is corrected.
+- Seed 0 month by month: the Field mapped Norcia's month far better (+263 bits on *where*) and
+  still lost it by 103, because it expected 9 M3+ quakes where 598 came (ETAS 14). Campotosto's
+  month cost 150 more, on *where*: the Field had narrowed its map to the active faults.
+- In the quiet months of 2017 ETAS keeps expecting 10-20 quakes a month when 3-13 come; the Field
+  is closer in most of them.
+
+Decisions: D-083 … D-085.
+
+Next: P8d, one model on every region: global ComCat, JMA, GeoNet, AFAD, CSN, and CB-22.

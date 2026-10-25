@@ -61,6 +61,14 @@ The same game for 2009, the year of L'Aquila, with models fitted only on data be
 - **Fingerprint:** `a12a2e1ceb896ad1`
 - **Test data:** days 365 · M>=3 315 · M>=1.5 11,070 · magnitude types ML 10,492, Md 510, Mw 68 · largest 6.1
 
+## CB-19 · 30-day forecast
+
+
+
+- **Metric:** log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts (higher is better)
+- **Fingerprint:** `b8eb0bb6d95db4b3`
+- **Test data:** periods 16 · M>=3 1,064 · M>=1.5 42,633 · magnitude types ML 42,207, Md 291, Mw 135 · largest 6.5
+
 ## CB-04 · GPS gap-fill
 
 Hide every day of 29 GNSS stations from everything, then rebuild their daily positions from the other stations. A station's series starts from an arbitrary origin, so each station's mean offset per component is removed before the RMSE.

@@ -80,9 +80,15 @@ class Days:
     memory: np.ndarray  # (days, cells, F) float16
     log_etas: np.ndarray  # (days, cells, 2) float32: log ETAS rate of M2-3 and M3+
     counts: np.ndarray | None  # (days, cells, 2) float32, training days only
+    #: Each start forecasts this many days from its midnight (CB-19: 30).
+    span_days: int = 1
 
 
-def _counts(ev: Events, grid: csep.Grid, starts: FloatArray, mc: float) -> np.ndarray:
+def _counts(
+    ev: Events, grid: csep.Grid, starts: FloatArray, mc: float, span_days: int = 1
+) -> np.ndarray:
+    if span_days != 1:
+        return _span_counts(ev, grid, starts, mc, span_days)
     ev = ev.above(mc).window(float(starts[0]), float(starts[-1]) + DAY)
     cell = grid.cell_of(ev.lat, ev.lon)
     # Each quake to the day it falls in; ``starts`` need not be consecutive (validation days).
@@ -95,6 +101,25 @@ def _counts(ev: Events, grid: csep.Grid, starts: FloatArray, mc: float) -> np.nd
     return out
 
 
+def _span_counts(
+    ev: Events, grid: csep.Grid, starts: FloatArray, mc: float, span_days: int
+) -> np.ndarray:
+    """Counts in the ``span_days`` from each midnight; the spans overlap, so every day is
+    counted once and the spans are read off the running sum."""
+    first = float(starts.min())
+    n_days = round((float(starts.max()) - first) / DAY) + span_days
+    ev = ev.above(mc).window(first, first + n_days * DAY)
+    cell = grid.cell_of(ev.lat, ev.lon)
+    day = np.floor((ev.time - first) / DAY).astype(np.int64)
+    big = (ev.mag >= M_SCORED - 1e-9).astype(np.int64)
+    ok = cell >= 0
+    daily = np.zeros((n_days + 1, grid.n_cells, 2), np.float32)
+    np.add.at(daily, (day[ok] + 1, cell[ok], big[ok]), 1.0)
+    run = np.cumsum(daily, axis=0)
+    i = np.round((starts - first) / DAY).astype(np.int64)
+    return np.asarray(run[i + span_days] - run[i], dtype=np.float32)
+
+
 def build_days(
     fit: etas.EtasFit,
     events: Events,
@@ -102,21 +127,22 @@ def build_days(
     grid: csep.Grid,
     cfg: FieldConfig,
     with_counts: bool,
+    span_days: int = 1,
 ) -> Days:
     """Memory, ETAS rates and (optionally) answers for ``starts``, reading only ``events``
-    before each midnight."""
+    before each midnight; each start's rates and answers cover ``span_days`` days."""
     proj = etas.Projection.for_grid(grid)
     spec = MemorySpec(m_min=cfg.memory.m_min, start=to_seconds(cfg.memory.start))
     mem = memory(events, grid, starts, spec)
     # ETAS reads every quake since the memory starts, also before its own fit window.
     hist = events.window(min(fit.t_ref, spec.start), float(starts[-1])).above(fit.mc)
     cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, fit.t_ref)
-    rates = etas_daily(fit, cat, (starts - fit.t_ref) / DAY, grid, proj)
+    rates = etas_daily(fit, cat, (starts - fit.t_ref) / DAY, grid, proj, span=span_days)
     big = 10.0 ** (-fit.b * (M_SCORED - fit.mc))  # GR share of M3+ among M ≥ mc
     log_r = np.log(np.maximum(rates, 1e-30))
     log_etas = np.stack([log_r + math.log(1 - big), log_r + math.log(big)], axis=-1)
-    counts = _counts(events, grid, starts, fit.mc) if with_counts else None
-    return Days(starts, mem, log_etas.astype(np.float32), counts)
+    counts = _counts(events, grid, starts, fit.mc, span_days) if with_counts else None
+    return Days(starts, mem, log_etas.astype(np.float32), counts, span_days)
 
 
 def train_member(
@@ -128,7 +154,10 @@ def train_member(
     tc = cfg.train
     idx = np.arange(len(days.starts))
     val_mask = (idx // VALIDATION_BLOCK_DAYS) % tc.validation_every == tc.validation_every - 1
-    train_d, val_d = idx[~val_mask], idx[val_mask]
+    # A training start whose span reaches into a validation block would have seen its answers.
+    reach = np.convolve(val_mask.astype(np.int64)[::-1], np.ones(days.span_days, np.int64))
+    sees_val = reach[: len(idx)][::-1] > 0
+    train_d, val_d = idx[~sees_val], idx[val_mask]
     torch.manual_seed(member_seed)
     rng = np.random.default_rng(member_seed)
     net = FieldNet(days.memory.shape[-1], grid, cfg.model).to(dev)
@@ -267,9 +296,12 @@ class FieldForecaster:
         t0 = time.perf_counter()
         cut = to_seconds(SPLITS[spec.fit_split].before or "")
         first = to_seconds(cfg.train.first_day)
-        starts = np.arange(first, cut - DAY + 1, DAY)
+        # Every midnight whose whole period ends before the cut-off is a training example.
+        starts = np.arange(first, cut - spec.period + 1, DAY)
         self.log(f"Field {spec.task_id} seed {seed}: building {len(starts)} training days")
-        days = build_days(fit, ctx.train_events(spec.fit_split), starts, spec.grid, cfg, True)
+        days = build_days(
+            fit, ctx.train_events(spec.fit_split), starts, spec.grid, cfg, True, spec.period_days
+        )
         states, runs, base = self.grown_from(ctx, spec, seed)
         if base:
             self.log(f"Field {spec.task_id} seed {seed}: keeping {len(states)} members of {base}")
@@ -316,7 +348,13 @@ class FieldForecaster:
         fit = Etas().fit(spec, ctx, seed)
         states, _ = self.states(spec, ctx, seed, fit)
         days = build_days(
-            fit, self.inputs(spec, ctx), spec.day_starts, spec.grid, self.config, False
+            fit,
+            self.inputs(spec, ctx),
+            spec.day_starts,
+            spec.grid,
+            self.config,
+            False,
+            spec.period_days,
         )
         m3 = predict_members(states, days, spec.grid, self.config)
         shares = magnitude_shares(fit, spec.grid)

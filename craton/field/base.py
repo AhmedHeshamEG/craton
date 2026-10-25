@@ -29,9 +29,11 @@ def etas_daily(
     grid: Grid,
     proj: etas.Projection,
     device: torch.device | None = None,
+    span: float = 1.0,
 ) -> FloatArray:
-    """(days, cells) ETAS's expected quakes at or above ``fit.mc`` for each day, reading only
-    quakes before the day starts. ``day_starts`` in days since ``fit.t_ref``."""
+    """(days, cells) ETAS's expected quakes at or above ``fit.mc`` in the ``span`` days from
+    each start (one day unless asked), reading only quakes before it. ``day_starts`` in days
+    since ``fit.t_ref``."""
     dev = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     pr = fit.params
     parents = history.select(history.m >= fit.mc - 1e-9)
@@ -46,13 +48,13 @@ def etas_daily(
         w_par = torch.tensor(prod[p0:p1], dtype=torch.float64, device=dev)
         for d0 in range(0, len(day_starts), DAY_BLOCK):
             t0 = starts[d0 : d0 + DAY_BLOCK, None]
-            w = _omori_integral(t0 + 1 - t_par[None], pr.c, pr.p) - _omori_integral(
+            w = _omori_integral(t0 + span - t_par[None], pr.c, pr.p) - _omori_integral(
                 t0 - t_par[None], pr.c, pr.p
             )
             w = torch.where(t_par[None] < t0, w, torch.zeros_like(w)) * w_par[None]
             out[d0 : d0 + DAY_BLOCK] += w @ kern
-    background = pr.mu * fit.background.cell_mass(grid, proj)
-    factor = etas.cascade_factor(pr, fit.b, fit.mc, 1.0)
+    background = span * pr.mu * fit.background.cell_mass(grid, proj)
+    factor = etas.cascade_factor(pr, fit.b, fit.mc, span)
     rates = (torch.tensor(background, device=dev)[None] + out) * factor
     return np.asarray(rates.cpu().numpy(), dtype=np.float64)
 

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 
@@ -297,6 +297,8 @@ class PoissonClimatology:
 
     name: str = "poisson"
     kind: str = "baseline"
+    #: Forecasts periods longer than a day too (CB-19).
+    long_periods: ClassVar[bool] = True
 
     def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
         grid = spec.grid
@@ -308,7 +310,7 @@ class PoissonClimatology:
         per_day = len(ev) / ((t1 - t0) / DAY)
         b = csep.b_value(ev.mag, FIT_MC)
         scale, shares = _shares(b, FIT_MC, grid)
-        cells = per_day * scale * bg.cell_mass(grid, proj)
+        cells = per_day * spec.period_days * scale * bg.cell_mass(grid, proj)
         rates = np.tile(cells, (len(spec.day_starts), 1))
         return GriddedForecast(rates, shares)
 
@@ -320,6 +322,8 @@ class Etas:
     name: str = "etas"
     kind: str = "baseline"
     anisotropic: bool = False
+    #: Forecasts periods longer than a day too (CB-19), the cascade stretched to the period.
+    long_periods: ClassVar[bool] = True
 
     def fit(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> etas.EtasFit:
         key = f"etas-fit:{spec.task_id}:{seed}"
@@ -341,7 +345,9 @@ class Etas:
         hist = ctx.events.window(f.t_ref, spec.window.t1).above(f.mc)
         cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, f.t_ref)
         days = (spec.day_starts - f.t_ref) / DAY
-        daily = etas.forecast_days(f, cat, days, spec.grid, proj, self.anisotropic)
+        daily = etas.forecast_days(
+            f, cat, days, spec.grid, proj, self.anisotropic, span=spec.period_days
+        )
         scale, shares = _shares(f.b, f.mc, spec.grid)
         return GriddedForecast(daily.rates * scale, shares)
 
@@ -368,6 +374,8 @@ class EtasIncomplete(Etas):
     """
 
     name: str = "etas_incomplete"
+    #: Its blind-time correction is minute by minute within one day.
+    long_periods: ClassVar[bool] = False
 
     @staticmethod
     def _daily_box(

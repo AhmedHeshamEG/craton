@@ -357,6 +357,44 @@
         "physics_planet.where_bits": -7.362411395388368,
         "planet": 1.0
       }
+    },
+    "CB-19": {
+      "task_id": "CB-19",
+      "metric": "log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts",
+      "direction": "higher",
+      "fingerprint": "b8eb0bb6d95db4b34c5a16c8d0149c96447bf6d02cbb03b7f398d7ab72fcf3c1",
+      "mean": -6.226076587223507,
+      "std": 0.1318158811134022,
+      "n_seeds": 3,
+      "run_id": "20261025-195238-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-10-25T20:03:38Z",
+      "extras": {
+        "M1.5.bits_per_eq": -2.8078899753373965,
+        "M1.5.bits_without_big_days": -1.33598903482759,
+        "M1.5.days_too_few": 0.8125,
+        "M1.5.days_too_many": 0.08333333333333333,
+        "M1.5.expected": 25369.204553635256,
+        "M1.5.how_big_bits": -3.5345216129259085,
+        "M1.5.how_many_bits": -1.075331537215799,
+        "M1.5.m_test_quantile": 0.0,
+        "M1.5.observed": 42633.0,
+        "M1.5.s_test_quantile": 0.0,
+        "M1.5.shuffle_bits": 6.967962004540852,
+        "M1.5.where_bits": -5.165998829736477,
+        "M3.bits_per_eq": -6.226076587223507,
+        "M3.bits_without_big_days": -4.267485981424335,
+        "M3.days_too_few": 0.125,
+        "M3.days_too_many": 0.125,
+        "M3.expected": 457.40518302425676,
+        "M3.how_big_bits": -3.3285820382887645,
+        "M3.how_many_bits": -2.5729976014946296,
+        "M3.m_test_quantile": 0.085,
+        "M3.observed": 1064.0,
+        "M3.s_test_quantile": 0.018666666666666668,
+        "M3.shuffle_bits": 5.1181548493717814,
+        "M3.where_bits": -5.442651796811892
+      }
     }
   },
   "baselines": {
@@ -1445,6 +1483,122 @@
           "planet": 1.0
         }
       }
+    },
+    "CB-19": {
+      "etas": {
+        "task_id": "CB-19",
+        "metric": "log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "b8eb0bb6d95db4b34c5a16c8d0149c96447bf6d02cbb03b7f398d7ab72fcf3c1",
+        "mean": -6.0019489692105354,
+        "std": 1.1522639061659829e-8,
+        "n_seeds": 3,
+        "run_id": "20261025-192803-etas",
+        "model": "etas",
+        "accepted": "2026-10-25T20:03:37Z",
+        "extras": {
+          "M1.5.bits_per_eq": -2.6139766889070537,
+          "M1.5.bits_without_big_days": -1.278955641208455,
+          "M1.5.days_too_few": 0.375,
+          "M1.5.days_too_many": 0.4375,
+          "M1.5.expected": 21162.923377221105,
+          "M1.5.how_big_bits": -3.5345218121910786,
+          "M1.5.how_many_bits": -1.0626506635707995,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 42633.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M1.5.shuffle_bits": 6.967962004540852,
+          "M1.5.where_bits": -4.984766217685963,
+          "M3.bits_per_eq": -6.0019489692105354,
+          "M3.bits_without_big_days": -4.253888940246242,
+          "M3.days_too_few": 0.25,
+          "M3.days_too_many": 0.3125,
+          "M3.expected": 381.5690648883197,
+          "M3.how_big_bits": -3.3285930901527245,
+          "M3.how_many_bits": -2.473932463896911,
+          "M3.m_test_quantile": 0.08700000000000001,
+          "M3.observed": 1064.0,
+          "M3.s_test_quantile": 1.0,
+          "M3.shuffle_bits": 5.1181548493717814,
+          "M3.where_bits": -5.31757826453268
+        }
+      },
+      "poisson": {
+        "task_id": "CB-19",
+        "metric": "log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "b8eb0bb6d95db4b34c5a16c8d0149c96447bf6d02cbb03b7f398d7ab72fcf3c1",
+        "mean": -10.517131603992592,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261025-193143-poisson",
+        "model": "poisson",
+        "accepted": "2026-10-25T20:03:37Z",
+        "extras": {
+          "M1.5.bits_per_eq": -7.5976156862907755,
+          "M1.5.bits_without_big_days": -6.819118501818925,
+          "M1.5.days_too_few": 1.0,
+          "M1.5.days_too_many": 0.0,
+          "M1.5.expected": 4018.286191624182,
+          "M1.5.how_big_bits": -3.5345218121910786,
+          "M1.5.how_many_bits": -3.0012136137499916,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 42633.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M1.5.shuffle_bits": 6.967962004540852,
+          "M1.5.where_bits": -8.029842264890492,
+          "M3.bits_per_eq": -10.517131603992592,
+          "M3.bits_without_big_days": -9.778648851324597,
+          "M3.days_too_few": 0.625,
+          "M3.days_too_many": 0.0,
+          "M3.expected": 72.44999555411223,
+          "M3.how_big_bits": -3.3285930901527245,
+          "M3.how_many_bits": -4.255484956141633,
+          "M3.m_test_quantile": 0.08700000000000001,
+          "M3.observed": 1064.0,
+          "M3.s_test_quantile": 0.0,
+          "M3.shuffle_bits": 5.1181548493717814,
+          "M3.where_bits": -8.051208407070016
+        }
+      },
+      "etas_aniso": {
+        "task_id": "CB-19",
+        "metric": "log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "b8eb0bb6d95db4b34c5a16c8d0149c96447bf6d02cbb03b7f398d7ab72fcf3c1",
+        "mean": -6.000794262000244,
+        "std": 1.1171718840034942e-8,
+        "n_seeds": 3,
+        "run_id": "20261025-200328-etas-aniso",
+        "model": "etas_aniso",
+        "accepted": "2026-10-25T20:03:38Z",
+        "extras": {
+          "M1.5.bits_per_eq": -2.612792594639162,
+          "M1.5.bits_without_big_days": -1.2787235306402838,
+          "M1.5.days_too_few": 0.375,
+          "M1.5.days_too_many": 0.4375,
+          "M1.5.expected": 21162.922848582006,
+          "M1.5.how_big_bits": -3.5345218121910786,
+          "M1.5.how_many_bits": -1.062650685709873,
+          "M1.5.m_test_quantile": 0.0,
+          "M1.5.observed": 42633.0,
+          "M1.5.s_test_quantile": 0.0,
+          "M1.5.shuffle_bits": 6.967962004540852,
+          "M1.5.where_bits": -4.983582101278999,
+          "M3.bits_per_eq": -6.000794262000244,
+          "M3.bits_without_big_days": -4.255848579331627,
+          "M3.days_too_few": 0.25,
+          "M3.days_too_many": 0.3125,
+          "M3.expected": 381.5690553569179,
+          "M3.how_big_bits": -3.3285930901527245,
+          "M3.how_many_bits": -2.4739324992247815,
+          "M3.m_test_quantile": 0.08700000000000001,
+          "M3.observed": 1064.0,
+          "M3.s_test_quantile": 1.0,
+          "M3.shuffle_bits": 5.1181548493717814,
+          "M3.where_bits": -5.316423521994516
+        }
+      }
     }
   },
   "history": [
@@ -1615,6 +1769,34 @@
       "kind": "baseline",
       "accepted": "2026-10-25T13:26:17Z",
       "summary": "1 new, 6 same"
+    },
+    {
+      "run_id": "20261025-192803-etas",
+      "model": "etas",
+      "kind": "baseline",
+      "accepted": "2026-10-25T20:03:37Z",
+      "summary": "1 new, 7 same"
+    },
+    {
+      "run_id": "20261025-193143-poisson",
+      "model": "poisson",
+      "kind": "baseline",
+      "accepted": "2026-10-25T20:03:37Z",
+      "summary": "1 new, 7 same"
+    },
+    {
+      "run_id": "20261025-195238-craton-mini",
+      "model": "craton-mini",
+      "kind": "model",
+      "accepted": "2026-10-25T20:03:38Z",
+      "summary": "1 new, 12 same"
+    },
+    {
+      "run_id": "20261025-200328-etas-aniso",
+      "model": "etas_aniso",
+      "kind": "baseline",
+      "accepted": "2026-10-25T20:03:38Z",
+      "summary": "1 new, 7 same"
     }
   ]
 }
