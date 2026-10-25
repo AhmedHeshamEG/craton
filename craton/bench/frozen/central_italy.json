@@ -437,6 +437,26 @@
           "gap": 0.8794187635057348
         }
       }
+    },
+    "CB-19": {
+      "name": "30-day forecast",
+      "metric": "log-likelihood per earthquake (bits), M\u22653, 30-day 0.1\u00b0 forecasts",
+      "direction": "higher",
+      "fingerprint": "b8eb0bb6d95db4b34c5a16c8d0149c96447bf6d02cbb03b7f398d7ab72fcf3c1",
+      "files": {
+        "observed.parquet": "8185ae031c47792c0c6aa3810a06721b6cebf340909c4bb4d4a8368dd84aaee3"
+      },
+      "summary": {
+        "periods": 16,
+        "M>=3": 1064,
+        "M>=1.5": 42633,
+        "magnitude_types": {
+          "ML": 42207,
+          "Md": 291,
+          "Mw": 135
+        },
+        "largest": 6.5
+      }
     }
   }
 }

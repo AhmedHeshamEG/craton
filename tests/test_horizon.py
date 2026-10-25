@@ -97,3 +97,25 @@ def test_the_score_reads_each_quake_into_its_period() -> None:
     good = score_forecast(GriddedForecast(right, shares), ev, spec, 0).value
     bad = score_forecast(GriddedForecast(wrong, shares), ev, spec, 0).value
     assert good > bad
+
+
+def test_cb19_is_cb02_in_thirty_day_periods() -> None:
+    from craton.bench.baselines import METHODS
+    from craton.bench.tasks import TASKS, SequenceForecast
+    from craton.train.method import CratonMini
+
+    cb19, cb02 = TASKS["CB-19"], TASKS["CB-02"]
+    assert isinstance(cb19, SequenceForecast)
+    assert isinstance(cb02, SequenceForecast)
+    assert cb19.fit_split == cb02.fit_split
+    assert cb19.window.start == cb02.window.start
+    spec = cb19.spec
+    assert len(spec.day_starts) == 16
+    assert spec.day_starts[-1] + spec.period == cb19.window.t1
+    assert cb19.definition()["period_days"] == 30
+    assert "period_days" not in cb02.definition()  # the daily tasks' frozen record stays put
+    assert cb19.supports(METHODS["etas"])
+    assert cb19.supports(METHODS["poisson"])
+    assert not cb19.supports(METHODS["etas_incomplete"])  # its blind time is within one day
+    assert cb19.supports(CratonMini())
+    assert not cb19.supports(CratonMini(field_config=""))

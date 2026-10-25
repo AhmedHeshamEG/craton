@@ -542,6 +542,10 @@ class SequenceForecast(Task):
         self.window = window
         self.fit_split = fit_split
         self.period_days = period_days
+        if period_days != 1:
+            self.metric = (
+                f"log-likelihood per earthquake (bits), M≥3, {period_days}-day 0.1° forecasts"
+            )
 
     @property
     def spec(self) -> ForecastSpec:
@@ -584,7 +588,7 @@ class SequenceForecast(Task):
         return {
             "files": {"observed.parquet": sha},
             "summary": {
-                "days": len(self.spec.day_starts),
+                ("days" if self.period_days == 1 else "periods"): len(self.spec.day_starts),
                 **{f"M>={t:g}": int((obs.mag >= t - 1e-9).sum()) for t in THRESHOLDS},
                 "magnitude_types": {str(k): int(v) for k, v in types.items()},
                 "largest": float(obs.mag.max()) if len(obs) else None,
@@ -1091,6 +1095,17 @@ register_task(
         "L'Aquila 2009 era holdout",
         Window("cb03_test", ERA_B.start, ERA_B.end),
         "cb03_fit",
+    )
+)
+# P8: CB-02's sequence and split, one forecast per 30 days. Sixteen whole periods fit in the
+# test window (to 2017-12-18); the last 14 days are left out rather than scored as a short one.
+register_task(
+    SequenceForecast(
+        "CB-19",
+        "30-day forecast",
+        Window("cb19_test", "2016-08-25T00:00:00Z", "2017-12-18T00:00:00Z"),
+        "cb02_fit",
+        period_days=30,
     )
 )
 register_task(GpsGapFill())
