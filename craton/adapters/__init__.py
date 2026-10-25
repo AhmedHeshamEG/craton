@@ -33,7 +33,7 @@ def get_adapter(name: str) -> Adapter:
 
 
 # The built-ins register themselves on import.
-from craton.adapters import ingv, ngl, tides  # noqa: E402
+from craton.adapters import fdsn, ingv, jma, ngl, tides  # noqa: E402
 
 __all__ = [
     "ADAPTERS",
@@ -41,8 +41,10 @@ __all__ = [
     "BuildContext",
     "DataCard",
     "FetchReport",
+    "fdsn",
     "get_adapter",
     "ingv",
+    "jma",
     "ngl",
     "register",
     "tides",

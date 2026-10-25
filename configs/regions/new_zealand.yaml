@@ -1,0 +1,20 @@
+# Both main islands: the Alpine Fault, the Hikurangi margin, Darfield 2010, Christchurch 2011,
+# Cook Strait 2013, Kaikoura 2016.
+name: new_zealand
+description: New Zealand's North and South Islands and their offshore margins.
+box:
+  lat_min: -48.0
+  lat_max: -34.0
+  lon_min: 165.0
+  lon_max: 179.0
+start: "1987-01-01T00:00:00Z"   # the modern network
+end: "2026-10-01T00:00:00Z"
+adapters: [fdsn_catalog]
+completeness: 3.0
+sources:
+  fdsn_catalog:
+    service: https://service.geonet.org.nz/fdsnws/event/1/query
+    provider: GeoNet (GNS Science)
+    license: CC-BY-4.0
+    min_magnitude: 2.5
+    params: {eventtype: earthquake}

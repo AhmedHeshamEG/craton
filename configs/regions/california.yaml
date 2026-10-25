@@ -1,0 +1,20 @@
+# California and the northern tip of Baja: the San Andreas system, Landers 1992, Northridge 1994,
+# Hector Mine 1999, El Mayor-Cucapah 2010, Ridgecrest 2019. Covers EarthquakeNPP's polygon (CB-29).
+name: california
+description: California, coast to the Basin and Range, from Baja's tip to the Oregon border.
+box:
+  lat_min: 31.0
+  lat_max: 43.5
+  lon_min: -126.0
+  lon_max: -113.0
+start: "1981-01-01T00:00:00Z"   # the start of CB-29's training window
+end: "2026-10-01T00:00:00Z"     # fixed; moving it is a new snapshot
+adapters: [fdsn_catalog]
+completeness: 2.5               # EarthquakeNPP's ComCat magnitude of completeness
+sources:
+  fdsn_catalog:
+    service: https://earthquake.usgs.gov/fdsnws/event/1/query
+    provider: USGS ANSS ComCat
+    license: LicenseRef-USGS-public-domain
+    min_magnitude: 2.0
+    params: {eventtype: earthquake}

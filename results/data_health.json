@@ -306,6 +306,59 @@
         "2026-10-01T00:00:00Z"
       ]
     },
+    "japan": {
+      "adapters": {
+        "jma_hypocenter": {
+          "files": 42,
+          "health": {
+            "seismic_catalog": {
+              "first": "1983-01-01",
+              "largest": {
+                "day": "2011-03-11",
+                "event_id": "jma:2011031114461812:0380621:01425166",
+                "magnitude": 9.0,
+                "type": "Mw"
+              },
+              "last": "2024-12-31",
+              "longest_gap_days": 1.44,
+              "magnitude_types": {
+                "Mj": 335666,
+                "Mw": 1
+              },
+              "mc_per_year": {},
+              "per_year": {
+                "0": 335667
+              },
+              "tokens": 335667
+            }
+          },
+          "raw_bytes": 141508838,
+          "raw_files": 43,
+          "rejects": {
+            "agency:I": 1,
+            "agency:U": 23374,
+            "below_min_magnitude": 4386385,
+            "eruption": 102,
+            "low_frequency": 181867,
+            "no_magnitude": 189931,
+            "outside_region": 166759
+          },
+          "tokens": 335667,
+          "version": "1.0.0"
+        }
+      },
+      "box": {
+        "lat_max": 44.0,
+        "lat_min": 30.0,
+        "lon_max": 146.0,
+        "lon_min": 129.0
+      },
+      "snapshot": "646e06efcb8292d8",
+      "window": [
+        "1983-01-01T00:00:00Z",
+        "2025-01-01T00:00:00Z"
+      ]
+    },
     "southern_italy": {
       "adapters": {
         "ingv_catalog": {

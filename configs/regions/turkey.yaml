@@ -1,0 +1,19 @@
+# Anatolia and the Aegean coast: the North and East Anatolian Faults, Izmit 1999, Van 2011,
+# Elazig 2020, Samos 2020, Kahramanmaras 2023. Never trained on (CB-22's zero-shot half).
+name: turkey
+description: Turkey and the eastern Aegean, from the Aegean coast to Lake Van.
+box:
+  lat_min: 35.0
+  lat_max: 43.0
+  lon_min: 25.0
+  lon_max: 46.0
+start: "1998-01-01T00:00:00Z"   # EMSC's catalogue is thin before
+end: "2026-10-01T00:00:00Z"
+adapters: [fdsn_catalog]
+completeness: 3.0
+sources:
+  fdsn_catalog:
+    service: https://www.seismicportal.eu/fdsnws/event/1/query
+    provider: EMSC (contributions from AFAD and KOERI)
+    license: LicenseRef-EMSC-terms
+    min_magnitude: 2.5

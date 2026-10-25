@@ -6,6 +6,8 @@ Every source Craton reads, who made it, under what terms, and what to watch out 
 
 | Adapter | Source | Tokens | Licence |
 |---|---|---|---|
+| [`fdsn_catalog`](fdsn_catalog.md) | Earthquake catalogues through any FDSN event web service | `seismic_catalog` | `LicenseRef-per-region` |
 | [`iers_tides`](iers_tides.md) | Solid-Earth body tide (IERS 2010), computed by Craton | `solid_earth_tide` | `CC-BY-4.0` |
 | [`ingv_catalog`](ingv_catalog.md) | INGV earthquake catalogue (ISIDe) | `seismic_catalog` | `CC-BY-4.0` |
+| [`jma_hypocenter`](jma_hypocenter.md) | JMA Unified Hypocenter Catalogue (the Seismological Bulletin of Japan) | `seismic_catalog` | `CC-BY-4.0` |
 | [`ngl_gnss`](ngl_gnss.md) | GNSS daily positions, Nevada Geodetic Laboratory (IGS20) | `gnss_daily` | `LicenseRef-NGL-as-is` |

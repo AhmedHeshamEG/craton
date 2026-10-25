@@ -153,6 +153,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | `ingv_catalog` | 320,757 | 1985-01-02 → 2026-09-30 | 126 (magnitude_type:M 120, event_type:controlled explosion 5) | largest Mw 6.5 on 2016-10-30; ML 290,892, Md 29,466, Mw 399; completeness ML 1.5 in 2005, 1.2 in 2015, 1.1 in 2025; Md 2.6 in 1985, 2.6 in 1995, 2.4 in 2005, 1.5 in 2015; longest quiet spell 10.93 days |
 | `ngl_gnss` | 751,394 | 1995-06-27 → 2026-09-30 | 0 | 293 stations, median 1,927 days each, median coverage 83%, 964 gaps over 30 days |
 
+### japan · snapshot `646e06efcb8292d8` · 1983-01-01 → 2025-01-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `jma_hypocenter` | 335,667 | 1983-01-01 → 2024-12-31 | 4,948,419 (below_min_magnitude 4,386,385, no_magnitude 189,931) | largest Mw 9 on 2011-03-11; Mj 335,666, Mw 1; longest quiet spell 1.44 days |
+
 ### southern_italy · snapshot `6dd8efd2fbc23ce6` · 1985-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
