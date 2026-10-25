@@ -1,0 +1,36 @@
+# The world Field (P8d): one Field for every region, the same network as `mini` read in each
+# region's own magnitudes (completeness mc; memory from mc - 0.5; scored from mc + 1).
+# Trained on every region below up to `world.cut`, the cut-off of CB-29 (EarthquakeNPP), so
+# no CB-22 sequence (2010 on), no CB-29 test day and no CB-02 / CB-03 day is ever seen.
+name: world
+description: ETAS start + Omori memory + attention between cells, learned on four regions at once.
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  dropout: 0.1
+  max_nudge: 4.0
+
+memory:
+  m_min: 1.5          # central Italy's; every other region counts from its own mc - 0.5
+  start: "1990-01-01T00:00:00Z"
+
+train:
+  first_day: "1995-01-01T00:00:00Z"
+  validation_every: 8
+  days_per_step: 8
+  lr: 1.0e-3
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 5
+  members: 4
+  seeds: [0, 1, 2]
+
+world:
+  cut: "2007-01-01T00:00:00Z"
+  regions:
+    central_italy: {mc: 2.0, fit_from: "2005-01-01T00:00:00Z"}   # INGV's ML catalogue starts 2005
+    california: {}
+    japan: {}
+    new_zealand: {}

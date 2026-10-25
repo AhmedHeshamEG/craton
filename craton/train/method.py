@@ -104,7 +104,10 @@ class CratonMini:
     override: CratonConfig | None = None
     #: The Field config that answers CB-02 and CB-03 (``configs/field/``); "" = the trunk.
     field_config: str = "mini"
+    #: The Field config that answers every other region (CB-22, P8d): one Field for the Earth.
+    world_config: str = "world"
     log: Log = _quiet
+    _world: list[Any] = field(default_factory=list)
     _models: dict[tuple[str, int], CratonModel] = field(default_factory=dict)
     _meta: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict)
     _lines: dict[str, Lines] = field(default_factory=dict)
@@ -561,6 +564,14 @@ class CratonMini:
 
             return FieldForecaster(self.field_config, log=self.log).forecast(spec, ctx, seed)
         return self.trunk_forecast(spec, ctx, seed)
+
+    def world_forecaster(self) -> Any:
+        """The world Field (``craton.field.world``), one per method so its members load once."""
+        if not self._world:
+            from craton.field.world import WorldField
+
+            self._world.append(WorldField(self.world_config, log=self.log))
+        return self._world[0]
 
     def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
         """CB-05 and the other trust tasks: the Field's members and fitted dispersion."""
