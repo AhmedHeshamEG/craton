@@ -1020,3 +1020,100 @@ phase can be checked against; a number is, and a miss gets written down.
 **Rejected.** Starting the ghost and the interpreters right after P7: they would read a forecaster
 that wins only on *how many*. Feeding the ML catalogues into CB-02 and CB-03: they were relocated
 with hindsight, so they get their own tasks (CB-20, CB-21) and the frozen tasks stay pure.
+
+### D-078 · 2026-10-25 · P8 — P8 is six sessions, planets first
+
+P8 holds four kinds of new data and five new tasks: fake planets (CB-09), a 30-day forecast (CB-19),
+the hindsight-relocated ML catalogues (CB-20, CB-21), three world regions (CB-22), Groningen and
+Oklahoma, and a curriculum that ends in a central Italy fine-tune. One session can't build that
+and test it honestly, so it is split, and each piece lands on `main` when its tests pass:
+
+- **P8a** the two planets and CB-09 (this session)
+- **P8b** CB-19, the 30-day forecast
+- **P8c** the ML catalogues, CB-20 and CB-21
+- **P8d** California, Japan and New Zealand, CB-22
+- **P8e** Groningen and Oklahoma: quakes where the pressure is measured
+- **P8f** the curriculum (planets → regions → central Italy) and its effect on CB-02 / CB-03
+
+The version stays 0.8.x until P8f; `v0.9.0` is tagged when the phase's exit tests are all read.
+
+**Rejected.** One giant session (nothing would get tested properly). Shipping each piece as its
+own minor version (the version numbers are the phases; the live bundle is rebuilt per release).
+
+### D-079 · 2026-10-25 · P8 — The physics planet: Dieterich seismicity on an Apennine fault network
+
+The phase planned a `SPIKE` on QDYN, a quasi-dynamic rate-and-state earthquake-cycle code, with a
+NumPy spring-block model as the fallback. The spike failed on two counts. QDYN is Fortran and this
+laptop has no Fortran toolchain (no gfortran; WSL would be its own project). And it answers the
+wrong question: it simulates the cycle of one fault in detail, not a region's M1.5+ catalogue with
+aftershocks of aftershocks, which is what a forecaster is scored on. A spring-block model (Burridge-
+Knopoff, OFC) gives Gutenberg-Richter but no Omori decay without extra machinery.
+
+So the physics planet (`craton/sim/rate_state.py`) works one level up, the way the seismicity
+literature does: Dieterich's (1994) rate-and-state seismicity law over a population of ~1,500
+nucleation patches. Thirty-six normal-fault segments along an Apennine-shaped axis (2 km patches,
+the largest quake from each segment's length by Wells and Coppersmith 1994) plus a diffuse 0.1°
+grid. Every quake from M2.5 changes every patch's Coulomb stress (lobes off the rupture's ends,
+shadows beside it, a drop on it, ~r⁻³, with per-patch heterogeneity), triggered quakes pass stress
+on in turn, and one or two fluid sources diffuse pore pressure for a few years. Between quakes the
+state follows the loading law exactly, and each step's expected count is its exact integral, so
+the hour-long step only decides when triggered quakes hand their stress on (five minutes for two
+days after an M5+). The tests check the integrator against Dieterich's closed form from one minute
+to a century, for steps up and down, and Omori's p ≈ 1.
+
+ETAS is the wrong model on this planet in three known ways: stress shadows (rates below
+background, which ETAS can't produce), anisotropic triggering along strike, and a hidden pressure
+source that raises rates for years. Small quakes trigger almost nothing here (their stress at 2 km
+is a few kPa), which is a fourth.
+
+**Rejected.** QDYN in WSL (days of work for a one-fault cycle). The spring-block fallback (no
+Omori). Calling this "rate-and-state fault physics" without qualification: it is the population
+form, the same one CRS forecasts use (Mancini et al. 2019); the planets are named for what they
+are. DISS fault sources for the geometry: a real fault map belongs to the hidden-state phase (P9),
+and a planet with Italy's exact faults would let a model learn the map and call it physics.
+
+### D-080 · 2026-10-25 · P8 — The ETAS planet is Italy as ETAS sees it
+
+The P7 ETAS planet (`etas`) is a weakly clustered toy (0.7 quakes a day, almost no triggering) used
+by the referee's tests; it stays as it is. CB-09's ETAS planet (`etas_italy`) is central Italy as
+the `etas` floor fitted it on CB-02's split (M ≥ 2, 2005 to Amatrice, b = 1.16), rounded. On that
+planet those numbers are the whole truth, so ETAS with them (`truth_forecast`) is the line no
+forecaster can beat on average, and fitted ETAS sits just below it.
+
+### D-081 · 2026-10-25 · P8 — CB-09: CB-02's calendar on six frozen planets
+
+- **Calendar.** Each planet copies CB-02: quakes from 1985, fitting on everything before the
+  `cb02_fit` cut-off (2016-08-24), daily forecasts from 2016-08-25 to the end of 2017 on the same
+  grid, scored by the same function. So every forecaster runs on a planet through exactly the
+  calls it makes on Italy (`PlanetContext`), and the Field trains on 9,367 planet days.
+- **Which planets.** Per kind, the first three simulator seeds whose test window holds an M5+ and
+  at least 100 M3+ quakes, the way CB-02's holds a sequence. Written once, hashed, frozen. ETAS
+  planets: seeds 5, 12, 14. Physics planets: seeds 0, 1, 2.
+- **Seeds.** Benchmark seed k scores planet k of each kind with method seed k: three seeds are
+  three planets, so the ± includes the planet-to-planet spread.
+- **The number.** Bits per M3+ quake on the physics planet (higher is better), because that's
+  where there is something to win. The ETAS planet's bits, the truth's bits and the bit split of
+  both are extras; the tie is read from them.
+- **Magnitudes are reported to 0.1.** The first freeze simulated magnitudes from exactly 2.0 and
+  rounded them, which half-empties the first bin: the ETAS planet came out with b ≈ 1.02 where its
+  truth is 1.16. A catalogue's "M2.0" is everything in [1.95, 2.05), and the grid and every fit
+  read it that way, so planets are simulated from half a step below their smallest magnitude.
+  Caught by the sim-to-real table before anything was committed; the record was re-frozen.
+
+**Rejected.** Longer or calmer test windows (most windows hold no sequence, and CB-02 is a
+sequence). Scoring every planet with every seed (9 Field ensembles per kind, for a spread the
+planet choice dominates anyway). A primary number that mixes both planets (a tie and a win are
+two different questions).
+
+### D-082 · 2026-10-25 · P8 — The sim-to-real gap is five plain statistics
+
+How far a simulator's catalogues are from the real Apennines, as the mean |log₂(planet ÷ real)|
+over five numbers every catalogue has (M ≥ 2, inside the grid, 2005 to the CB-02 cut-off): quakes
+per day, b-value, the share of quakes on the busiest 1% of days, the share in the busiest 5% of
+cells, and the spread of daily counts (coefficient of variation). 0 = indistinguishable on these,
+1 = off by 2x on average. Measured once per planet in the frozen record. ETAS planets 1.32, physics
+planets 0.88: the physics planet is closer to Italy than Italy's own ETAS, and both are far less
+bursty (the real busiest 1% of days hold 31% of the quakes; the planets 5-10%).
+
+**Rejected.** Distances between whole distributions (KS on inter-event times and the like): each
+needs a choice of what to compare, and five numbers a reader can check beat one they can't.

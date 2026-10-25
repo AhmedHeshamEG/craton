@@ -1078,3 +1078,6 @@ assert to_seconds(ERA_A.start) < to_seconds("2016-08-25T00:00:00Z")
 
 # The P7 trust tasks register themselves through the same registry (CB-05 … CB-11).
 from craton.bench import locks as _locks  # noqa: E402, F401
+
+# The P8 planets: CB-09.
+from craton.bench import planets as _planets  # noqa: E402, F401

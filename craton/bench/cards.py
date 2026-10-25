@@ -49,6 +49,15 @@ ABOUT = {
         "against 25.8 TFLOP/s of fp16 tensor-core math). A run that needs more than 6 GiB "
         "of VRAM can't be scored at all. Tokens per second, peak VRAM and minutes ride along."
     ),
+    "CB-09": (
+        "CB-02's calendar and scoring on six simulated planets where the truth is known. Three "
+        "ETAS planets, where Italy's own fitted ETAS makes the quakes: nothing beats the truth "
+        "on average, so a forecaster has to tie it. Three physics planets (Dieterich "
+        "rate-and-state seismicity on Apennine-shaped faults, stress transfer with shadows, a "
+        "hidden fluid source), where ETAS is the wrong model and a forecaster has to beat it. "
+        "Seed k scores planet k of each kind. The gap column is the sim-to-real gap: the mean "
+        "factor off the real Apennines, in doublings, over the five statistics."
+    ),
 }
 
 
@@ -58,6 +67,27 @@ def _bins() -> list[str]:
         for b in bins:
             edges = "k·w" if not b.offset else f"k·w − {b.offset:g}"
             out.append(f"| `{inst}` | {b.channel} | {b.width:g} | {edges} |")
+    return out
+
+
+def _planets(summary: dict[str, Any]) -> list[str]:
+    """CB-09's frozen planets against the real Apennines, statistic by statistic."""
+    real = summary["real"]
+    cols = [k for k in real if k != "largest"]
+    out = [
+        "| Catalogue | Seed | "
+        + " | ".join(c.replace("_", " ") for c in cols)
+        + " | gap | test M3+ |",
+        "|---|---|" + "---|" * (len(cols) + 2),
+        "| Real Apennines | · | " + " | ".join(f"{real[c]:.3g}" for c in cols) + " | 0 | · |",
+    ]
+    for kind, v in summary.items():
+        if kind == "real":
+            continue
+        for seed, p in zip(v["seeds"], v["planets"], strict=True):
+            stats = " | ".join(f"{p[c]:.3g}" for c in cols)
+            name = kind.replace("_", " ")
+            out.append(f"| {name} | {seed} | {stats} | {p['gap']:.2f} | {p['test_m3']} |")
     return out
 
 
@@ -115,7 +145,7 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary:
+        if summary and task_id != "CB-09":
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
@@ -126,6 +156,8 @@ def render() -> str:
             lines.append("- **Test data:** " + " · ".join(parts))
         if task_id == "CB-01":
             lines += ["", *_bins()]
+        if task_id == "CB-09" and summary:
+            lines += ["", *_planets(summary)]
     lines += [
         "",
         "## Add a method",

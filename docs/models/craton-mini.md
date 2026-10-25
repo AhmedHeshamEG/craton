@@ -369,3 +369,57 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 - **Training:** epochs per member 7, 9, 21, 11, 19, 11; validation gain over ETAS (nats per quake) 0.1556, 0.1467, 0.1999, 0.1582, 0.1615, 0.1700; 30.9 min.
 - **Starting line:** ETAS with mu 0.604, k 0.8269, a 1.035, c 0.00592, p 1.039, d 1.822, gamma 0.1932, q 2.209, b 1.311, mc 2.
 - **Code:** Craton 0.7.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-09-etas_planet-0 · seed 0
+
+- **What it does:** daily forecasts for CB-09-etas_planet-0, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 6 members averaged.
+- **Training:** epochs per member 15, 6, 12, 17, 11, 15; validation gain over ETAS (nats per quake) 0.0135, 0.0082, 0.0130, 0.0116, 0.0129, 0.0119; 58.8 min.
+- **Starting line:** ETAS with mu 0.6721, k 0.4863, a 1.256, c 0.01911, p 1.199, d 0.5928, gamma 0.6964, q 2.075, b 1.151, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-09-etas_planet-1 · seed 1
+
+- **What it does:** daily forecasts for CB-09-etas_planet-1, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 6 members averaged.
+- **Training:** epochs per member 9, 9, 8, 12, 10, 8; validation gain over ETAS (nats per quake) 0.0084, 0.0110, 0.0106, 0.0101, 0.0131, 0.0083; 46.0 min.
+- **Starting line:** ETAS with mu 0.679, k 0.4874, a 1.222, c 0.01892, p 1.201, d 0.5878, gamma 0.7298, q 2.096, b 1.156, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-09-etas_planet-2 · seed 2
+
+- **What it does:** daily forecasts for CB-09-etas_planet-2, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 6 members averaged.
+- **Training:** epochs per member 11, 5, 7, 9, 5, 5; validation gain over ETAS (nats per quake) 0.0010, 0.0000, 0.0015, 0.0021, 0.0000, 0.0000; 23.4 min.
+- **Starting line:** ETAS with mu 0.6962, k 0.4718, a 1.252, c 0.02062, p 1.201, d 0.5348, gamma 0.7271, q 2.031, b 1.161, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-09-physics_planet-0 · seed 0
+
+- **What it does:** daily forecasts for CB-09-physics_planet-0, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 6 members averaged.
+- **Training:** epochs per member 13, 16, 13, 15, 12, 15; validation gain over ETAS (nats per quake) 0.1207, 0.1272, 0.1338, 0.1432, 0.1261, 0.1346; 70.1 min.
+- **Starting line:** ETAS with mu 0.3304, k 10, a 0.1072, c 1, p 1.012, d 1.569, gamma 0.1814, q 4, b 1.001, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-09-physics_planet-1 · seed 1
+
+- **What it does:** daily forecasts for CB-09-physics_planet-1, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 6 members averaged.
+- **Training:** epochs per member 15, 16, 23, 9, 32, 35; validation gain over ETAS (nats per quake) 0.1403, 0.1401, 0.1449, 0.1215, 0.1537, 0.1515; 93.2 min.
+- **Starting line:** ETAS with mu 0.4063, k 10, a 0.1311, c 1, p 1.011, d 1.771, gamma 0.009391, q 4, b 0.9952, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-09-physics_planet-2 · seed 2
+
+- **What it does:** daily forecasts for CB-09-physics_planet-2, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,367 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,618 parameters per member, 6 members averaged.
+- **Training:** epochs per member 16, 17, 10, 20, 27, 17; validation gain over ETAS (nats per quake) 0.1649, 0.1741, 0.1576, 0.1775, 0.1818, 0.1652; 58.6 min.
+- **Starting line:** ETAS with mu 0.3827, k 10, a 0.1591, c 1, p 1.011, d 1.94, gamma 0.004524, q 4, b 1.001, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.

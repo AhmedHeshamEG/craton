@@ -125,6 +125,23 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Fingerprint:** `ad899191ff41ab37`
 - **Test data:** reads ['CB-02', 'CB-03']
 
+## CB-09 · Two planets
+
+CB-02's calendar and scoring on six simulated planets where the truth is known. Three ETAS planets, where Italy's own fitted ETAS makes the quakes: nothing beats the truth on average, so a forecaster has to tie it. Three physics planets (Dieterich rate-and-state seismicity on Apennine-shaped faults, stress transfer with shadows, a hidden fluid source), where ETAS is the wrong model and a forecaster has to beat it. Seed k scores planet k of each kind. The gap column is the sim-to-real gap: the mean factor off the real Apennines, in doublings, over the five statistics.
+
+- **Metric:** bits per M3+ quake on the physics planet, daily 0.1° forecasts (higher is better)
+- **Fingerprint:** `2e0396974965f7d7`
+
+| Catalogue | Seed | quakes per day | b value | busiest 1pct days share | busiest 5pct cells share | daily count cv | gap | test M3+ |
+|---|---|---|---|---|---|---|---|---|
+| Real Apennines | · | 2.19 | 1.16 | 0.315 | 0.698 | 6.34 | 0 | · |
+| etas planet | 5 | 3 | 1.15 | 0.0707 | 0.246 | 1.17 | 1.31 | 115 |
+| etas planet | 12 | 2.69 | 1.16 | 0.0694 | 0.223 | 1.13 | 1.32 | 125 |
+| etas planet | 14 | 2.76 | 1.16 | 0.0684 | 0.243 | 1.12 | 1.31 | 111 |
+| physics planet | 0 | 2.77 | 1 | 0.0971 | 0.726 | 2.98 | 0.68 | 140 |
+| physics planet | 1 | 2.47 | 0.995 | 0.0666 | 0.698 | 1.89 | 0.88 | 108 |
+| physics planet | 2 | 2.43 | 1 | 0.0548 | 0.67 | 1.15 | 1.08 | 127 |
+
 ## Add a method
 
 Implement the task's protocol (`MaskedPredictor`, `Forecaster`, `GapFiller` or `EfficiencyReport` in `craton/bench/tasks.py`), register it with `register_method`, and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet --accept` puts it on the scoreboard if nothing got worse.

@@ -427,6 +427,15 @@ scale follow, renumbered.
 **Benchmarks:** **CB-09 (two-planet test + sim-to-real gap, new), CB-19, CB-20, CB-21, CB-22 (new)** +
 everything before.
 
+**Built in six parts** (D-078), each on `main` when its tests pass; `v0.9.0` is tagged after the last:
+P8a the two planets and CB-09 · P8b CB-19 · P8c the ML catalogues, CB-20 and CB-21 · P8d California,
+Japan and New Zealand, CB-22 · P8e Groningen and Oklahoma · P8f the curriculum.
+
+**P8a, done (2026-10-25):** the physics planet is Dieterich's rate-and-state seismicity on an
+Apennine-shaped fault network (the QDYN spike failed, D-079). ETAS planet: Craton −0.02 bits from
+fitted ETAS (tie ✓). Physics planet: **+0.19** over ETAS on all three planets (beaten beyond noise ✓,
+short of the +1 hoped for). Sim-to-real gap: ETAS planets 1.32 doublings off, physics planets 0.88.
+
 **Not in this phase:** the hidden-state layer (P9).
 
 **Done when**
