@@ -110,6 +110,11 @@ class CratonMini:
     _lines: dict[str, Lines] = field(default_factory=dict)
 
     @property
+    def long_periods(self) -> bool:
+        """CB-19's thirty-day forecasts come from the Field; the trunk's head is daily."""
+        return bool(self.field_config)
+
+    @property
     def config(self) -> CratonConfig:
         return self.override if self.override is not None else load_config(self.config_name)
 

@@ -471,24 +471,35 @@ class GeoPerplexity(Task):
 
 @dataclass(frozen=True)
 class ForecastSpec:
-    """What a forecaster is asked: daily forecasts over a test window, fitted on a split."""
+    """What a forecaster is asked: forecasts over a test window, fitted on a split.
+
+    One forecast per period of ``period_days`` (CB-02 and CB-03: one day; CB-19: thirty).
+    Each period's forecast may read every quake before the period starts, none inside it.
+    """
 
     task_id: str
     fit_split: str
     window: Window
     grid: csep.Grid
+    period_days: int = 1
+
+    @property
+    def period(self) -> float:
+        """Length of one forecast period, in seconds."""
+        return DAY * self.period_days
 
     @property
     def day_starts(self) -> FloatArray:
-        n = round((self.window.t1 - self.window.t0) / DAY)
-        return np.asarray(self.window.t0 + DAY * np.arange(n), dtype=np.float64)
+        """The midnight each period starts on (each day's, for daily forecasts)."""
+        n = round((self.window.t1 - self.window.t0) / self.period)
+        return np.asarray(self.window.t0 + self.period * np.arange(n), dtype=np.float64)
 
 
 @dataclass(frozen=True)
 class GriddedForecast:
-    """Expected quakes per (day, cell) at or above the grid's lowest bin, and how they split
-    over magnitude bins: ``mag_shares`` broadcasts to (days, cells, mags) and sums to 1 over
-    the magnitude axis."""
+    """Expected quakes per (period, cell) at or above the grid's lowest bin, and how they
+    split over magnitude bins: ``mag_shares`` broadcasts to (periods, cells, mags) and sums
+    to 1 over the magnitude axis. A period is a day unless the spec says otherwise."""
 
     rates: FloatArray  # (days, cells)
     mag_shares: FloatArray
@@ -523,15 +534,20 @@ class SequenceForecast(Task):
     direction = "higher"
     metric = "log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts"
 
-    def __init__(self, task_id: str, name: str, window: Window, fit_split: str) -> None:
+    def __init__(
+        self, task_id: str, name: str, window: Window, fit_split: str, period_days: int = 1
+    ) -> None:
         self.task_id = task_id
         self.name = name
         self.window = window
         self.fit_split = fit_split
+        self.period_days = period_days
 
     @property
     def spec(self) -> ForecastSpec:
-        return ForecastSpec(self.task_id, self.fit_split, self.window, forecast_grid())
+        return ForecastSpec(
+            self.task_id, self.fit_split, self.window, forecast_grid(), self.period_days
+        )
 
     def definition(self) -> dict[str, Any]:
         g = forecast_grid()
@@ -544,6 +560,8 @@ class SequenceForecast(Task):
             "magnitudes": "catalogue preferred magnitude of any type (ML, Md, Mw)",
             "day": "UTC midnight to midnight; a forecast may read every quake before its day",
             "csep": f"Poisson; daily N-test, S and M tests on the summed forecast, {N_SIMS} sims",
+            # Only longer periods say so, so the daily tasks' frozen definitions stay as they were.
+            **({"period_days": self.period_days} if self.period_days != 1 else {}),
         }
 
     def prepare(self, ctx: BenchContext) -> dict[str, Any]:
@@ -586,14 +604,19 @@ class SequenceForecast(Task):
         )
 
     def supports(self, method: Any) -> bool:
+        if self.period_days != 1 and not getattr(method, "long_periods", False):
+            return False
         return isinstance(method, Forecaster)
 
     def score(self, method: Any, ctx: BenchContext, seed: int) -> Score:
         spec = self.spec
         from craton.trust.predictive import predictive_of
 
-        # Computed once per (method, task, seed): CB-05, CB-07, CB-08 and CB-11 read it too.
-        fc = predictive_of(method, spec, ctx, seed).forecast
+        if self.period_days == 1:
+            # Computed once per (method, task, seed): CB-05, CB-07, CB-08 and CB-11 read it too.
+            fc = predictive_of(method, spec, ctx, seed).forecast
+        else:
+            fc = method.forecast(spec, ctx, seed)
         days = len(spec.day_starts)
         if fc.rates.shape != (days, spec.grid.n_cells):
             raise ValueError(f"{self.task_id}: forecast has shape {fc.rates.shape}")
@@ -657,7 +680,8 @@ def bit_split(
 def score_forecast(fc: GriddedForecast, obs: Events, spec: ForecastSpec, seed: int) -> Score:
     """Joint Poisson log-likelihood per quake, plus the CSEP consistency tests, as extras."""
     g = spec.grid
-    day = np.floor((obs.time - spec.window.t0) / DAY).astype(np.int64)
+    # The period each quake falls in (its day, for daily forecasts).
+    day = np.floor((obs.time - spec.window.t0) / spec.period).astype(np.int64)
     cell = g.cell_of(obs.lat, obs.lon)
     mbin = g.mag_bin_of(obs.mag)
     extras: dict[str, float] = {}
