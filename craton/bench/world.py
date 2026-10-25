@@ -56,6 +56,10 @@ BOX_LAT, BOX_LON, CELL = 3.0, 3.5, 0.1
 TEST_DAYS = 365
 #: ETAS fits on at most this many years before the first big shock.
 FIT_YEARS = 20
+#: A sequence counts only if its reference ETAS fits on at least this many quakes. Below a few
+#: hundred, ETAS's maximum likelihood runs onto its bounds and the "floor" is no floor (Maule:
+#: 75 quakes, p and productivity on their bounds, 295 M5.5+ expected the day after when 1 came).
+MIN_FIT_QUAKES = 200
 #: The largest magnitude any world forecast may give probability to (the largest ever, 9.5).
 MAX_MAGNITUDE = 9.5
 #: Cells of the forecast grid start at the region's completeness; the open top bin from here.
@@ -257,6 +261,8 @@ class WorldSequences(Task):
             "per quake from completeness + 1) of the region's sequences",
             "seen_regions_trained_until": "2007-01-01 (no sequence starts before 2010)",
             "scoring": "as CB-02 (score_forecast), max magnitude 9.5",
+            "qualifies": f"a sequence counts in the halves only if its reference ETAS fits on "
+            f"at least {MIN_FIT_QUAKES} quakes; the others are scored and reported, not counted",
         }
 
     def prepare(self, ctx: BenchContext) -> dict[str, Any]:
@@ -336,7 +342,11 @@ class WorldSequences(Task):
             extras[f"{seq.key}.expected"] = sc.extras[f"{tag}.expected"]
             for part in ("how_many_bits", "where_bits", "how_big_bits"):
                 extras[f"{seq.key}.{part}"] = sc.extras.get(f"{tag}.{part}", math.nan)
-            gains[seq.half].setdefault(seq.region, []).append(gain)
+            n_fit = Etas().fit(spec, view, seed).n_targets
+            extras[f"{seq.key}.fit_quakes"] = float(n_fit)
+            extras[f"{seq.key}.qualified"] = float(n_fit >= MIN_FIT_QUAKES)
+            if n_fit >= MIN_FIT_QUAKES:
+                gains[seq.half].setdefault(seq.region, []).append(gain)
         for half in HALVES:
             per_seq = [g for v in gains[half].values() for g in v]
             per_region = [_mean(v) for v in gains[half].values()]
