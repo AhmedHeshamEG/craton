@@ -36,7 +36,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-16 | Scaling-law fit | · | · | P16 |
 | CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
 | CB-18 | Ladder rung 3 | · | · | P16 |
-| CB-19 | 30-day forecast | · | · | P8 |
+| CB-19 | 30-day forecast | −6.226 ± 0.13 ↑ · craton-mini | −6.001 ± 0 ↑ · etas_aniso | P8 |
 | CB-20 | Apennines, enhanced inputs | · | · | P8 |
 | CB-21 | L'Aquila, enhanced inputs | · | · | P8 |
 | CB-22 | World sequences | · | · | P8 |
@@ -104,11 +104,18 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-11 | poisson | 24.03 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-17 | context_kde | 19.03 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
 | CB-17 | climatology | 27.72 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
+| CB-19 | etas_aniso | −6.001 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
+| CB-19 | etas | −6.002 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
+| CB-19 | poisson | −10.52 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 72 expected; M≥1.5: −7.6 bits/quake; days with too few M≥3: 62% |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-25 20:03 | `20261025-200328-etas-aniso` | etas_aniso (baseline) | 1 new, 7 same |
+| 2026-10-25 20:03 | `20261025-195238-craton-mini` | craton-mini | 1 new, 12 same |
+| 2026-10-25 20:03 | `20261025-193143-poisson` | poisson (baseline) | 1 new, 7 same |
+| 2026-10-25 20:03 | `20261025-192803-etas` | etas (baseline) | 1 new, 7 same |
 | 2026-10-25 13:26 | `20261025-132553-etas-incomplete` | etas_incomplete (baseline) | 1 new, 6 same |
 | 2026-10-25 13:26 | `20261025-132227-craton-mini` | craton-mini | 1 new, 11 same |
 | 2026-10-25 13:26 | `20261025-122339-etas-aniso` | etas_aniso (baseline) | 1 new, 6 same |
