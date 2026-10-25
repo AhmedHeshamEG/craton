@@ -329,6 +329,34 @@
         "space_radius_km": 39.58244784387096,
         "time_share": 0.5820721769499418
       }
+    },
+    "CB-09": {
+      "task_id": "CB-09",
+      "metric": "bits per M3+ quake on the physics planet, daily 0.1° forecasts",
+      "direction": "higher",
+      "fingerprint": "2e0396974965f7d7af8f232ef60f01f8bedd9d3256d6a366b2be8215ce7eddf7",
+      "mean": -14.377081980088255,
+      "std": 0.41935798360658605,
+      "n_seeds": 3,
+      "run_id": "20261025-132227-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-10-25T13:26:17Z",
+      "extras": {
+        "etas_planet.bits_per_eq": -14.145588639992765,
+        "etas_planet.expected": 102.57961573557238,
+        "etas_planet.how_big_bits": -3.2991218301993936,
+        "etas_planet.how_many_bits": -3.746951439654261,
+        "etas_planet.observed": 117.0,
+        "etas_planet.truth_bits": -14.143329363934095,
+        "etas_planet.where_bits": -7.35966599378338,
+        "physics_planet.bits_per_eq": -14.377081980088255,
+        "physics_planet.expected": 121.2526976996809,
+        "physics_planet.how_big_bits": -3.564819089752478,
+        "physics_planet.how_many_bits": -3.597927638806843,
+        "physics_planet.observed": 125.0,
+        "physics_planet.where_bits": -7.362411395388368,
+        "planet": 1.0
+      }
     }
   },
   "baselines": {
@@ -1303,6 +1331,120 @@
           "contexts_unseen": 893.0
         }
       }
+    },
+    "CB-09": {
+      "poisson": {
+        "task_id": "CB-09",
+        "metric": "bits per M3+ quake on the physics planet, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "2e0396974965f7d7af8f232ef60f01f8bedd9d3256d6a366b2be8215ce7eddf7",
+        "mean": -14.733313441615769,
+        "std": 0.1912703522540042,
+        "n_seeds": 3,
+        "run_id": "20261025-113416-poisson",
+        "model": "poisson",
+        "accepted": "2026-10-25T13:26:17Z",
+        "extras": {
+          "etas_planet.bits_per_eq": -16.753427289078974,
+          "etas_planet.expected": 97.17984910930818,
+          "etas_planet.how_big_bits": -3.299133648843558,
+          "etas_planet.how_many_bits": -3.832446139320251,
+          "etas_planet.observed": 117.0,
+          "etas_planet.truth_bits": -14.143329363934095,
+          "etas_planet.where_bits": -9.881998124559436,
+          "physics_planet.bits_per_eq": -14.733313441615769,
+          "physics_planet.expected": 126.75645483702176,
+          "physics_planet.how_big_bits": -3.5648770838032866,
+          "physics_planet.how_many_bits": -3.5917405684149046,
+          "physics_planet.observed": 125.0,
+          "physics_planet.where_bits": -7.724771933257013,
+          "planet": 1.0
+        }
+      },
+      "etas": {
+        "task_id": "CB-09",
+        "metric": "bits per M3+ quake on the physics planet, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "2e0396974965f7d7af8f232ef60f01f8bedd9d3256d6a366b2be8215ce7eddf7",
+        "mean": -14.570471240517561,
+        "std": 0.443631866230769,
+        "n_seeds": 3,
+        "run_id": "20261025-115917-etas",
+        "model": "etas",
+        "accepted": "2026-10-25T13:26:17Z",
+        "extras": {
+          "etas_planet.bits_per_eq": -14.123681187795492,
+          "etas_planet.expected": 111.14523789894564,
+          "etas_planet.how_big_bits": -3.299133648843558,
+          "etas_planet.how_many_bits": -3.737437951419309,
+          "etas_planet.observed": 117.0,
+          "etas_planet.truth_bits": -14.143329363934095,
+          "etas_planet.where_bits": -7.347260211176898,
+          "physics_planet.bits_per_eq": -14.570471240517561,
+          "physics_planet.expected": 137.65969233267847,
+          "physics_planet.how_big_bits": -3.5648770838032866,
+          "physics_planet.how_many_bits": -3.599593950341376,
+          "physics_planet.observed": 125.0,
+          "physics_planet.where_bits": -7.554076350232333,
+          "planet": 1.0
+        }
+      },
+      "etas_aniso": {
+        "task_id": "CB-09",
+        "metric": "bits per M3+ quake on the physics planet, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "2e0396974965f7d7af8f232ef60f01f8bedd9d3256d6a366b2be8215ce7eddf7",
+        "mean": -14.570539821653862,
+        "std": 0.44368881662468446,
+        "n_seeds": 3,
+        "run_id": "20261025-122339-etas-aniso",
+        "model": "etas_aniso",
+        "accepted": "2026-10-25T13:26:17Z",
+        "extras": {
+          "etas_planet.bits_per_eq": -14.123910405043953,
+          "etas_planet.expected": 111.14334047679097,
+          "etas_planet.how_big_bits": -3.299133648843558,
+          "etas_planet.how_many_bits": -3.737433058479677,
+          "etas_planet.observed": 117.0,
+          "etas_planet.truth_bits": -14.143329363934095,
+          "etas_planet.where_bits": -7.347494321364991,
+          "physics_planet.bits_per_eq": -14.570539821653862,
+          "physics_planet.expected": 137.65969233258016,
+          "physics_planet.how_big_bits": -3.5648770838032866,
+          "physics_planet.how_many_bits": -3.599593950341324,
+          "physics_planet.observed": 125.0,
+          "physics_planet.where_bits": -7.554144931368689,
+          "planet": 1.0
+        }
+      },
+      "etas_incomplete": {
+        "task_id": "CB-09",
+        "metric": "bits per M3+ quake on the physics planet, daily 0.1° forecasts",
+        "direction": "higher",
+        "fingerprint": "2e0396974965f7d7af8f232ef60f01f8bedd9d3256d6a366b2be8215ce7eddf7",
+        "mean": -14.570462754239417,
+        "std": 0.44364655442201534,
+        "n_seeds": 3,
+        "run_id": "20261025-132553-etas-incomplete",
+        "model": "etas_incomplete",
+        "accepted": "2026-10-25T13:26:17Z",
+        "extras": {
+          "etas_planet.bits_per_eq": -14.134838361940199,
+          "etas_planet.expected": 106.57632358094868,
+          "etas_planet.how_big_bits": -3.299133648843558,
+          "etas_planet.how_many_bits": -3.745755286208105,
+          "etas_planet.observed": 117.0,
+          "etas_planet.truth_bits": -14.143329363934095,
+          "etas_planet.where_bits": -7.350100050532806,
+          "physics_planet.bits_per_eq": -14.570462754239417,
+          "physics_planet.expected": 137.64419793846162,
+          "physics_planet.how_big_bits": -3.5648786763063973,
+          "physics_planet.how_many_bits": -3.599583871560123,
+          "physics_planet.observed": 125.0,
+          "physics_planet.where_bits": -7.554076350232333,
+          "planet": 1.0
+        }
+      }
     }
   },
   "history": [
@@ -1438,6 +1580,41 @@
       "kind": "model",
       "accepted": "2026-10-22T12:35:54Z",
       "summary": "5 new, 6 same"
+    },
+    {
+      "run_id": "20261025-113416-poisson",
+      "model": "poisson",
+      "kind": "baseline",
+      "accepted": "2026-10-25T13:26:17Z",
+      "summary": "1 new, 6 same"
+    },
+    {
+      "run_id": "20261025-115917-etas",
+      "model": "etas",
+      "kind": "baseline",
+      "accepted": "2026-10-25T13:26:17Z",
+      "summary": "1 new, 6 same"
+    },
+    {
+      "run_id": "20261025-122339-etas-aniso",
+      "model": "etas_aniso",
+      "kind": "baseline",
+      "accepted": "2026-10-25T13:26:17Z",
+      "summary": "1 new, 6 same"
+    },
+    {
+      "run_id": "20261025-132227-craton-mini",
+      "model": "craton-mini",
+      "kind": "model",
+      "accepted": "2026-10-25T13:26:17Z",
+      "summary": "1 new, 11 same"
+    },
+    {
+      "run_id": "20261025-132553-etas-incomplete",
+      "model": "etas_incomplete",
+      "kind": "baseline",
+      "accepted": "2026-10-25T13:26:17Z",
+      "summary": "1 new, 6 same"
     }
   ]
 }

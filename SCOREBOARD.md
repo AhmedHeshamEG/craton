@@ -26,7 +26,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-06 | Unseen region | 0.9972 ± 0.00065 ↑ · craton-mini | 0.9982 ± 0 ↑ · fingerprint_knn | P7 |
 | CB-07 | Fake-precursor attack | 1.002 ± 0.0039 ↓ · craton-mini | 1 ± 0 ↓ · poisson | P7 |
 | CB-08 | Physics sanity | 0 ± 0 ↓ · craton-mini | 0 ± 0 ↓ · poisson | P7 |
-| CB-09 | Two planets | · | · | P8 |
+| CB-09 | Two planets | −14.38 ± 0.42 ↑ · craton-mini | −14.57 ± 0.44 ↑ · etas_incomplete | P8 |
 | CB-10 | Planted discovery | · | · | P12 |
 | CB-11 | Predictability meter | 0.843 ± 0.06 ↓ · craton-mini | 1.317 ± 0 ↓ · etas_aniso | P7 |
 | CB-12 | Interpreter faithfulness | · | · | P13 |
@@ -94,6 +94,10 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-08 | etas | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
 | CB-08 | etas_aniso | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
 | CB-08 | etas_incomplete | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
+| CB-09 | etas_incomplete | −14.57 ± 0.44 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
+| CB-09 | etas | −14.57 ± 0.44 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
+| CB-09 | etas_aniso | −14.57 ± 0.44 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
+| CB-09 | poisson | −14.73 ± 0.19 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
 | CB-11 | etas_aniso | 1.317 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-11 | etas_incomplete | 1.32 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-11 | etas | 1.324 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
@@ -105,6 +109,11 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-25 13:26 | `20261025-132553-etas-incomplete` | etas_incomplete (baseline) | 1 new, 6 same |
+| 2026-10-25 13:26 | `20261025-132227-craton-mini` | craton-mini | 1 new, 11 same |
+| 2026-10-25 13:26 | `20261025-122339-etas-aniso` | etas_aniso (baseline) | 1 new, 6 same |
+| 2026-10-25 13:26 | `20261025-115917-etas` | etas (baseline) | 1 new, 6 same |
+| 2026-10-25 13:26 | `20261025-113416-poisson` | poisson (baseline) | 1 new, 6 same |
 | 2026-10-22 12:35 | `20261022-123525-craton-mini` | craton-mini | 5 new, 6 same |
 | 2026-10-22 11:30 | `20261022-112953-etas-incomplete` | etas_incomplete (baseline) | 4 new, 2 same |
 | 2026-10-22 11:30 | `20261022-105940-etas-aniso` | etas_aniso (baseline) | 4 new, 2 same |

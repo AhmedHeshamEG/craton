@@ -321,6 +321,122 @@
           "CB-03"
         ]
       }
+    },
+    "CB-09": {
+      "name": "Two planets",
+      "metric": "bits per M3+ quake on the physics planet, daily 0.1\u00b0 forecasts",
+      "direction": "higher",
+      "fingerprint": "2e0396974965f7d7af8f232ef60f01f8bedd9d3256d6a366b2be8215ce7eddf7",
+      "files": {
+        "etas_planet-0.parquet": "d17def1c267cfe92bf0f00b76038d3873a03ccae477505017eccf4504b739c95",
+        "etas_planet-1.parquet": "49febda450540ef7c07671c123c0a316b50bb445bb5f76df9e69e5d8c44a5b58",
+        "etas_planet-2.parquet": "9209d130b757c2222168e3e097635e95c7bcf8fbb5f594a606c2caf664ba726f",
+        "physics_planet-0.parquet": "d7f9b51d86632d174b05113c97d67b9b7549d57fd2d4e038033a2d8e17b74025",
+        "physics_planet-1.parquet": "0bef1f177b2ae6b2c6239300ca7876994036ec94ddea69ece5524feb58af01ab",
+        "physics_planet-2.parquet": "47759959da3cc241ffce3745bf63203c46cae15bb440bc73dbeb3e58666918b4"
+      },
+      "summary": {
+        "real": {
+          "quakes_per_day": 2.19468610392664,
+          "b_value": 1.1624859321742849,
+          "busiest_1pct_days_share": 0.3152989072209128,
+          "busiest_5pct_cells_share": 0.6982001285622456,
+          "daily_count_cv": 6.342593829142751,
+          "largest": 6.1
+        },
+        "etas_planet": {
+          "seeds": [
+            5,
+            12,
+            14
+          ],
+          "planets": [
+            {
+              "quakes_per_day": 3.004702562896779,
+              "b_value": 1.1507405754360291,
+              "busiest_1pct_days_share": 0.07074105955082557,
+              "busiest_5pct_cells_share": 0.24641990766100633,
+              "daily_count_cv": 1.1652504611742307,
+              "largest": 5.8,
+              "gap": 1.3141826646528991,
+              "test_m3": 115,
+              "test_largest": 5.3,
+              "quakes": 34179
+            },
+            {
+              "quakes_per_day": 2.6912767458264755,
+              "b_value": 1.1563002186240094,
+              "busiest_1pct_days_share": 0.06936921195177355,
+              "busiest_5pct_cells_share": 0.22278525248995282,
+              "daily_count_cv": 1.1289303311725247,
+              "largest": 5.3,
+              "gap": 1.3248859060304556,
+              "test_m3": 125,
+              "test_largest": 5.3,
+              "quakes": 31073
+            },
+            {
+              "quakes_per_day": 2.7554667293675053,
+              "b_value": 1.1613890201207602,
+              "busiest_1pct_days_share": 0.06843587336803482,
+              "busiest_5pct_cells_share": 0.24276815427937537,
+              "daily_count_cv": 1.1156985183262642,
+              "largest": 5.6,
+              "gap": 1.3129453410906151,
+              "test_m3": 111,
+              "test_largest": 5.1,
+              "quakes": 31154
+            }
+          ],
+          "gap": 1.3173379705913233
+        },
+        "physics_planet": {
+          "seeds": [
+            0,
+            1,
+            2
+          ],
+          "planets": [
+            {
+              "quakes_per_day": 2.7688690336233246,
+              "b_value": 1.0010671427522497,
+              "busiest_1pct_days_share": 0.09714673913043478,
+              "busiest_5pct_cells_share": 0.7257982336956522,
+              "daily_count_cv": 2.9815828639227653,
+              "largest": 6.2,
+              "gap": 0.6788723725841739,
+              "test_m3": 140,
+              "test_largest": 5.7,
+              "quakes": 105496
+            },
+            {
+              "quakes_per_day": 2.4735480837056194,
+              "b_value": 0.9952030037514609,
+              "busiest_1pct_days_share": 0.06663498098859316,
+              "busiest_5pct_cells_share": 0.6984790874524714,
+              "daily_count_cv": 1.885542494058116,
+              "largest": 5.7,
+              "gap": 0.8779511923241075,
+              "test_m3": 108,
+              "test_largest": 5.3,
+              "quakes": 97873
+            },
+            {
+              "quakes_per_day": 2.430519633200094,
+              "b_value": 1.0007249271483627,
+              "busiest_1pct_days_share": 0.05475476443842508,
+              "busiest_5pct_cells_share": 0.6695366160394699,
+              "daily_count_cv": 1.1546604946345516,
+              "largest": 5.5,
+              "gap": 1.081432725608923,
+              "test_m3": 127,
+              "test_largest": 5.0,
+              "quakes": 99219
+            }
+          ],
+          "gap": 0.8794187635057348
+        }
+      }
     }
   }
 }
