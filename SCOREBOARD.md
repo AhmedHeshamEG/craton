@@ -46,6 +46,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-26 | Distilled law | · | · | P14 |
 | CB-27 | Predictability horizon | · | · | P15 |
 | CB-28 | Velocity gap-fill | · | · | P10 |
+| CB-29 | EarthquakeNPP | · | · | P8 |
 
 ## The building
 
@@ -145,6 +146,12 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 Measured on the latest build of each region by `craton data build`. The snapshot id is the hash of every token file, so it only changes if a byte of the data does.
 
+### alaska · snapshot `857cc9fcdf860e01` · 1990-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 59,362 | 1990-01-01 → 2026-09-30 | 0 | largest Mw 8.2 on 2021-07-29; M 93, ML 55,612, Md 8, Ms 2, Mw 887, mb 2,760; completeness ML 2.7 in 1995, 2.7 in 2005, 2.7 in 2015, 2.7 in 2025; longest quiet spell 4.89 days |
+
 ### california · snapshot `2e933cc433533857` · 1981-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
@@ -158,6 +165,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | `iers_tides` | 686,709 | 1985-01-01 → 2026-09-30 | 0 | 320,757 at earthquakes + 365,952 hourly; peak 0.319 m up, 0.080 m north, 0.079 m east |
 | `ingv_catalog` | 320,757 | 1985-01-02 → 2026-09-30 | 126 (magnitude_type:M 120, event_type:controlled explosion 5) | largest Mw 6.5 on 2016-10-30; ML 290,892, Md 29,466, Mw 399; completeness ML 1.5 in 2005, 1.2 in 2015, 1.1 in 2025; Md 2.6 in 1985, 2.6 in 1995, 2.4 in 2005, 1.5 in 2015; longest quiet spell 10.93 days |
 | `ngl_gnss` | 751,394 | 1995-06-27 → 2026-09-30 | 0 | 293 stations, median 1,927 days each, median coverage 83%, 964 gaps over 30 days |
+
+### chile · snapshot `16c9638835d229d7` · 1985-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 28,189 | 1985-01-01 → 2026-09-30 | 0 | largest Mw 8.8 on 2010-02-27; M 294, ML 840, Md 3,291, Ms 50, Mw 4,770, mb 18,944; completeness ML 4.2 in 2002; Md 4.2 in 1995, 4.3 in 2005; longest quiet spell 14.4 days |
 
 ### earthquakenpp_comcat · snapshot `960204e6f5819c99` · 1971-01-01 → 2020-01-17
 
@@ -182,3 +195,9 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `ingv_catalog` | 61,086 | 1985-01-06 → 2026-09-30 | 154 (event_type:experimental explosion 88, magnitude_type:M 57) | largest Mw 6.1 on 2026-06-01; ML 49,241, Md 11,608, Mw 228, mb 9; completeness ML 2.3 in 2005, 1.6 in 2015, 1.6 in 2025; Md 2.9 in 1985, 2.6 in 1995, 3.0 in 2005, 1.6 in 2015; longest quiet spell 16.14 days |
+
+### turkey · snapshot `bfb1790b549c2dfe` · 1998-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 153,573 | 1998-01-01 → 2026-09-30 | 0 | largest Mw 7.8 on 2023-02-06; M 515, ML 74,537, Mc 39, Md 74,224, Ms 57, Mw 984, mb 3,217; completeness ML 4.0 in 2005, 2.7 in 2015, 2.7 in 2025; Md 3.1 in 2005; longest quiet spell 5.61 days |
