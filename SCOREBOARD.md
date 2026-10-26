@@ -39,14 +39,14 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-19 | 30-day forecast | −6.226 ± 0.13 ↑ · craton-mini | −6.001 ± 0 ↑ · etas_aniso | P8 |
 | CB-20 | Apennines, enhanced inputs | · | · | P8 |
 | CB-21 | L'Aquila, enhanced inputs | · | · | P8 |
-| CB-22 | World sequences | · | · | P8 |
+| CB-22 | World sequences | 0.3612 ± 0.083 ↑ · craton-mini | 0.3363 ± 1.6e−05 ↑ · etas_incomplete | P8 |
 | CB-23 | Hidden-state truth | · | · | P9 |
 | CB-24 | Migration | · | · | P9 |
 | CB-25 | Mainshock days | · | · | P11 |
 | CB-26 | Distilled law | · | · | P14 |
 | CB-27 | Predictability horizon | · | · | P15 |
 | CB-28 | Velocity gap-fill | · | · | P10 |
-| CB-29 | EarthquakeNPP | · | · | P8 |
+| CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
 
 ## The building
 
@@ -108,11 +108,21 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-19 | etas_aniso | −6.001 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
 | CB-19 | etas | −6.002 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
 | CB-19 | poisson | −10.52 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 72 expected; M≥1.5: −7.6 bits/quake; days with too few M≥3: 62% |
+| CB-22 | etas_incomplete | 0.3363 ± 1.6e−05 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | etas_aniso | −0.1055 ± 7.9e−06 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | poisson | −5.26 ± 0.00015 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-29 | etas | 7.256 ± 0 ↓ | negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits |  |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-26 10:27 | `20261026-102634-craton-mini` | craton-mini | 2 new, 13 same |
+| 2026-10-26 10:27 | `20261026-085543-etas-incomplete` | etas_incomplete (baseline) | 1 new, 7 same |
+| 2026-10-26 10:27 | `20261026-064021-etas-aniso` | etas_aniso (baseline) | 1 new, 8 same |
+| 2026-10-26 10:27 | `20261026-054645-poisson` | poisson (baseline) | 1 new, 8 same |
+| 2026-10-26 10:27 | `20261026-051905-etas` | etas (baseline) | 2 new, 8 same |
 | 2026-10-25 20:03 | `20261025-200328-etas-aniso` | etas_aniso (baseline) | 1 new, 7 same |
 | 2026-10-25 20:03 | `20261025-195238-craton-mini` | craton-mini | 1 new, 12 same |
 | 2026-10-25 20:03 | `20261025-193143-poisson` | poisson (baseline) | 1 new, 7 same |
