@@ -58,13 +58,14 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-19 | **30-day forecast** | As CB-02, one forecast per 30 days: the horizon where GPS strain might pay | ETAS | P8 |
 | CB-20 | **Apennines, enhanced inputs** | CB-02's scoring, with the 2016–17 ML catalogue as input (relocated with hindsight, so its own task) | ETAS on the same inputs | P8 |
 | CB-21 | **L'Aquila, enhanced inputs** | CB-03's scoring, with the 2009 ML catalogue as input | ETAS on the same inputs | P8 |
-| CB-22 | **World sequences** | Daily forecasts on held-out sequences in California, Japan, New Zealand; share where Craton beats ETAS + mean gain | ETAS fitted per region | P8 |
+| CB-22 | **World sequences** | Daily forecasts on 14 held-out sequences: six in regions trained on (California, Japan, New Zealand), eight in regions never seen (Turkey, Chile, Alaska); gain per quake, the never-seen half is the headline | ETAS fitted on each box's own past | P8 |
 | CB-23 | **Hidden-state truth** | Inferred stress axes vs focal-mechanism stress inversions (angle); inferred pressure vs Vp/Vs and CO₂ maps | Regional-average stress | P9 |
 | CB-24 | **Migration** | Connection graph learned before 2016 vs the order the 2016–17 sequence lit up | Distance only | P9 |
 | CB-25 | **Mainshock days** | Skill on held-out world M6+ days: Molchan curve, false alarms per hit | ETAS | P11 |
 | CB-26 | **Distilled law** | A symbolic formula's held-out gain over ETAS vs the network's | the network itself | P14 |
 | CB-27 | **Predictability horizon** | Skill over ETAS vs lead time (1 day → 1 year): where it reaches zero, with error bars | — | P15 |
 | CB-28 | **Velocity gap-fill** | Hide one station's dv/v series, rebuild it | Neighbour average | P10 |
+| CB-29 | **EarthquakeNPP** | The outside benchmark (Stockman et al., TMLR 2026): their California data, splits, ETAS and metric, untouched; nats per quake | Their ETAS | P8 |
 
 CB-02 and CB-03 also report, from P6 on: how-many / where / how-big bits, the score without the M5+ days, and
 the oracle ceilings (the building).
@@ -411,8 +412,12 @@ scale follow, renumbered.
 1. **ML catalogues** as a new instrument source: Tan et al. 2016–17 (~900k events), L'Aquila 2009
    (PhaseNet + GaMMA), Altotiberina 2010–23 (~420k). They were relocated with hindsight, so they feed **new
    tasks only** (CB-20, CB-21); CB-02 and CB-03 stay pure.
-2. **Other real regions:** California (ComCat, plus the QTM template-matching catalogue), Japan (JMA), New
-   Zealand (GeoNet). A world set of held-out sequences for CB-22.
+2. **The whole Earth, one model (P8d; D-086).** Every region is a YAML file. One Field trained on central
+   Italy, California (ComCat), Japan (JMA) and New Zealand (GeoNet) together, in each region's own
+   magnitudes. CB-22 scores it on held-out sequences there **and zero-shot** in regions it never read
+   (Turkey via EMSC, Chile and Alaska via ComCat). **CB-29** scores it on EarthquakeNPP, an outside
+   benchmark where five neural point processes lost to ETAS. Stop rule, set before any result: lose CB-29
+   or CB-22's never-seen half, and the phases after P8 are redone.
 3. **Human-made planets with a measured cause:** Groningen (gas production and reservoir pressure) and
    Oklahoma (wastewater injection volumes). Learn "pressure → quakes" where pressure is known.
 4. **Fake planets, as a two-planet test:** an ETAS planet (Craton must tie ETAS: it can't beat the truth) and
@@ -424,12 +429,13 @@ scale follow, renumbered.
 7. Figure: one fake planet's 10,000 years next to the real Apennines; and the world map of sequences Craton
    learned from.
 
-**Benchmarks:** **CB-09 (two-planet test + sim-to-real gap, new), CB-19, CB-20, CB-21, CB-22 (new)** +
-everything before.
+**Benchmarks:** **CB-09 (two-planet test + sim-to-real gap, new), CB-19, CB-20, CB-21, CB-22, CB-29
+(new)** + everything before.
 
 **Built in six parts** (D-078), each on `main` when its tests pass; `v0.9.0` is tagged after the last:
-P8a the two planets and CB-09 · P8b CB-19 · P8c the ML catalogues, CB-20 and CB-21 · P8d California,
-Japan and New Zealand, CB-22 · P8e Groningen and Oklahoma · P8f the curriculum.
+P8a the two planets and CB-09 · P8b CB-19 · P8d the whole Earth, CB-22 and CB-29 · P8c the ML catalogues,
+CB-20 and CB-21 · P8e Groningen and Oklahoma · P8f the curriculum (in that order since the 2026-10-25
+world replan, D-086).
 
 **P8a, done (2026-10-25):** the physics planet is Dieterich's rate-and-state seismicity on an
 Apennine-shaped fault network (the QDYN spike failed, D-079). ETAS planet: Craton −0.02 bits from
@@ -446,12 +452,14 @@ the Fields in P8f (D-085).
 **Done when**
 - ETAS planet tied within noise; physics planet beaten beyond noise
 - CB-02 / CB-03 improve on P6 beyond noise from the new data, or the negative result is documented
-- CB-22: Craton above ETAS on most held-out world sequences
+- CB-22: Craton above ETAS on most held-out world sequences, and on most never-seen regions (zero-shot)
+- CB-29: EarthquakeNPP's ETAS reproduced, and Craton's score against it published either way
 - model size raised only if the scaling evidence supports it
 - `lessons/P8.md` written
 
 **Expect:** CB-02 ≈ +0.6 over ETAS · CB-03 ≈ +1.4 · CB-20 ≈ +1.1 · CB-21 ≈ +1.8 · CB-19 ≈ +0.2 ·
-CB-22 above ETAS on ~2 sequences in 3 · CB-09 ETAS planet |Δ| < 0.05, physics planet ≈ +1.
+CB-22 above ETAS on ~2 sequences in 3 (seen regions), ~1 region in 2 zero-shot · CB-29 above their ETAS by
+≈ +0.1 to +0.3 · CB-09 ETAS planet |Δ| < 0.05, physics planet ≈ +1.
 
 **Learn:** simulators, rate-and-state friction, induced seismicity, catalogue completeness, transfer.
 

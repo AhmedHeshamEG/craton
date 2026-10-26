@@ -58,7 +58,40 @@ ABOUT = {
         "Seed k scores planet k of each kind. The gap column is the sim-to-real gap: the mean "
         "factor off the real Apennines, in doublings, over the five statistics."
     ),
+    "CB-22": (
+        "CB-02's question anywhere on Earth: the year after the first big shock of fourteen "
+        "sequences, each on a 3° × 3.5° box centred on it, in its region's own magnitudes "
+        "(scored from completeness + 1). Six are in regions models may train on up to 2007; "
+        "eight are in regions they must never have read. The number is the gain over ETAS "
+        "fitted on the box's own past, averaged over the never-seen regions. A sequence counts "
+        "only if that ETAS fits on 200+ quakes."
+    ),
+    "CB-29": (
+        "EarthquakeNPP (Stockman, Lawson & Werner, TMLR 2026), untouched: their ComCat_25 "
+        "California dataset, their 1981-2007 training and 2007-2020 test windows, their fitted "
+        "ETAS and their metric, the point-process log-likelihood per test quake in nats. A "
+        "method enters as their ETAS times a factor per 0.1° cell and day, fixed at midnight."
+    ),
 }
+
+
+def _sequences(summary: dict[str, Any]) -> list[str]:
+    """CB-22's frozen sequences: where, when, how many quakes to score, how many to fit on."""
+    from craton.bench.world import SEQUENCES
+
+    out = [
+        "| Sequence | Region | Half | mc | Scored quakes | Largest in window | ETAS fits on |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for seq in SEQUENCES:
+        v = summary[seq.key]
+        scored = v.get(f"M>={v['mc'] + 1:g}", "·")
+        out.append(
+            f"| {seq.name} | {seq.region} | {seq.half.replace('_', '-')} | {v['mc']:g} | "
+            f"{scored} | {v['largest']} | {v['fit_quakes']:,} |"
+        )
+    snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
+    return [*out, "", f"Snapshots: {snaps}."]
 
 
 def _bins() -> list[str]:
@@ -145,7 +178,7 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary and task_id != "CB-09":
+        if summary and task_id not in ("CB-09", "CB-22"):
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
@@ -158,6 +191,8 @@ def render() -> str:
             lines += ["", *_bins()]
         if task_id == "CB-09" and summary:
             lines += ["", *_planets(summary)]
+        if task_id == "CB-22" and summary:
+            lines += ["", *_sequences(summary)]
     lines += [
         "",
         "## Add a method",

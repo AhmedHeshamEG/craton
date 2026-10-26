@@ -1180,3 +1180,138 @@ Same seeds, same everything else.
 **Rejected.** Shipping the GPS Field as CB-19's number now (one task's configuration diverging
 from the rest, for +0.13 inside a 0.13 spread). Dropping GPS for missing ETAS (the paired gain
 is consistent on every seed).
+
+### D-086 · 2026-10-25 · P8 — Anywhere on Earth: P8d goes next, and it can stop the plan
+
+Until P8d every Craton number was central Italy's. A model of the Earth's crust that has only ever
+read one patch of Italy is not one, so the order of P8 changed to P8b → **P8d** → P8c → P8e → P8f,
+and a standing rule joined the phase protocol: every instrument, task and model works for any
+region by configuration. A region is a YAML file; a place name inside an adapter or the model is
+a bug.
+
+P8d is also the project's real test, so it carries a stop rule written before any result: if
+Craton does not beat ETAS on CB-29 (EarthquakeNPP, an outside benchmark) or on CB-22's never-seen
+regions, the phases after P8 are redone before anything else is built.
+
+**Rejected.** Scaling the Italy model up first (it would only prove Italy again). Fitting one
+model per region (that's a toolkit, not a model of the Earth).
+
+### D-087 · 2026-10-25 · P8 — Token Spec 1.1.0: five magnitude words, and the oldest version wins
+
+The world's catalogues use magnitudes the 1.0.0 vocabulary doesn't have: `M` (the agency's own,
+unspecified: GeoNet, the EarthquakeNPP CSVs), `Mj` (JMA's magnitude), `Mh` (ComCat's hand-read),
+`mb_Lg` (Nuttli) and `MLv` (local magnitude from vertical components, GeoNet). They join the
+closed vocabulary in 1.1.0, frozen in `craton/spec/frozen/1.1.0.json`.
+
+A token is written under the **oldest** spec that accepts it (`WORDS_ADDED`, `spec_for_magnitude`);
+a token that uses a 1.1.0 word but says 1.0.0 is refused (`spec_too_old`). A snapshot records the
+newest spec its tokens ask for. So central Italy's tokens, files and snapshot keep their bytes and
+their names after the spec grew, which is the whole point of an add-only spec.
+
+**Rejected.** Stamping every token with the current version (every existing snapshot would change
+its name on rebuild). Mapping `M` and `Mj` onto `ML` (they are different scales).
+
+### D-088 · 2026-10-25 · P8 — One adapter per format, never per place
+
+- **`fdsn_catalog`** reads any FDSN event web service in its text format (13 or 14 columns).
+  The region's YAML names the service, the provider, the licence and the smallest magnitude
+  (`sources.fdsn_catalog`). It serves USGS ComCat (California, Chile, Alaska), GeoNet (New
+  Zealand) and EMSC (Turkey). Each service's magnitude spellings map to the vocabulary through
+  one table; the service's own spelling stays in the provenance record.
+- **`jma_hypocenter`** reads JMA's yearly fixed-width files (Japan, 1983-2024). The bulletin's
+  times are Japan Standard Time and become UTC; only JMA's own locations, natural quakes only.
+- **`earthquakenpp`** reads the EarthquakeNPP CSVs from a pinned commit, byte for byte (CB-29).
+- **Regions** gain `sources` (per-adapter options) and `completeness` (the magnitude the region
+  trusts). Fields at their defaults stay out of a region's fingerprint, so central Italy's
+  snapshot keeps its name.
+- **Turkey from EMSC.** AFAD's API answered nothing from here; EMSC carries AFAD's and KOERI's
+  locations through a standard service. Its terms allow research use without a stated open
+  licence (`LicenseRef-EMSC-terms`); raw data stay local, only scores are published. Its yearly
+  counts swing (about 12,000 a year in 2008-11, 3,000 in 2013-16) as its contributors change.
+
+**Rejected.** An adapter per country (places in code). ComCat for Japan and Turkey (complete only
+above M4-4.5 there).
+
+### D-089 · 2026-10-25 · P8 — Every region in its own magnitudes
+
+Catalogues are complete down to different magnitudes: central Italy M2, California M2.5, Japan,
+New Zealand, Turkey and Alaska M3 at the scale Craton uses, Chile M4.5 in ComCat. So magnitudes
+are read relative to each region's completeness mc: the memory counts from mc − 0.5, a quake of
+magnitude mc weighs 1 in the productivity counters, the Field learns from mc and the forecasts are
+scored from mc + 1. Central Italy (mc 2) is exactly the Field it always was: memory from M1.5,
+scored at M3. A forecast spec now carries its region's mc, fit window, cut-off, thresholds and
+largest magnitude; the defaults are central Italy's, so no existing task or checkpoint moved.
+
+**Rejected.** One global magnitude threshold (M4.5 everywhere throws away 95% of California).
+
+### D-090 · 2026-10-25 · P8 — The world Field: one network, tiles of CB-02's size
+
+`craton/field/world.py`, `configs/field/world.yaml`. The Field's network never knew a place: a
+cell is its memory, ETAS's rate and where it sits inside its box. So one network can read any box.
+
+- Every training region (central Italy, California, Japan, New Zealand) is cut into tiles of
+  3° × 3.5° (CB-02's 1,050 cells); tiles with fewer than 300 quakes at mc are sea and dropped.
+- Each tile gets its own ETAS, fitted on its own past: the starting line is always the local floor.
+- Nothing after **2007-01-01** is trained on, anywhere: CB-29's cut-off, before every CB-22
+  sequence and before CB-02 and CB-03.
+- Days with a quake are all kept; quiet days with probability 0.15, weighted back by 1/0.15 in
+  the loss, so the pool fits a laptop disk and the loss is unchanged in expectation. A pool is
+  named only by what decides its data.
+- Italy's learning rate (10⁻³) peaked after the first epoch on every member, at +0.05 nats per
+  quake over ETAS on validation. At 3·10⁻⁴ with validation every 500 steps a member reaches
+  about +0.13. Four members per seed, about 40 minutes a seed on the RTX 2060.
+
+**Rejected.** One model per region (D-086). Training on everything up to each sequence (every
+sequence would need its own model, and the model would have seen other regions' futures).
+
+### D-091 · 2026-10-25 · P8 — CB-22: fourteen sequences, eight of them in places never seen
+
+`craton/bench/world.py`. Each sequence is the year after the day of its first big shock, on a
+3° × 3.5° box centred on it, scored as CB-02 from the region's mc + 1. The reference is ETAS fitted
+on the box's own past (up to 20 years, at mc), up to the midnight of the first big shock: the best
+simple model a seismologist there would build.
+
+- **Seen** (trained on up to 2007): El Mayor-Cucapah 2010 and Ridgecrest 2019 (California),
+  Tohoku 2011 and Kumamoto 2016 (Japan), Darfield 2010 and Kaikoura 2016 (New Zealand).
+- **Zero-shot** (never one quake read): Van 2011, Elazig 2020 and Kahramanmaras 2023 (Turkey),
+  Maule 2010, Iquique 2014 and Illapel 2015 (Chile), Anchorage 2018 and Chignik 2021 (Alaska).
+- **The number** is the gain over the reference in bits per quake, averaged over the zero-shot
+  regions (each region the mean of its sequences). ETAS scores 0 by construction. The extras hold
+  every sequence's bits and gain and the share of sequences and regions above ETAS. The catalogue
+  entry's wording ("share of sequences above ETAS") gained the gain itself before the task existed.
+- **A sequence counts only if its reference ETAS fits on at least 200 quakes.** This rule was
+  added after the first score, because of one sequence: Maule 2010 has 75 quakes in its box's 20
+  years of ComCat above M4.5. ETAS's fit ran onto its bounds (p = 3, productivity 3.5) and expected
+  295 M5.5+ quakes the day after Maule, when one came: −37 bits per quake for the floor itself.
+  The Field, reading an M8.8 in its memory, doubled that. Every other sequence fits on 297 to
+  9,500 quakes. Maule is still scored and reported with every run; it doesn't move the halves.
+
+**Rejected.** A bigger box or a whole-region fit for the reference (a different floor for one
+sequence). Dropping Maule silently. Averaging over sequences instead of regions (Turkey's three
+would outvote Alaska's two).
+
+### D-092 · 2026-10-25 · P8 — CB-29: EarthquakeNPP with their ETAS, untouched
+
+`craton/bench/npp.py`. EarthquakeNPP (Stockman, Lawson & Werner, TMLR 2026) found five neural
+point processes all below ETAS in California. CB-29 is its ComCat_25 dataset (their CSV, their
+polygon, their 1971 / 1981 / 2007 / 2020-01-17 windows) and their fitted ETAS parameters, scored
+by their metric: test log-likelihood per quake in nats, time in days, space in km².
+
+- **The spike reproduced their number first.** Their formula with their parameters gives 7.25543
+  nats per quake in their convention and 7.25559 in the proper one (the integral over the whole
+  test window; theirs starts at the first test quake and stops at the last).
+- **How a daily model enters a continuous benchmark.** Craton's intensity is their ETAS intensity
+  times a factor e^c per 0.1° cell and day, fixed at each midnight from what was known then. The
+  factor is predictable, so this is a proper point process and its likelihood is exact; within a
+  day it still reacts to every quake as ETAS does, and c = 0 is their ETAS exactly.
+- **Exact cell masses.** Each parent's kernel mass in every cell within 50 km is integrated along
+  360 rays from the parent (the kernel's radial distribution is closed-form); the rest of the
+  plane stays at ETAS's value, so the integral stays exact.
+- **The Field on CB-29** starts from the world Field's weights and is fine-tuned on their 1981-2007
+  training days, reading at midnight their ETAS's forecast and its memory of their catalogue,
+  graded by the realized intensity of each day (the day's own quakes trigger too). Their CSV is
+  cut at M2.5, so the memory counts from 2.5 there.
+
+**Rejected.** Our own ComCat download as CB-29's data (different events from theirs). Our ETAS as
+the reference (the benchmark is theirs). A Monte Carlo cell integral (biased for the tight kernels
+of small quakes, which hold almost all their mass in one cell).

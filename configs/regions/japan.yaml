@@ -1,0 +1,15 @@
+# Japan from Kyushu to Hokkaido's south coast, and the trench offshore: Kobe 1995, Chuetsu 2004,
+# Tohoku 2011, Kumamoto 2016, Hokkaido 2018, Noto 2024.
+name: japan
+description: The Japanese archipelago from Kyushu to southern Hokkaido and the Japan Trench.
+box:
+  lat_min: 30.0
+  lat_max: 44.0
+  lon_min: 129.0
+  lon_max: 146.0
+start: "1983-01-01T00:00:00Z"   # JMA's first one-year hypocenter file
+end: "2025-01-01T00:00:00Z"     # JMA's bulletin is final through 2024
+adapters: [jma_hypocenter]
+completeness: 3.0               # offshore and right after big shocks, JMA is complete only above ~M3
+sources:
+  jma_hypocenter: {min_magnitude: 2.5}

@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -51,6 +52,16 @@ class Region(_Strict):
     start: str = Field(description="First moment included, ISO 8601 UTC.")
     end: str = Field(description="First moment excluded, ISO 8601 UTC. Fixed, never 'today'.")
     adapters: tuple[str, ...] = Field(min_length=1)
+    sources: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Per-adapter options (which service, which magnitudes): how a source "
+        "that serves the whole Earth is pointed at this region, without code.",
+    )
+    completeness: float | None = Field(
+        default=None,
+        description="Magnitude above which the catalogue is complete for forecasting (mc); "
+        "the forecasts score quakes from mc + 1.",
+    )
 
     @model_validator(mode="after")
     def _window(self) -> Region:
@@ -70,8 +81,15 @@ class Region(_Strict):
         """Inside the box and the half-open window [start, end)."""
         return self.box.contains(lat, lon) and self.t_start <= t < self.t_end
 
+    def options(self, adapter: str) -> dict[str, Any]:
+        """The region's options for one adapter (empty when it has none)."""
+        return dict(self.sources.get(adapter, {}))
+
     def fingerprint(self) -> str:
-        canonical = json.dumps(self.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+        # Fields left at their defaults stay out, so a region written before they existed
+        # keeps its fingerprint (and its snapshot's name).
+        body = self.model_dump(mode="json", exclude_defaults=True)
+        canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
 

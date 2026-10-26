@@ -457,6 +457,305 @@
         },
         "largest": 6.5
       }
+    },
+    "CB-29": {
+      "name": "EarthquakeNPP",
+      "metric": "negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits",
+      "direction": "lower",
+      "fingerprint": "232993a1c5253174bffdf6a8e9c940728ad83627b71cfd984b6a91648d25a7f6",
+      "files": {
+        "catalogue.parquet": "9322bd0f9438f95325d3f8e7192008472cf0f0420436cb49b15d6038d0bd88e0"
+      },
+      "summary": {
+        "snapshot": "960204e6f5819c99",
+        "quakes": 92263,
+        "test_quakes": 21889,
+        "largest_test": 7.2
+      }
+    },
+    "CB-22": {
+      "name": "World sequences",
+      "metric": "bits per quake above ETAS fitted on the region's own past, mean over never-seen regions",
+      "direction": "higher",
+      "fingerprint": "df582fd188028630248f24bfb07a1449065463dfdabd43cc36fc6fb23a971095",
+      "files": {
+        "el_mayor.parquet": "b88d1852855aeae21cb5f893d106fa5ef644653f489cf74606cd9e51ee85508b",
+        "ridgecrest.parquet": "d2d3de46c7d3792f9494aba71f1238833c3fe51909c8078fcdba6b5fab8a7ac2",
+        "tohoku.parquet": "f5a5945ac5a0cf4d371f9786850bdf42607e320106cbf0208e2dfbfac3a57623",
+        "kumamoto.parquet": "e0aeedb3d134e55c8c21311e160a4f130970f0e786179642095874c782f83d15",
+        "darfield.parquet": "764c2c13a68a13d49638ccfa5c671c4209234a17f496fca9d2d53965377f2f63",
+        "kaikoura.parquet": "63606745bbbff2bf9ac14e2fc1f10b99680688a438517fca3f9ce1bca974c5ae",
+        "van.parquet": "4995af21663d558df816ec2aa3b021c8ac175e673df65c8ef22a6d59b6e22d41",
+        "elazig.parquet": "26968af4111f6a4bdce336085b8c21c4c94ad73a1538376b53a18348017f1be6",
+        "kahramanmaras.parquet": "84b2fc287fea457b2216727292b284360caa991141cac559349e8cc187e217cf",
+        "maule.parquet": "85bf15978330f27e3abdf7ae8dce8e254de0df7571c9535ebf27e01ee2806a8d",
+        "iquique.parquet": "e2d802f34586c01d0566a22b5d64a0eb726a93d39b2a7b089d3020725a2dff3f",
+        "illapel.parquet": "82c0b04ec88dc0c68499ef02d196a45c441289db8488dfacb171828340e75d8a",
+        "anchorage.parquet": "6bee4b3abbd0d53ef19356443c702d210632b5764fef9ed7218621d03452edb9",
+        "chignik.parquet": "891f545dce2ceccd3d12270e88c7c27613b028ef12035bb0f49e81d1df83ce33"
+      },
+      "summary": {
+        "snapshots": {
+          "california": "2e933cc433533857",
+          "japan": "646e06efcb8292d8",
+          "new_zealand": "0ad42fd967748d63",
+          "turkey": "bfb1790b549c2dfe",
+          "chile": "16c9638835d229d7",
+          "alaska": "857cc9fcdf860e01"
+        },
+        "el_mayor": {
+          "box": [
+            31.0,
+            34.0,
+            -117.0,
+            -113.5
+          ],
+          "window": {
+            "name": "cb22_el_mayor",
+            "start": "2010-04-05T00:00:00Z",
+            "end": "2011-04-05T00:00:00Z"
+          },
+          "mc": 2.5,
+          "M>=3.5": 493,
+          "M>=2.5": 4197,
+          "largest": 5.71,
+          "fit_quakes": 6564
+        },
+        "ridgecrest": {
+          "box": [
+            34.2,
+            37.2,
+            -119.2,
+            -115.7
+          ],
+          "window": {
+            "name": "cb22_ridgecrest",
+            "start": "2019-07-05T00:00:00Z",
+            "end": "2020-07-04T00:00:00Z"
+          },
+          "mc": 2.5,
+          "M>=3.5": 412,
+          "M>=2.5": 2865,
+          "largest": 7.1,
+          "fit_quakes": 4578
+        },
+        "tohoku": {
+          "box": [
+            36.8,
+            39.8,
+            140.6,
+            144.1
+          ],
+          "window": {
+            "name": "cb22_tohoku",
+            "start": "2011-03-10T00:00:00Z",
+            "end": "2012-03-09T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 3478,
+          "M>=3": 16765,
+          "largest": 9.0,
+          "fit_quakes": 8632
+        },
+        "kumamoto": {
+          "box": [
+            31.2,
+            34.2,
+            129.0,
+            132.5
+          ],
+          "window": {
+            "name": "cb22_kumamoto",
+            "start": "2016-04-15T00:00:00Z",
+            "end": "2017-04-15T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 118,
+          "M>=3": 1222,
+          "largest": 7.3,
+          "fit_quakes": 2698
+        },
+        "darfield": {
+          "box": [
+            -45.0,
+            -42.0,
+            170.4,
+            173.9
+          ],
+          "window": {
+            "name": "cb22_darfield",
+            "start": "2010-09-04T00:00:00Z",
+            "end": "2011-09-04T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 216,
+          "M>=3": 3160,
+          "largest": 6.2,
+          "fit_quakes": 4094
+        },
+        "kaikoura": {
+          "box": [
+            -44.2,
+            -41.2,
+            171.3,
+            174.8
+          ],
+          "window": {
+            "name": "cb22_kaikoura",
+            "start": "2016-11-14T00:00:00Z",
+            "end": "2017-11-14T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 330,
+          "M>=3": 2747,
+          "largest": 6.7,
+          "fit_quakes": 9574
+        },
+        "van": {
+          "box": [
+            37.2,
+            40.2,
+            41.8,
+            45.3
+          ],
+          "window": {
+            "name": "cb22_van",
+            "start": "2011-10-24T00:00:00Z",
+            "end": "2012-10-23T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 188,
+          "M>=3": 2276,
+          "largest": 5.5,
+          "fit_quakes": 1579
+        },
+        "elazig": {
+          "box": [
+            36.9,
+            39.9,
+            37.3,
+            40.8
+          ],
+          "window": {
+            "name": "cb22_elazig",
+            "start": "2020-01-25T00:00:00Z",
+            "end": "2021-01-24T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 54,
+          "M>=3": 320,
+          "largest": 5.9,
+          "fit_quakes": 4286
+        },
+        "kahramanmaras": {
+          "box": [
+            35.7,
+            38.7,
+            35.3,
+            38.8
+          ],
+          "window": {
+            "name": "cb22_kahramanmaras",
+            "start": "2023-02-07T00:00:00Z",
+            "end": "2024-02-07T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 377,
+          "M>=3": 2873,
+          "largest": 6.3,
+          "fit_quakes": 2634
+        },
+        "maule": {
+          "box": [
+            -37.6,
+            -34.6,
+            -74.6,
+            -71.1
+          ],
+          "window": {
+            "name": "cb22_maule",
+            "start": "2010-02-28T00:00:00Z",
+            "end": "2011-02-28T00:00:00Z"
+          },
+          "mc": 4.5,
+          "M>=5.5": 33,
+          "M>=4.5": 525,
+          "largest": 6.9,
+          "fit_quakes": 80
+        },
+        "iquique": {
+          "box": [
+            -21.1,
+            -18.1,
+            -72.5,
+            -69.0
+          ],
+          "window": {
+            "name": "cb22_iquique",
+            "start": "2014-03-17T00:00:00Z",
+            "end": "2015-03-17T00:00:00Z"
+          },
+          "mc": 4.5,
+          "M>=5.5": 34,
+          "M>=4.5": 302,
+          "largest": 8.2,
+          "fit_quakes": 300
+        },
+        "illapel": {
+          "box": [
+            -33.1,
+            -30.1,
+            -73.4,
+            -69.9
+          ],
+          "window": {
+            "name": "cb22_illapel",
+            "start": "2015-09-17T00:00:00Z",
+            "end": "2016-09-16T00:00:00Z"
+          },
+          "mc": 4.5,
+          "M>=5.5": 38,
+          "M>=4.5": 401,
+          "largest": 6.8,
+          "fit_quakes": 660
+        },
+        "anchorage": {
+          "box": [
+            59.8,
+            62.8,
+            -151.7,
+            -148.2
+          ],
+          "window": {
+            "name": "cb22_anchorage",
+            "start": "2018-12-01T00:00:00Z",
+            "end": "2019-12-01T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 39,
+          "M>=3": 307,
+          "largest": 5.2,
+          "fit_quakes": 1350
+        },
+        "chignik": {
+          "box": [
+            54.0,
+            57.0,
+            -159.6,
+            -156.1
+          ],
+          "window": {
+            "name": "cb22_chignik",
+            "start": "2021-07-30T00:00:00Z",
+            "end": "2022-07-30T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 49,
+          "M>=3": 305,
+          "largest": 6.9,
+          "fit_quakes": 1080
+        }
+      }
     }
   }
 }

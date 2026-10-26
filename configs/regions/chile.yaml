@@ -1,0 +1,20 @@
+# Chile's subduction margin from Arica to Aysen: Maule 2010, Iquique 2014, Illapel 2015.
+# Never trained on (CB-22's zero-shot half). ComCat holds only the larger quakes here.
+name: chile
+description: The Chilean margin and the Andes, 17 S to 46 S.
+box:
+  lat_min: -46.0
+  lat_max: -17.0
+  lon_min: -77.0
+  lon_max: -66.0
+start: "1985-01-01T00:00:00Z"
+end: "2026-10-01T00:00:00Z"
+adapters: [fdsn_catalog]
+completeness: 4.5               # ComCat's global coverage, not a national network
+sources:
+  fdsn_catalog:
+    service: https://earthquake.usgs.gov/fdsnws/event/1/query
+    provider: USGS ANSS ComCat
+    license: LicenseRef-USGS-public-domain
+    min_magnitude: 4.0
+    params: {eventtype: earthquake}

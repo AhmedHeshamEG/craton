@@ -23,7 +23,7 @@ from craton.adapters.base import Adapter, BuildContext, FetchReport
 from craton.adapters.health import Collector, canonical, collector_for
 from craton.adapters.http import Fetcher
 from craton.adapters.region import Region
-from craton.spec.token import SPEC_VERSION
+from craton.spec.token import BASE_SPEC
 from craton.store.parquet import TokenFile, write_tokens
 from craton.store.raw import RawStore
 
@@ -111,6 +111,7 @@ def build(
 ) -> Snapshot:
     """Build every adapter of the region, offline, from the raw store. Returns the snapshot."""
     results: dict[str, AdapterBuild] = {}
+    specs = {BASE_SPEC}
     for adapter in build_order(region.adapters):
         inputs = {req: [f.path for f in results[req].files] for req in adapter.requires}
         ctx = BuildContext(region=region, raw=raw, inputs=inputs)
@@ -119,6 +120,7 @@ def build(
         for batch in adapter.tokens(ctx):
             if not batch:
                 continue
+            specs.update(t.spec for t in batch)
             files = write_tokens(batch, tokens_root)
             out.files += files
             for tok_instrument in {t.instrument for t in batch}:
@@ -138,7 +140,9 @@ def build(
         "region_fingerprint": region.fingerprint(),
         "box": region.box.model_dump(),
         "window": [region.start, region.end],
-        "spec": SPEC_VERSION,
+        # The newest spec any token asks for: a region whose tokens are all 1.0.0 stays 1.0.0
+        # (and keeps its snapshot's name) however far the spec has grown since.
+        "spec": max(specs, key=lambda v: tuple(int(x) for x in v.split("."))),
         "adapters": {n: results[n].as_dict(tokens_root) for n in sorted(results)},
     }
     snap_id = snapshot_id(body)

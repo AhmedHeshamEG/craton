@@ -6,6 +6,22 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 ## [Unreleased]
 
 ### Added
+- **The whole Earth (P8d, D-086).** Regions are YAML files with their own sources and completeness
+  (D-088): California, Japan, New Zealand, Turkey, Chile, Alaska and EarthquakeNPP's ComCat_25 join
+  central Italy. Adapters `fdsn_catalog` (any FDSN event service: ComCat, GeoNet, EMSC),
+  `jma_hypocenter` (JMA's yearly files, JST to UTC) and `earthquakenpp` (their CSVs, pinned commit).
+- **Token Spec 1.1.0** (D-087): magnitude types `M`, `Mj`, `Mh`, `mb_Lg`, `MLv`. Tokens are written
+  under the oldest spec that accepts them, so existing data keep their bytes.
+- **The world Field** (`craton/field/world.py`, `configs/field/world.yaml`, D-089, D-090): one Field
+  trained on central Italy, California, Japan and New Zealand up to 2007, in tiles of CB-02's size,
+  every region in its own magnitudes.
+- **CB-22, world sequences** (`craton/bench/world.py`, D-091): fourteen held-out sequences, six in
+  regions trained on and eight in regions never seen, against ETAS fitted on each box's own past.
+- **CB-29, EarthquakeNPP** (`craton/bench/npp.py`, D-092): their data, splits, ETAS and metric;
+  their ETAS reproduced to 2·10⁻⁴ nats per quake; Craton as their ETAS times a daily factor per cell,
+  fine-tuned from the world Field (`craton/field/npp.py`).
+- `scripts/ablations/world_on_italy.py`, `docs/assets/world-*.png`, `scripts/figures/world.py`,
+  `lessons/P8.md` (P8d).
 - **CB-19, the 30-day forecast** (D-083): CB-02's sequence, split and score, one forecast per 30
   days, sixteen periods. `ForecastSpec.period_days`; ETAS over any span with the cascade stretched
   to it (CPU and GPU); the Field trained on 30-day answers with purged training starts (D-084);

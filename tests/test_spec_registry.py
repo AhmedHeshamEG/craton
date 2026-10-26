@@ -83,7 +83,7 @@ def test_qualifier_checks_vocabulary_and_pattern() -> None:
     mt = SEISMIC_CATALOG.qualifier("magnitude_type")
     assert mt is not None
     assert mt.problem("Mw") is None
-    assert mt.problem("M") is not None
+    assert mt.problem("Mx") is not None
     station = Qualifier("station", "code", pattern=r"[A-Z0-9]{4}")
     assert station.problem("ARQT") is None
     assert station.problem("ARQTX") is not None

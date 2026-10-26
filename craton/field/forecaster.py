@@ -41,7 +41,6 @@ from craton import __version__
 from craton.bench import csep, etas
 from craton.bench.baselines import Etas
 from craton.bench.data import DAY, Events
-from craton.bench.splits import SPLITS
 from craton.bench.tasks import BenchContext, ForecastSpec, GriddedForecast
 from craton.field.base import etas_daily
 from craton.field.config import FieldConfig, field_hash, load_field_config
@@ -85,16 +84,21 @@ class Days:
 
 
 def _counts(
-    ev: Events, grid: csep.Grid, starts: FloatArray, mc: float, span_days: int = 1
+    ev: Events,
+    grid: csep.Grid,
+    starts: FloatArray,
+    mc: float,
+    span_days: int = 1,
+    scored: float = M_SCORED,
 ) -> np.ndarray:
     if span_days != 1:
-        return _span_counts(ev, grid, starts, mc, span_days)
+        return _span_counts(ev, grid, starts, mc, span_days, scored)
     ev = ev.above(mc).window(float(starts[0]), float(starts[-1]) + DAY)
     cell = grid.cell_of(ev.lat, ev.lon)
     # Each quake to the day it falls in; ``starts`` need not be consecutive (validation days).
     day = np.searchsorted(starts, ev.time, side="right") - 1
     inside = (day >= 0) & (ev.time < starts[np.maximum(day, 0)] + DAY)
-    big = (ev.mag >= M_SCORED - 1e-9).astype(np.int64)
+    big = (ev.mag >= scored - 1e-9).astype(np.int64)
     ok = (cell >= 0) & inside
     out = np.zeros((len(starts), grid.n_cells, 2), np.float32)
     np.add.at(out, (day[ok], cell[ok], big[ok]), 1.0)
@@ -102,7 +106,7 @@ def _counts(
 
 
 def _span_counts(
-    ev: Events, grid: csep.Grid, starts: FloatArray, mc: float, span_days: int
+    ev: Events, grid: csep.Grid, starts: FloatArray, mc: float, span_days: int, scored: float
 ) -> np.ndarray:
     """Counts in the ``span_days`` from each midnight; the spans overlap, so every day is
     counted once and the spans are read off the running sum."""
@@ -111,7 +115,7 @@ def _span_counts(
     ev = ev.above(mc).window(first, first + n_days * DAY)
     cell = grid.cell_of(ev.lat, ev.lon)
     day = np.floor((ev.time - first) / DAY).astype(np.int64)
-    big = (ev.mag >= M_SCORED - 1e-9).astype(np.int64)
+    big = (ev.mag >= scored - 1e-9).astype(np.int64)
     ok = cell >= 0
     daily = np.zeros((n_days + 1, grid.n_cells, 2), np.float32)
     np.add.at(daily, (day[ok] + 1, cell[ok], big[ok]), 1.0)
@@ -128,20 +132,23 @@ def build_days(
     cfg: FieldConfig,
     with_counts: bool,
     span_days: int = 1,
+    scored: float = M_SCORED,
+    memory_spec: MemorySpec | None = None,
 ) -> Days:
     """Memory, ETAS rates and (optionally) answers for ``starts``, reading only ``events``
-    before each midnight; each start's rates and answers cover ``span_days`` days."""
+    before each midnight; each start's rates and answers cover ``span_days`` days. Answers
+    split at ``scored`` (central Italy: M3); the memory follows ``cfg`` unless given."""
     proj = etas.Projection.for_grid(grid)
-    spec = MemorySpec(m_min=cfg.memory.m_min, start=to_seconds(cfg.memory.start))
+    spec = memory_spec or MemorySpec(m_min=cfg.memory.m_min, start=to_seconds(cfg.memory.start))
     mem = memory(events, grid, starts, spec)
     # ETAS reads every quake since the memory starts, also before its own fit window.
     hist = events.window(min(fit.t_ref, spec.start), float(starts[-1])).above(fit.mc)
     cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, fit.t_ref)
     rates = etas_daily(fit, cat, (starts - fit.t_ref) / DAY, grid, proj, span=span_days)
-    big = 10.0 ** (-fit.b * (M_SCORED - fit.mc))  # GR share of M3+ among M ≥ mc
+    big = 10.0 ** (-fit.b * (scored - fit.mc))  # GR share of the scored among M ≥ mc
     log_r = np.log(np.maximum(rates, 1e-30))
     log_etas = np.stack([log_r + math.log(1 - big), log_r + math.log(big)], axis=-1)
-    counts = _counts(events, grid, starts, fit.mc, span_days) if with_counts else None
+    counts = _counts(events, grid, starts, fit.mc, span_days, scored) if with_counts else None
     return Days(starts, mem, log_etas.astype(np.float32), counts, span_days)
 
 
@@ -294,7 +301,7 @@ class FieldForecaster:
             return list(body["members"]), meta
         cfg = self.config
         t0 = time.perf_counter()
-        cut = to_seconds(SPLITS[spec.fit_split].before or "")
+        cut = to_seconds(spec.fit_end)
         first = to_seconds(cfg.train.first_day)
         # Every midnight whose whole period ends before the cut-off is a training example.
         starts = np.arange(first, cut - spec.period + 1, DAY)
@@ -357,8 +364,8 @@ class FieldForecaster:
             spec.period_days,
         )
         m3 = predict_members(states, days, spec.grid, self.config)
-        shares = magnitude_shares(fit, spec.grid)
-        first = int(spec.grid.mag_bin_of(np.array([M_SCORED]))[0])
+        shares = magnitude_shares(fit, spec.grid, spec.max_magnitude)
+        first = int(spec.grid.mag_bin_of(np.array([spec.scored]))[0])
         return m3 / shares[first:].sum(), shares, fit, states
 
     def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
@@ -392,7 +399,7 @@ class FieldForecaster:
             if body.get("version") == CALIBRATION_VERSION:
                 return body
         cfg = self.config
-        cut = to_seconds(SPLITS[spec.fit_split].before or "")
+        cut = to_seconds(spec.fit_end)
         starts = np.arange(to_seconds(cfg.train.first_day), cut - DAY + 1, DAY)
         idx = np.arange(len(starts))
         every = cfg.train.validation_every
@@ -417,11 +424,13 @@ class FieldForecaster:
         return body
 
 
-def magnitude_shares(fit: etas.EtasFit, grid: csep.Grid) -> FloatArray:
+def magnitude_shares(
+    fit: etas.EtasFit, grid: csep.Grid, max_magnitude: float = MAX_MAGNITUDE
+) -> FloatArray:
     """Gutenberg-Richter shares over the grid's bins with ETAS's b-value, nothing above
-    ``MAX_MAGNITUDE``."""
+    ``max_magnitude`` (central Italy: ``MAX_MAGNITUDE``)."""
     gr = csep.gutenberg_richter_bins(fit.b, fit.mc, grid)
-    gr = np.where(grid.magnitudes <= MAX_MAGNITUDE + 1e-9, gr, 0.0)
+    gr = np.where(grid.magnitudes <= max_magnitude + 1e-9, gr, 0.0)
     return np.asarray(gr / gr.sum(), dtype=np.float64)
 
 

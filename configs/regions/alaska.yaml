@@ -1,0 +1,20 @@
+# South-central Alaska and the Alaska Peninsula: Anchorage 2018, Simeonof 2020, Chignik 2021.
+# Never trained on (CB-22's zero-shot half).
+name: alaska
+description: South-central Alaska, Cook Inlet and the Alaska Peninsula.
+box:
+  lat_min: 54.0
+  lat_max: 64.0
+  lon_min: -162.0
+  lon_max: -144.0
+start: "1990-01-01T00:00:00Z"
+end: "2026-10-01T00:00:00Z"
+adapters: [fdsn_catalog]
+completeness: 3.0
+sources:
+  fdsn_catalog:
+    service: https://earthquake.usgs.gov/fdsnws/event/1/query
+    provider: USGS ANSS ComCat
+    license: LicenseRef-USGS-public-domain
+    min_magnitude: 2.5
+    params: {eventtype: earthquake}

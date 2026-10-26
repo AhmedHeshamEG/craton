@@ -1,0 +1,15 @@
+# EarthquakeNPP's ComCat_25 dataset (CB-29), exactly as its authors cut it: California's
+# polygon, M >= 2.5, 1971 to 2020-01-17. The box only has to hold their polygon.
+name: earthquakenpp_comcat
+description: EarthquakeNPP's ComCat_25, California's polygon at M2.5+, read byte for byte.
+box:
+  lat_min: 31.0
+  lat_max: 43.5
+  lon_min: -126.0
+  lon_max: -112.5
+start: "1971-01-01T00:00:00Z"   # their auxiliary (burn-in) start
+end: "2020-01-17T00:00:00Z"     # their test end
+adapters: [earthquakenpp]
+completeness: 2.5
+sources:
+  earthquakenpp: {dataset: ComCat/ComCat_catalog.csv}

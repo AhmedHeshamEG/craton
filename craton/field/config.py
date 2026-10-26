@@ -41,12 +41,34 @@ class FieldTrain(_Strict):
     seeds: tuple[int, ...] = Field(min_length=3)
 
 
+class WorldRegion(_Strict):
+    """One region the world Field learns from; empty fields take the region's own terms."""
+
+    mc: float | None = Field(default=None, description="Completeness; else the region's.")
+    fit_from: str | None = Field(default=None, description="ETAS fit start; else 20 years back.")
+
+
+class FieldWorld(_Strict):
+    """How one Field learns from many regions at once (P8d): every region is cut into tiles of
+    CB-02's size, each tile a place the Field reads like central Italy."""
+
+    regions: dict[str, WorldRegion] = Field(min_length=1)
+    cut: str = Field(description="Nothing at or after this moment is trained on, anywhere.")
+    tile_lat: float = Field(default=3.0, gt=0)
+    tile_lon: float = Field(default=3.5, gt=0)
+    min_tile_quakes: int = Field(default=300, ge=0, description="M ≥ mc quakes a tile needs.")
+    quiet_share: float = Field(default=0.15, gt=0, le=1, description="Quiet days kept.")
+    steps_per_epoch: int = Field(default=1000, gt=0)
+    max_validation_days: int = Field(default=200, gt=0, description="Kept per tile.")
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
     model: FieldShape
     memory: FieldMemory
     train: FieldTrain
+    world: FieldWorld | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -58,5 +80,8 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 
 def field_hash(config: FieldConfig) -> str:
-    body = json.dumps(config.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    dump = config.model_dump(mode="json")
+    if dump.get("world") is None:
+        dump.pop("world", None)  # a config from before P8d keeps its hash and checkpoints
+    body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

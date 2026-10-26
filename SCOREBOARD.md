@@ -39,13 +39,14 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-19 | 30-day forecast | −6.226 ± 0.13 ↑ · craton-mini | −6.001 ± 0 ↑ · etas_aniso | P8 |
 | CB-20 | Apennines, enhanced inputs | · | · | P8 |
 | CB-21 | L'Aquila, enhanced inputs | · | · | P8 |
-| CB-22 | World sequences | · | · | P8 |
+| CB-22 | World sequences | 0.3612 ± 0.083 ↑ · craton-mini | 0.3363 ± 1.6e−05 ↑ · etas_incomplete | P8 |
 | CB-23 | Hidden-state truth | · | · | P9 |
 | CB-24 | Migration | · | · | P9 |
 | CB-25 | Mainshock days | · | · | P11 |
 | CB-26 | Distilled law | · | · | P14 |
 | CB-27 | Predictability horizon | · | · | P15 |
 | CB-28 | Velocity gap-fill | · | · | P10 |
+| CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
 
 ## The building
 
@@ -107,11 +108,21 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-19 | etas_aniso | −6.001 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
 | CB-19 | etas | −6.002 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
 | CB-19 | poisson | −10.52 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 72 expected; M≥1.5: −7.6 bits/quake; days with too few M≥3: 62% |
+| CB-22 | etas_incomplete | 0.3363 ± 1.6e−05 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | etas_aniso | −0.1055 ± 7.9e−06 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | poisson | −5.26 ± 0.00015 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-29 | etas | 7.256 ± 0 ↓ | negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits |  |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-26 10:27 | `20261026-102634-craton-mini` | craton-mini | 2 new, 13 same |
+| 2026-10-26 10:27 | `20261026-085543-etas-incomplete` | etas_incomplete (baseline) | 1 new, 7 same |
+| 2026-10-26 10:27 | `20261026-064021-etas-aniso` | etas_aniso (baseline) | 1 new, 8 same |
+| 2026-10-26 10:27 | `20261026-054645-poisson` | poisson (baseline) | 1 new, 8 same |
+| 2026-10-26 10:27 | `20261026-051905-etas` | etas (baseline) | 2 new, 8 same |
 | 2026-10-25 20:03 | `20261025-200328-etas-aniso` | etas_aniso (baseline) | 1 new, 7 same |
 | 2026-10-25 20:03 | `20261025-195238-craton-mini` | craton-mini | 1 new, 12 same |
 | 2026-10-25 20:03 | `20261025-193143-poisson` | poisson (baseline) | 1 new, 7 same |
@@ -145,6 +156,18 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 Measured on the latest build of each region by `craton data build`. The snapshot id is the hash of every token file, so it only changes if a byte of the data does.
 
+### alaska · snapshot `857cc9fcdf860e01` · 1990-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 59,362 | 1990-01-01 → 2026-09-30 | 0 | largest Mw 8.2 on 2021-07-29; M 93, ML 55,612, Md 8, Ms 2, Mw 887, mb 2,760; completeness ML 2.7 in 1995, 2.7 in 2005, 2.7 in 2015, 2.7 in 2025; longest quiet spell 4.89 days |
+
+### california · snapshot `2e933cc433533857` · 1981-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 250,864 | 1981-01-01 → 2026-09-30 | 165 (magnitude_type:ma 152, magnitude_type:mdl 12) | largest Mw 7.3 on 1992-06-28; ML 90,786, Mc 58,534, Md 92,974, Mh 5,740, Ms 1, Mw 2,510, mb 319; completeness ML 3.2 in 1985, 2.6 in 1995, 2.3 in 2005, 2.3 in 2015, 2.3 in 2025; Md 2.3 in 1985, 2.3 in 1995, 2.3 in 2005, 2.3 in 2015, 2.3 in 2025; longest quiet spell 1.59 days |
+
 ### central_italy · snapshot `96a163f798d8f9cc` · 1985-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
@@ -153,8 +176,38 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | `ingv_catalog` | 320,757 | 1985-01-02 → 2026-09-30 | 126 (magnitude_type:M 120, event_type:controlled explosion 5) | largest Mw 6.5 on 2016-10-30; ML 290,892, Md 29,466, Mw 399; completeness ML 1.5 in 2005, 1.2 in 2015, 1.1 in 2025; Md 2.6 in 1985, 2.6 in 1995, 2.4 in 2005, 1.5 in 2015; longest quiet spell 10.93 days |
 | `ngl_gnss` | 751,394 | 1995-06-27 → 2026-09-30 | 0 | 293 stations, median 1,927 days each, median coverage 83%, 964 gaps over 30 days |
 
+### chile · snapshot `16c9638835d229d7` · 1985-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 28,189 | 1985-01-01 → 2026-09-30 | 0 | largest Mw 8.8 on 2010-02-27; M 294, ML 840, Md 3,291, Ms 50, Mw 4,770, mb 18,944; completeness ML 4.2 in 2002; Md 4.2 in 1995, 4.3 in 2005; longest quiet spell 14.4 days |
+
+### earthquakenpp_comcat · snapshot `960204e6f5819c99` · 1971-01-01 → 2020-01-17
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `earthquakenpp` | 92,263 | 1971-01-01 → 2020-01-16 | 0 | largest M 7.3 on 1992-06-28; M 92,263; longest quiet spell 8.11 days |
+
+### japan · snapshot `646e06efcb8292d8` · 1983-01-01 → 2025-01-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `jma_hypocenter` | 335,667 | 1983-01-01 → 2024-12-31 | 4,948,419 (below_min_magnitude 4,386,385, no_magnitude 189,931) | largest Mw 9 on 2011-03-11; Mj 335,666, Mw 1; longest quiet spell 1.44 days |
+
+### new_zealand · snapshot `0ad42fd967748d63` · 1987-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 229,726 | 1987-01-01 → 2026-09-30 | 25 (magnitude_type:Mw(mB) 24, magnitude_type:Ms(BB) 1) | largest Mw 7.8 on 2009-07-15; M 35,427, ML 175,680, MLv 17,457, Mw 1,160, mb 2; completeness ML 2.8 in 1995, 2.8 in 2005; longest quiet spell 2.05 days |
+
 ### southern_italy · snapshot `6dd8efd2fbc23ce6` · 1985-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `ingv_catalog` | 61,086 | 1985-01-06 → 2026-09-30 | 154 (event_type:experimental explosion 88, magnitude_type:M 57) | largest Mw 6.1 on 2026-06-01; ML 49,241, Md 11,608, Mw 228, mb 9; completeness ML 2.3 in 2005, 1.6 in 2015, 1.6 in 2025; Md 2.9 in 1985, 2.6 in 1995, 3.0 in 2005, 1.6 in 2015; longest quiet spell 16.14 days |
+
+### turkey · snapshot `bfb1790b549c2dfe` · 1998-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 153,573 | 1998-01-01 → 2026-09-30 | 0 | largest Mw 7.8 on 2023-02-06; M 515, ML 74,537, Mc 39, Md 74,224, Ms 57, Mw 984, mb 3,217; completeness ML 4.0 in 2005, 2.7 in 2015, 2.7 in 2025; Md 3.1 in 2005; longest quiet spell 5.61 days |
