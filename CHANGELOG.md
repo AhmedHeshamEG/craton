@@ -6,6 +6,10 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 ## [Unreleased]
 
 ### Added
+- **The project page** (`site/`, `scripts/site.py`, `.github/workflows/pages.yml`): every score drawn
+  against ETAS on GitHub Pages, rebuilt from `results/` on each push to main.
+- `docs/assets/scorecard-*.png`, `scripts/figures/scorecard.py`: Craton against ETAS on every
+  forecasting test, the climb by phase, and the fourteen CB-22 sequences.
 - **The whole Earth (P8d, D-086).** Regions are YAML files with their own sources and completeness
   (D-088): California, Japan, New Zealand, Turkey, Chile, Alaska and EarthquakeNPP's ComCat_25 join
   central Italy. Adapters `fdsn_catalog` (any FDSN event service: ComCat, GeoNet, EMSC),

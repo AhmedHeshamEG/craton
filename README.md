@@ -109,7 +109,16 @@ predictability meter. Every version has to shrink it, or it doesn't count as pro
 | **Information gain over ETAS** | Does it beat the standard statistical model on a real sequence (Amatrice–Norcia, 2016–17)? | Beating the strong baseline |
 
 The simple methods were scored first, so the first model had something honest to beat. Live numbers:
-[`SCOREBOARD.md`](SCOREBOARD.md).
+[`SCOREBOARD.md`](SCOREBOARD.md), and drawn, with every chart you can hover, on
+[the project page](https://ahmedheshameg.github.io/craton/).
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/scorecard-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/scorecard-light.png">
+    <img alt="Craton against ETAS. Top left: every forecasting test as bits per quake above ETAS; Craton is ahead on six of seven, from +0.13 on EarthquakeNPP to +1.16 on L'Aquila 2009, and behind on the 30-day forecast (−0.22). Top right: the climb on the two Italian exams, from far below ETAS in P4 and P5 to above it from P6 on. Bottom: fourteen aftershock sequences around the world; Craton is above ETAS on twelve, ETAS-incomplete rings sit close on the never-seen regions, and Maule 2010 is off scale and not counted." src="docs/assets/scorecard-dark.png" width="100%">
+  </picture>
+</p>
 
 ## The test before the model
 
