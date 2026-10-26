@@ -47,13 +47,27 @@ def quakes() -> dict[str, tuple[np.ndarray, np.ndarray]]:
 
 
 def gains() -> dict[str, float]:
+    """Each sequence's gain, whether it counts, CB-22's own number and CB-29's gain, from the
+    latest craton-mini run; the world Field's CB-02 / CB-03 gains from its ablation, if run."""
+    out: dict[str, float] = {}
     runs = sorted((ROOT / "results" / "runs").glob("*-craton-mini.json"))
     for path in reversed(runs):
-        body = json.loads(path.read_text("utf-8"))
-        for r in body["results"]:
-            if r["task_id"] == "CB-22":
-                return {s.key: float(np.mean(r["extras"][f"{s.key}.gain"])) for s in SEQUENCES}
-    return {}
+        body = {r["task_id"]: r for r in json.loads(path.read_text("utf-8"))["results"]}
+        if "CB-22" not in body:
+            continue
+        ex = body["CB-22"]["extras"]
+        for s in SEQUENCES:
+            out[s.key] = float(np.mean(ex[f"{s.key}.gain"]))
+            out[f"qualified:{s.key}"] = float(np.min(ex[f"{s.key}.qualified"]))
+        out["primary"] = float(np.mean(body["CB-22"]["values"]))
+        if "CB-29" in body:
+            out["cb29"] = float(np.mean(body["CB-29"]["extras"]["gain_over_etas"]))
+        break
+    italy = ROOT / "results" / "ablation" / "world_on_italy.json"
+    if italy.is_file():
+        for task, v in json.loads(italy.read_text("utf-8")).items():
+            out[f"italy:{task}"] = float(np.mean(v["gain"]))
+    return out
 
 
 TOP = ("central_italy", "california", "japan", "new_zealand")
@@ -96,7 +110,16 @@ def _panel(
     for s in (s for s in SEQUENCES if s.region == name):
         ax.scatter([s.lon], [s.lat], s=70, facecolors="none", edgecolors=accent, linewidths=1.3)
         gain = g.get(s.key)
-        lines.append(s.name if gain is None else f"{s.name}   {gain:+.2f}")
+        if gain is None:
+            lines.append(s.name)
+        elif g.get(f"qualified:{s.key}", 1.0) < 1:
+            lines.append(f"{s.name}   not counted (thin ETAS floor)")
+        else:
+            lines.append(f"{s.name}   {gain:+.2f}")
+    if name == "central_italy":
+        for task in ("CB-02", "CB-03"):
+            if f"italy:{task}" in g:
+                lines.append(f"{task}, seen to 2007   {g[f'italy:{task}']:+.2f}")
     ax.set_xlim(box.lon_min, box.lon_max)
     ax.set_ylim(box.lat_min, box.lat_max)
     ax.set_aspect(
@@ -116,39 +139,35 @@ def draw(theme: Theme, q: dict[str, tuple[np.ndarray, np.ndarray]], g: dict[str,
         _panel(fig, (0.03 + 0.245 * i, 0.55, 0.21, 0.28), name, theme, q, g)
     for i, name in enumerate(BOTTOM):
         _panel(fig, (0.03 + 0.245 * i, 0.12, 0.21, 0.28), name, theme, q, g)
-    zero = [g[s.key] for s in SEQUENCES if s.half == ZERO_SHOT and s.key in g]
-    if zero:
-        by_region: dict[str, list[float]] = {}
-        for s in SEQUENCES:
-            if s.half == ZERO_SHOT and s.key in g:
-                by_region.setdefault(s.region, []).append(g[s.key])
-        headline = float(np.mean([np.mean(v) for v in by_region.values()]))
-        fig.text(0.765, 0.30, f"{headline:+.2f}", color=ACCENT, fontproperties=bold, fontsize=44)
+    if "primary" in g:
+        zero = [g[s.key] for s in SEQUENCES if s.half == ZERO_SHOT and g.get(f"qualified:{s.key}")]
         fig.text(
-            0.765,
-            0.255,
-            "bits per quake over ETAS,",
-            color=theme.ink,
-            fontproperties=font,
-            fontsize=11,
+            0.765, 0.33, f"{g['primary']:+.2f}", color=ACCENT, fontproperties=bold, fontsize=44
         )
+        for i, line in enumerate(("bits per quake over ETAS,", "never-seen regions (CB-22)")):
+            fig.text(
+                0.765, 0.29 - 0.023 * i, line, color=theme.ink, fontproperties=font, fontsize=11
+            )
         fig.text(
             0.765,
-            0.232,
-            "never-seen regions (CB-22)",
-            color=theme.ink,
-            fontproperties=font,
-            fontsize=11,
-        )
-        beaten = sum(v > 0 for v in zero)
-        fig.text(
-            0.765,
-            0.200,
-            f"{beaten} of {len(zero)} sequences above ETAS",
+            0.225,
+            f"{sum(v > 0 for v in zero)} of {len(zero)} counted sequences above ETAS",
             color=theme.muted,
             fontproperties=font,
             fontsize=10,
         )
+        if "cb29" in g:
+            fig.text(
+                0.765, 0.17, f"{g['cb29']:+.3f}", color=theme.ink, fontproperties=bold, fontsize=22
+            )
+            fig.text(
+                0.765,
+                0.145,
+                "nats per quake over EarthquakeNPP's ETAS (CB-29)",
+                color=theme.muted,
+                fontproperties=font,
+                fontsize=9,
+            )
     fig.text(
         0.03, 0.95, "One model, seven regions", color=theme.ink, fontproperties=bold, fontsize=20
     )

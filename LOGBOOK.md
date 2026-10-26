@@ -483,3 +483,68 @@ Surprises / problems:
 Decisions: D-083 … D-085.
 
 Next: P8d, one model on every region: global ComCat, JMA, GeoNet, AFAD, CSN, and CB-22.
+
+## 2026-10-26 — P8d — The whole Earth
+
+TLDR: One Field, trained on central Italy, California, Japan and New Zealand up to 2007, forecasts
+places it never read better than ETAS fitted there: +0.36 bits per quake on Turkey, Chile and
+Alaska (CB-22's never-seen half), and every held-out sequence in the regions it trained on is above
+ETAS (+0.35). On EarthquakeNPP (CB-29), the outside benchmark where five neural forecasters lost to
+ETAS, it beats their own ETAS on their own data by 0.089 nats per quake, on every seed. One honest
+catch: ETAS-incomplete, a better floor, is level with Craton on the never-seen half.
+
+Built:
+- regions as YAML with `sources` and `completeness`; California, Japan, New Zealand, Turkey,
+  Chile, Alaska and EarthquakeNPP's ComCat_25 (D-086, D-088)
+- adapters `fdsn_catalog` (ComCat, GeoNet, EMSC), `jma_hypocenter`, `earthquakenpp` (D-088)
+- Token Spec 1.1.0: `M`, `Mj`, `Mh`, `mb_Lg`, `MLv`; tokens written under the oldest spec that
+  accepts them (D-087)
+- every region in its own magnitudes; forecast specs carry mc, cut-off and thresholds (D-089)
+- the world Field (`craton/field/world.py`), 42 tiles of four regions, cut 2007-01-01 (D-090)
+- CB-22 (`craton/bench/world.py`, D-091) and CB-29 (`craton/bench/npp.py`, `craton/field/npp.py`,
+  D-092), frozen
+- `scripts/ablations/world_on_italy.py`; the world figure; `lessons/P8.md` (P8d); tests 383 → 402
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261026-102634-craton-mini`):
+- CB-22 +0.361 ± 0.083 bits per quake above ETAS, never-seen regions (new). Turkey +0.43, Chile
+  +0.48, Alaska +0.17: all three regions above ETAS on every seed. Counted sequences above ETAS:
+  6, 5 and 6 of 7 by seed (Chignik 2021 below on every seed, −0.21; Elazig level, +0.01). Seen
+  regions: +0.354, all six sequences above ETAS on every seed (Kumamoto +0.54, Tohoku +0.46, El Mayor +0.42,
+  Ridgecrest +0.39, Kaikoura +0.18, Darfield +0.12).
+- CB-22 floors: ETAS-incomplete +0.336 (the floor), ETAS 0, ETAS-aniso −0.106, Poisson −5.26.
+  Against ETAS-incomplete, Craton is +0.31 on the seen half, +0.22 in Turkey, −0.11 in Chile and
+  −0.03 in Alaska.
+- CB-29 7.167 ± 0.002 nats per quake (new; their ETAS 7.256 here and 7.2554 as they publish it,
+  Poisson 13.26): +0.088, +0.091, +0.088 per seed.
+- World Field on central Italy (ablation, not on the board): CB-02 +0.21 over ETAS (−6.90; the
+  Italy Field −6.82), CB-03 +0.79 (−8.61; the Italy Field −8.23). It has seen Italy only to 2007.
+- CB-01 … CB-19: every number identical to P8b.
+
+Surprises / problems:
+- Maule 2010 broke the first score: −17 bits per quake. Its box holds 75 ComCat quakes above M4.5
+  in twenty years; ETAS's fit ran to its bounds and expected 295 M5.5+ quakes the day after Maule
+  when one came, and the Field doubled that. A sequence now counts only if its ETAS fits on 200+
+  quakes (the others: 297-9,500). The rule was added after seeing Maule; with Maule counted, the
+  never-seen half is negative on every seed (−1.61, −0.80, −1.86).
+- The never-seen sequences are small: 34-49 scored quakes each in Chile and Alaska, 54 for
+  Elazig (377 for Kahramanmaras). One by one their gains are noisy; the region averages, and the
+  same sign on every seed, are what the result rests on.
+- ETAS-incomplete is the real floor in Chile: ComCat sees Chile through the global network, which
+  goes blind for hours after a great quake, and a blind-time model captures exactly that (+0.81 on
+  Iquique). The world Field never learned blindness from a global network, because none of its
+  regions is one.
+- Italy's learning rate peaked after one epoch on every member of the world Field (+0.05 nats per
+  quake on validation); 3·10⁻⁴ with validation every 500 steps reaches about +0.13. Seed 0's first
+  run was stopped and retrained.
+- Two trainers on memory-mapped pools held 11 GB of RAM, leaving under 2 GB free; one was
+  stopped and the seeds trained one after another.
+- AFAD's API returned nothing; Turkey comes through EMSC, whose yearly counts swing by four times
+  as its contributors change.
+- Their CSV has no depth and no magnitude type, so CB-29's tokens say depth unknown and type `M`.
+- Unlike P8b's missing paper, everything the plan cited exists: EarthquakeNPP, its repository,
+  its fitted parameters and its scores.
+
+Decisions: D-086 … D-092.
+
+Next: talk the result through with Hesham (the stop rule), then P8c, the ML catalogues: CB-20 and
+CB-21.

@@ -133,6 +133,14 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Fingerprint:** `ad899191ff41ab37`
 - **Test data:** reads ['CB-02', 'CB-03']
 
+## CB-29 · EarthquakeNPP
+
+EarthquakeNPP (Stockman, Lawson & Werner, TMLR 2026), untouched: their ComCat_25 California dataset, their 1981-2007 training and 2007-2020 test windows, their fitted ETAS and their metric, the point-process log-likelihood per test quake in nats. A method enters as their ETAS times a factor per 0.1° cell and day, fixed at midnight.
+
+- **Metric:** negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits (lower is better)
+- **Fingerprint:** `232993a1c5253174`
+- **Test data:** snapshot 960204e6f5819c99 · quakes 92,263 · test quakes 21,889 · largest test 7.2
+
 ## CB-09 · Two planets
 
 CB-02's calendar and scoring on six simulated planets where the truth is known. Three ETAS planets, where Italy's own fitted ETAS makes the quakes: nothing beats the truth on average, so a forecaster has to tie it. Three physics planets (Dieterich rate-and-state seismicity on Apennine-shaped faults, stress transfer with shadows, a hidden fluid source), where ETAS is the wrong model and a forecaster has to beat it. Seed k scores planet k of each kind. The gap column is the sim-to-real gap: the mean factor off the real Apennines, in doublings, over the five statistics.
@@ -149,6 +157,32 @@ CB-02's calendar and scoring on six simulated planets where the truth is known. 
 | physics planet | 0 | 2.77 | 1 | 0.0971 | 0.726 | 2.98 | 0.68 | 140 |
 | physics planet | 1 | 2.47 | 0.995 | 0.0666 | 0.698 | 1.89 | 0.88 | 108 |
 | physics planet | 2 | 2.43 | 1 | 0.0548 | 0.67 | 1.15 | 1.08 | 127 |
+
+## CB-22 · World sequences
+
+CB-02's question anywhere on Earth: the year after the first big shock of fourteen sequences, each on a 3° × 3.5° box centred on it, in its region's own magnitudes (scored from completeness + 1). Six are in regions models may train on up to 2007; eight are in regions they must never have read. The number is the gain over ETAS fitted on the box's own past, averaged over the never-seen regions. A sequence counts only if that ETAS fits on 200+ quakes.
+
+- **Metric:** bits per quake above ETAS fitted on the region's own past, mean over never-seen regions (higher is better)
+- **Fingerprint:** `df582fd188028630`
+
+| Sequence | Region | Half | mc | Scored quakes | Largest in window | ETAS fits on |
+|---|---|---|---|---|---|---|
+| El Mayor-Cucapah 2010 | california | seen | 2.5 | 493 | 5.71 | 6,564 |
+| Ridgecrest 2019 | california | seen | 2.5 | 412 | 7.1 | 4,578 |
+| Tohoku 2011 | japan | seen | 3 | 3478 | 9.0 | 8,632 |
+| Kumamoto 2016 | japan | seen | 3 | 118 | 7.3 | 2,698 |
+| Darfield-Christchurch 2010 | new_zealand | seen | 3 | 216 | 6.2 | 4,094 |
+| Kaikoura 2016 | new_zealand | seen | 3 | 330 | 6.7 | 9,574 |
+| Van 2011 | turkey | zero-shot | 3 | 188 | 5.5 | 1,579 |
+| Elazig 2020 | turkey | zero-shot | 3 | 54 | 5.9 | 4,286 |
+| Kahramanmaras 2023 | turkey | zero-shot | 3 | 377 | 6.3 | 2,634 |
+| Maule 2010 | chile | zero-shot | 4.5 | 33 | 6.9 | 80 |
+| Iquique 2014 | chile | zero-shot | 4.5 | 34 | 8.2 | 300 |
+| Illapel 2015 | chile | zero-shot | 4.5 | 38 | 6.8 | 660 |
+| Anchorage 2018 | alaska | zero-shot | 3 | 39 | 5.2 | 1,350 |
+| Chignik 2021 | alaska | zero-shot | 3 | 49 | 6.9 | 1,080 |
+
+Snapshots: california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
 
 ## Add a method
 

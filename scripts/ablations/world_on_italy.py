@@ -11,6 +11,7 @@ checkpoints stay the ratchet's floor until the world beats them (PHASES, P8d).
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -25,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def main(seeds: list[int]) -> None:
     ctx = BenchContext(root=ROOT)
     world = WorldField(log=lambda m: print(m, flush=True))
+    out: dict[str, dict[str, list[float]]] = {}
     for task_id in ("CB-02", "CB-03"):
         task = TASKS[task_id]
         spec = task.spec  # type: ignore[attr-defined]
@@ -32,6 +34,10 @@ def main(seeds: list[int]) -> None:
         for seed in seeds:
             w = score_forecast(world.forecast(spec, ctx, seed), obs, spec, seed)
             e = score_forecast(Etas().forecast(spec, ctx, seed), obs, spec, seed)
+            rec = out.setdefault(task_id, {"world": [], "etas": [], "gain": []})
+            rec["world"].append(w.value)
+            rec["etas"].append(e.value)
+            rec["gain"].append(w.value - e.value)
             many = w.extras["M3.how_many_bits"] - e.extras["M3.how_many_bits"]
             where = w.extras["M3.where_bits"] - e.extras["M3.where_bits"]
             print(
@@ -39,6 +45,9 @@ def main(seeds: list[int]) -> None:
                 f"gain {w.value - e.value:+.3f}  (how many {many:+.3f}, where {where:+.3f})",
                 flush=True,
             )
+    path = ROOT / "results" / "ablation" / "world_on_italy.json"
+    path.write_text(json.dumps(out, indent=2) + "\n", "utf-8")
+    print(f"wrote {path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

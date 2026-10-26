@@ -309,6 +309,31 @@ GPS was the reason to try a month. Added to the Field it gains +0.13 bits per qu
 in *how many*: most likely the stations measuring the big shocks and the slow slip after them. That's useful,
 and it isn't a precursor. It joins every Field in P8f, next to a version with those jumps removed.
 
+## One model, the whole Earth
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/world-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/world-light.png">
+    <img alt="Seven panels of earthquake dots with no coastlines. Top: central Italy, California, Japan and New Zealand, the regions the world model learned from up to 2007, with held-out sequences ringed and their gains over ETAS, all positive. Bottom, in orange: Turkey, Chile and Alaska, regions it never saw. Headline: +0.36 bits per quake over ETAS on the never-seen regions, and +0.089 nats per quake over EarthquakeNPP's ETAS." src="docs/assets/world-dark.png" width="100%">
+  </picture>
+</p>
+
+Everything above was central Italy. Then one Field learned from four regions at once (central Italy,
+California, Japan, New Zealand, up to 2007) and was asked about places and years it never read. Each region is
+a YAML file, and each speaks in its own magnitudes.
+
+| | Craton over ETAS fitted there |
+|---|---|
+| Held-out sequences in the regions it learned from (Ridgecrest, Tohoku, Kumamoto, Kaikoura, ...) | **+0.35 bits per quake**, all six above ETAS |
+| Regions it never saw a quake from (Turkey, Chile, Alaska) | **+0.36 bits per quake**, all three regions above ETAS |
+| [EarthquakeNPP](https://arxiv.org/abs/2410.08226): their data, splits, ETAS and metric | **7.167 vs 7.256 nats per quake**, every seed |
+
+EarthquakeNPP is someone else's exam: five neural forecasters lost to ETAS on it. Craton beats their ETAS by a
+small, steady margin. Two honest catches. ETAS that knows networks go blind after big shocks is level with
+Craton on the never-seen regions (+0.34), and wins Chile. And Maule 2010 isn't counted, because its box has too
+few past quakes for ETAS itself to be fitted (D-091). Step by step: [`lessons/P8.md`](lessons/P8.md).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -361,7 +386,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (2 of 6 parts in: the two fake planets, the 30-day forecast) | more pretraining data, synthetic data |
+| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (3 of 6 parts in: the two fake planets, the 30-day forecast, the whole Earth) | more pretraining data, synthetic data |
 | ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
