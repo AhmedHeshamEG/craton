@@ -11,15 +11,16 @@ gave the real quakes more probability than ETAS did.
 
 These are forecasts: probabilities over the next day. Never a prediction of a quake.
 
-**5 days locked · 0 graded · 0 M3+ quakes · Craton vs ETAS:
-+0.00 bits in total, no M3+ quake yet.**
+**6 days locked · 1 graded · 0 M3+ quakes · Craton vs ETAS:
++0.07 bits in total, no M3+ quake yet.**
 
 | Day (UTC) | Craton expects M3+ | ETAS expects | Came | Gain (bits) | Seal |
 |---|---|---|---|---|---|
+| 2026-10-28 | 0.06 | 0.10 | · | · | `8bf9c7c3285e` |
 | 2026-10-27 | 0.05 | 0.10 | · | · | `bd16f10f276e` |
 | 2026-10-26 | 0.06 | 0.10 | · | · | `8d9ce3a43d2f` |
 | 2026-10-25 | 0.06 | 0.11 | · | · | `c1da34115371` |
 | 2026-10-24 | 0.06 | 0.10 | · | · | `3119e5a22e69` |
-| 2026-10-23 | 0.06 | 0.11 | · | · | `b183ed19db62` |
+| 2026-10-23 | 0.06 | 0.11 | 0 | +0.07 | `b183ed19db62` |
 
 Check a seal yourself: `craton live verify`. How it works: `lessons/P7.md`.
