@@ -5,7 +5,23 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+### Fixed
+- Anisotropic ETAS no longer fails on a box with no quake big enough to have a shape.
+- Month windows before 1970 (Windows refuses `datetime.fromtimestamp` there).
+
 ### Added
+- **Where people pushed the crust (P8e, D-097 … D-100).** Token Spec 1.2.0 with two forcing
+  instruments, `fluid_injection` and `reservoir_pressure`, and the unit `m3`. Adapters
+  `uic_workbook` (regulator injection workbooks, read by a standard-library `.xlsx` reader) and
+  `pressure_grid` (a reservoir model's grid CSV, RD New converted to WGS84). Regions `groningen`
+  (KNMI quakes, NAM's pressure model) and `oklahoma` (ComCat quakes, every well's monthly volume).
+- **CB-30, human-made quakes** (`craton/bench/induced.py`, `craton/bench/forcing.py`): 30-day
+  forecasts of Groningen and Oklahoma from 2017, the forcing read only as far as it was known;
+  the physics floor `etas_forced`; the forced Field (`craton/field/forced.py`,
+  `configs/field/forced.yaml`) and its ablation (`scripts/ablations/forcing_blind.py`).
+- `craton bench run --carry`: a run of new tasks copies the rest from the method's last
+  accepted run when nothing they depend on changed, and says so (`carried_from`).
+- `docs/assets/pump-*.png`, `scripts/figures/pump.py`, `lessons/P8.md` (P8e).
 - **What the network missed (P8c, D-094, D-095).** Adapter `zenodo_catalog` (research catalogues
   published as one CSV on Zenodo, MD5-checked) and three machine-learning catalogues: Tan et al. 2021
   (central Italy 2016-17), Fonzetti et al. 2025 (L'Aquila 2009), Poggiali et al. 2025 (Alto Tiberina).

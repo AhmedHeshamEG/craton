@@ -477,3 +477,57 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 - **Training:** epochs per member 20, 16, 16, 17, 17, 32; validation gain over ETAS (nats per quake) 0.2948, 0.2793, 0.2689, 0.2825, 0.2834, 0.3095; 86.6 min.
 - **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
 - **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Forced Field without the forcing (ablation) · seed 0
+
+- **What it does:** 30-day forecasts of CB-30's two boxes (Groningen, Oklahoma), starting from ETAS fitted there and correcting it cell by cell, at most 4x either way.
+- **Reads:** the quakes only, as known at each period's start.
+- **Learned from:** groningen-53_53.6_6.4_7.3, oklahoma-34_37_-99.5_-96, 4,430 training starts, all before 2017-01-01.
+- **Size:** 110,018 parameters per member, 4 members.
+- **Training:** validation gain over ETAS (nats per quake) 0.0621, 0.0795, 0.0762, 0.0703; 7.7 min.
+- **Code:** Craton 0.8.0, forced f0.1, pool `414048d269a1`, config hash `a6ba6957b81dde0b`.
+
+## Forced Field without the forcing (ablation) · seed 1
+
+- **What it does:** 30-day forecasts of CB-30's two boxes (Groningen, Oklahoma), starting from ETAS fitted there and correcting it cell by cell, at most 4x either way.
+- **Reads:** the quakes only, as known at each period's start.
+- **Learned from:** groningen-53_53.6_6.4_7.3, oklahoma-34_37_-99.5_-96, 4,430 training starts, all before 2017-01-01.
+- **Size:** 110,018 parameters per member, 4 members.
+- **Training:** validation gain over ETAS (nats per quake) 0.0712, 0.0676, 0.0594, 0.1144; 4.7 min.
+- **Code:** Craton 0.8.0, forced f0.1, pool `414048d269a1`, config hash `a6ba6957b81dde0b`.
+
+## Forced Field without the forcing (ablation) · seed 2
+
+- **What it does:** 30-day forecasts of CB-30's two boxes (Groningen, Oklahoma), starting from ETAS fitted there and correcting it cell by cell, at most 4x either way.
+- **Reads:** the quakes only, as known at each period's start.
+- **Learned from:** groningen-53_53.6_6.4_7.3, oklahoma-34_37_-99.5_-96, 4,430 training starts, all before 2017-01-01.
+- **Size:** 110,018 parameters per member, 4 members.
+- **Training:** validation gain over ETAS (nats per quake) 0.0814, 0.0633, 0.0750, 0.0797; 5.4 min.
+- **Code:** Craton 0.8.0, forced f0.1, pool `414048d269a1`, config hash `a6ba6957b81dde0b`.
+
+## Forced Field · seed 0
+
+- **What it does:** 30-day forecasts of CB-30's two boxes (Groningen, Oklahoma), starting from ETAS fitted there and correcting it cell by cell, at most 4x either way.
+- **Reads:** the quakes and the measured forcing, as known at each period's start.
+- **Learned from:** groningen-53_53.6_6.4_7.3, oklahoma-34_37_-99.5_-96, 4,430 training starts, all before 2017-01-01.
+- **Size:** 110,658 parameters per member, 4 members.
+- **Training:** validation gain over ETAS (nats per quake) 0.0850, 0.0671, 0.1044, 0.0939; 7.1 min.
+- **Code:** Craton 0.8.0, forced f0.1, pool `dbe039ec50c1`, config hash `a6ba6957b81dde0b`.
+
+## Forced Field · seed 1
+
+- **What it does:** 30-day forecasts of CB-30's two boxes (Groningen, Oklahoma), starting from ETAS fitted there and correcting it cell by cell, at most 4x either way.
+- **Reads:** the quakes and the measured forcing, as known at each period's start.
+- **Learned from:** groningen-53_53.6_6.4_7.3, oklahoma-34_37_-99.5_-96, 4,430 training starts, all before 2017-01-01.
+- **Size:** 110,658 parameters per member, 4 members.
+- **Training:** validation gain over ETAS (nats per quake) 0.0819, 0.0622, 0.0780, 0.0871; 5.3 min.
+- **Code:** Craton 0.8.0, forced f0.1, pool `dbe039ec50c1`, config hash `a6ba6957b81dde0b`.
+
+## Forced Field · seed 2
+
+- **What it does:** 30-day forecasts of CB-30's two boxes (Groningen, Oklahoma), starting from ETAS fitted there and correcting it cell by cell, at most 4x either way.
+- **Reads:** the quakes and the measured forcing, as known at each period's start.
+- **Learned from:** groningen-53_53.6_6.4_7.3, oklahoma-34_37_-99.5_-96, 4,430 training starts, all before 2017-01-01.
+- **Size:** 110,658 parameters per member, 4 members.
+- **Training:** validation gain over ETAS (nats per quake) 0.0741, 0.0687, 0.0829, 0.0953; 4.9 min.
+- **Code:** Craton 0.8.0, forced f0.1, pool `dbe039ec50c1`, config hash `a6ba6957b81dde0b`.

@@ -1,0 +1,70 @@
+{
+ "rows": [
+  {
+   "seed": 0,
+   "case": "groningen",
+   "etas": -10.553209197761133,
+   "forcing": -10.244591674857011,
+   "forcing_expected": 102.00670279747237,
+   "blind": -10.242414660573921,
+   "blind_expected": 125.08815728413492,
+   "observed": 103.0,
+   "forcing_pays": -0.0021770142830899175
+  },
+  {
+   "seed": 0,
+   "case": "oklahoma",
+   "etas": -10.847577492552867,
+   "forcing": -9.84657120483406,
+   "forcing_expected": 1593.444837109877,
+   "blind": -10.280314309886014,
+   "blind_expected": 1685.055360849109,
+   "observed": 609.0,
+   "forcing_pays": 0.43374310505195446
+  },
+  {
+   "seed": 1,
+   "case": "groningen",
+   "etas": -10.55320922831124,
+   "forcing": -10.147155449295742,
+   "forcing_expected": 116.48169027449194,
+   "blind": -10.19141687340557,
+   "blind_expected": 106.91653710978062,
+   "observed": 103.0,
+   "forcing_pays": 0.044261424109828695
+  },
+  {
+   "seed": 1,
+   "case": "oklahoma",
+   "etas": -10.847577488569367,
+   "forcing": -9.788860830437581,
+   "forcing_expected": 1542.3546073060988,
+   "blind": -9.368007570187247,
+   "blind_expected": 1457.4646106578384,
+   "observed": 609.0,
+   "forcing_pays": -0.4208532602503343
+  },
+  {
+   "seed": 2,
+   "case": "groningen",
+   "etas": -10.553209200685584,
+   "forcing": -10.19582146764245,
+   "forcing_expected": 119.49480196250443,
+   "blind": -10.206289178560969,
+   "blind_expected": 115.50503680619931,
+   "observed": 103.0,
+   "forcing_pays": 0.010467710918518947
+  },
+  {
+   "seed": 2,
+   "case": "oklahoma",
+   "etas": -10.847577454872052,
+   "forcing": -9.736741541026642,
+   "forcing_expected": 1614.5833066797331,
+   "blind": -9.894005324130783,
+   "blind_expected": 1673.9419698140791,
+   "observed": 609.0,
+   "forcing_pays": 0.15726378310414013
+  }
+ ]
+}

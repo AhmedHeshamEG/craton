@@ -382,6 +382,32 @@ shock: it forecasts about 1.9 times ETAS's count. Fill those gaps in and it stil
 stays 1.1 bits above ETAS. Part of Craton's edge on CB-02 turns out to be a learned fix for the catalogue's
 gaps (D-096).
 
+## Where people pushed the crust
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pump-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/pump-light.png">
+    <img alt="Two panels of quakes every 30 days under a grey band of how hard people pushed the rock. Top, Groningen: the reservoir's pressure loss rises to 2013 and falls after, and M1.5+ quakes follow it loosely. Bottom, Oklahoma: wastewater pumped into the Arbuckle rises to 2015 and is cut, and M3+ quakes surge and collapse with it. From 2017 two forecast lines: ETAS expects 145 Groningen quakes and 2,292 Oklahoma ones, Craton 102 and 1,593; 103 and 609 came." src="docs/assets/pump-dark.png" width="100%">
+  </picture>
+</p>
+
+In two places the push behind the quakes is written down. Groningen's gas field has a map of its
+reservoir's pressure every year; Oklahoma has every disposal well's volume every month. In both, people
+turned the push down and the quakes fell. CB-30 forecasts both, 30 days at a time from 2017, with only the
+past (D-099).
+
+| bits per quake, 2017-24 | ETAS | physics floor | Craton without the pump | Craton |
+|---|---|---|---|---|
+| Groningen, M1.5+ | −10.553 | −10.517 | −10.213 | **−10.196** |
+| Oklahoma, M3+ | −10.848 | −9.972 | −9.847 | **−9.791** |
+
+Craton is **+0.71 bits per quake** above ETAS and above a physics floor whose background follows the pump,
+on every seed. But the same Field trained without the pump is almost as good. The gain comes from reading
+the quakes; the pump only makes it steadier from seed to seed. Craton hasn't learned "pressure → quakes" yet,
+and the reason is in the training years: before 2017 nobody had turned the pump down hard, so there was no
+cut to learn from.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -434,7 +460,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (3 of 6 parts in: the two fake planets, the 30-day forecast, the whole Earth) | more pretraining data, synthetic data |
+| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (5 of 6 parts in: the two fake planets, the 30-day forecast, the whole Earth, the machine-learning catalogues, Groningen and Oklahoma) | more pretraining data, synthetic data |
 | ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |

@@ -47,6 +47,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-27 | Predictability horizon | · | · | P15 |
 | CB-28 | Velocity gap-fill | · | · | P10 |
 | CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
+| CB-30 | Human-made quakes | 0.7071 ± 0.045 ↑ · craton-mini | 0.4562 ± 0 ↑ · etas_forced | P8 |
 
 ## The building
 
@@ -121,11 +122,20 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-22 | etas_aniso | −0.1055 ± 7.9e−06 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-22 | poisson | −5.26 ± 0.00015 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-29 | etas | 7.256 ± 0 ↓ | negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits |  |
+| CB-30 | etas_forced | 0.4562 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
+| CB-30 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
+| CB-30 | etas_aniso | −0.0003537 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
+| CB-30 | poisson | −1.137 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-29 17:04 | `20261029-170430-etas-aniso` | etas_aniso (baseline) | 1 new, 11 same |
+| 2026-10-29 17:04 | `20261029-164113-craton-mini` | craton-mini | 1 new, 17 same |
+| 2026-10-29 17:04 | `20261029-162500-etas-forced` | etas_forced (baseline) | 1 new |
+| 2026-10-29 17:04 | `20261029-161853-poisson` | poisson (baseline) | 1 new, 11 same |
+| 2026-10-29 17:04 | `20261029-161328-etas` | etas (baseline) | 1 new, 12 same |
 | 2026-10-29 10:56 | `20261029-105451-craton-mini` | craton-mini | 2 new, 15 same |
 | 2026-10-29 10:56 | `20261029-090914-etas-aniso` | etas_aniso (baseline) | 2 new, 9 same |
 | 2026-10-29 10:56 | `20261029-080630-etas-incomplete` | etas_incomplete (baseline) | 2 new, 8 same |
@@ -213,6 +223,13 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `earthquakenpp` | 92,263 | 1971-01-01 → 2020-01-16 | 0 | largest M 7.3 on 1992-06-28; M 92,263; longest quiet spell 8.11 days |
 
+### groningen · snapshot `b392ac5e4c87e6dc` · 1957-10-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 1,866 | 1986-12-26 → 2026-08-21 | 355 (month_not_fetched 339, no_magnitude 16) | largest ML 3.6 on 2012-08-16; ML 1,866; completeness ML 1.0 in 2015; longest quiet spell 1581.11 days |
+| `pressure_grid` | 474,099 | 1957-10-01 → 2025-10-01 | 199,259 (outside_window 199,259) | · |
+
 ### japan · snapshot `646e06efcb8292d8` · 1983-01-01 → 2025-01-01
 
 | Source | Tokens | Span | Rejected | What it holds |
@@ -230,6 +247,13 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `fdsn_catalog` | 229,726 | 1987-01-01 → 2026-09-30 | 25 (magnitude_type:Mw(mB) 24, magnitude_type:Ms(BB) 1) | largest Mw 7.8 on 2009-07-15; M 35,427, ML 175,680, MLv 17,457, Mw 1,160, mb 2; completeness ML 2.8 in 1995, 2.8 in 2005; longest quiet spell 2.05 days |
+
+### oklahoma · snapshot `1989705b223c5506` · 2000-01-01 → 2025-01-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 16,838 | 2000-10-08 → 2024-12-30 | 0 | largest Mw 5.8 on 2016-09-03; ML 15,259, Md 180, Mw 505, mb 4, mb_Lg 890; completeness ML 2.7 in 2015; Md 2.7 in 2010; longest quiet spell 474.01 days |
+| `uic_workbook` | 1,029,067 | 2011-01-01 → 2024-12-01 | 188,996 (outside_region 179,741, invalid:no_depth 6,383) | · |
 
 ### southern_italy · snapshot `6dd8efd2fbc23ce6` · 1985-01-01 → 2026-10-01
 

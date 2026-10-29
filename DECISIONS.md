@@ -1400,3 +1400,114 @@ nothing changes (−8.224 against −8.233).
 **Rejected.** Dropping CB-20 (a benchmark is never dropped). Retraining the Field on the
 union (the machine-learning catalogues start nine days before CB-02's test, so there is no
 training data with it).
+
+### D-097 · 2026-10-29 · P8 — Token Spec 1.2.0: what people push in
+
+Two forcing instruments join the registry, the first since 1.0.0, and the unit `m3`:
+
+- `fluid_injection`: a volume pumped into one well over a reporting period, at the well and the
+  middle of its injection interval; qualifiers `well` (required), `well_class`, `fluid`,
+  `formation`.
+- `reservoir_pressure`: pore pressure at a point and a moment, from a reservoir model matched to
+  measured pressures; qualifiers `model` (required), `reservoir`.
+
+A token of an instrument added in 1.2.0 must say spec 1.2.0 or later. The validator never
+checked an instrument's version before, because every instrument was 1.0.0; the new rule rejects
+nothing that was valid (no older token can name an instrument that didn't exist), so it is a
+minor change. Tokens are still written under the oldest spec that accepts them (D-087).
+
+**Rejected.** One generic `forcing` instrument with a free-text "what" (the add-only rule needs
+channels with fixed units and meanings). Production volumes for Groningen (the pressure is the
+better measure of what was done to the rock, and it was published).
+
+### D-098 · 2026-10-29 · P8 — Groningen and Oklahoma: three formats, two regions
+
+- **Oklahoma** (`configs/regions/oklahoma.yaml`): ComCat quakes (`fdsn_catalog`), and the
+  Corporation Commission's yearly UIC workbooks 2011-2024 through a new adapter,
+  `uic_workbook` (the form 1012A layout: a row per well and year, twelve month columns; the
+  column names live in the YAML, `FormationName` became `PermitFormationName` in 2021).
+  1,029,067 well-month tokens in the box; 1,559 exact double rows dropped, 6,383 rows with no
+  depth refused. Read with a 100-line standard-library `.xlsx` reader (`craton.adapters.xlsx`),
+  so no spreadsheet library joins the dependencies.
+- **Groningen** (`configs/regions/groningen.yaml`): KNMI's FDSN service and NAM's reservoir
+  pressure model (yearly maps on a 500 m grid, 1957-2054) from TNO's Zenodo record 10245813,
+  through a new adapter, `pressure_grid` (projected grid CSV, one column per date). The grid is
+  on the Dutch RD New system; `craton.adapters.crs` converts it with the published approximation
+  series (about 1 m), no projection library.
+- **KNMI writes its magnitude `MLn` (and `MLnq` for older events)**: a region may now map a
+  service's spellings (`magnitude_aliases`), and a source may start after its region does
+  (`start`: KNMI from 1986, the pressure from 1957). Neither changes any existing region's bytes.
+- `month_windows` no longer calls `datetime.fromtimestamp`, which Windows refuses before 1970.
+- **Licences.** KNMI's catalogue is CC BY 4.0. The pressure record states none; Craton reads it
+  and never redistributes it (`LicenseRef-NAM-TNO-no-licence-stated`). The UIC workbooks are
+  public records with no licence attached (`LicenseRef-OCC-public-record`).
+
+**Rejected.** NLOG's per-well production (an undocumented POST API). The Kraaijpoel et al.
+(2026) Groningen model chain as an outside benchmark (its source data step writes 72 GB; its
+pressure maps are the ones read here). Oklahoma's pre-2011 `.xls` (another layout, and the
+quakes before 2011 are few).
+
+### D-099 · 2026-10-29 · P8 — CB-30, human-made quakes, and what the pump is worth
+
+**The task** (`craton/bench/induced.py`). Two cases, each a box with its own cells and
+magnitudes: Groningen (53.0-53.6° N, 6.4-7.3° E, 0.05° cells, from M1.0, scored from M1.5)
+and Oklahoma (CB-02's size, 34-37° N, 99.5-96° W, 0.1° cells, from M2.5, scored from M3).
+Nothing before 2017-01-01 is scored; 97 periods of 30 days from then. Forcing is read only as
+far as known at each period's start: a period's push counts once the period has ended
+(`craton.bench.forcing`, tested by adding later pushes and checking nothing earlier moves). The
+primary number is the gain over ETAS fitted on the box's own past, mean of the two cases.
+
+**The physics floor, `etas_forced`.** ETAS's triggering, and ETAS's background map turned up
+and down by each cell's push relative to its own past, `(push now / past push)^k`, with `b` and
+`k` fitted on the past (`k` = 1 is the proportional seismogenic-index law). Fitted: Groningen
+`k` = 1.95 on the cell's own pressure loss; Oklahoma `k` = 2.88 on the push blurred over 3 cells.
+
+**Two choices made after a first look at the test.** Said plainly, as D-091 said Maule:
+
+1. The first floor was the proportional law itself, `a · push + b · ETAS's background`. Its
+   fitted `a` came out at zero in both places (the past rejects it), so it was ETAS. It was
+   replaced by the modulated form above before any Craton number existed.
+2. Oklahoma's first forcing was every disposal well. That version of the floor lost to ETAS on
+   the test (−12.17 bits against −10.85). The volumes show why: disposal into the Arbuckle, the
+   formation on top of the basement faults, fell 67% from 2014 to 2021 (120 → 39 million m³)
+   while disposal into shallower formations didn't fall at all (95 → 74). The case now reads
+   Arbuckle disposal only, as the literature does (Keranen et al. 2014; Langenbruch & Zoback
+   2016). Every number below is with this choice, and nothing was changed after Craton's.
+
+**Scores (bits per quake, 3 seeds).** ETAS: Groningen −10.553, Oklahoma −10.848. Floor:
+−10.517 / −9.972 (+0.456). Craton: −10.196 / −9.791, **+0.707 ± 0.045** over ETAS (+0.36 and
++1.06), +0.25 over the floor, above both on every seed. Poisson −1.14, ETAS-aniso −0.0004.
+Counts 2017-24: Groningen 103 came, ETAS expected 145, Craton 113; Oklahoma 609 came, ETAS
+2,292, the floor 1,867, Craton 1,583.
+
+**What the pump is worth** (`scripts/ablations/forcing_blind.py`, `results/ablation/
+forcing_blind.json`). The same Field trained on the same days without the ten forcing features:
+
+| | seed 0 | seed 1 | seed 2 | mean |
+|---|---|---|---|---|
+| Groningen, with − without | −0.002 | +0.044 | +0.010 | +0.02 |
+| Oklahoma, with − without | +0.434 | −0.421 | +0.157 | +0.06 |
+
+Without the forcing the Field reaches +0.67 over ETAS on average, so almost all of Craton's
+gain comes from reading the quakes (mostly *where*, in Groningen). What the forcing does is
+make the Field steady: Oklahoma's three seeds land at −9.85, −9.79, −9.74 with it and at
+−10.28, −9.37, −9.89 without. **"Pressure → quakes" was not learned in a way the score can
+see.** The likely reasons: the Field trains on 2012-16, years when the push only rose, so it
+never sees a cut; and by the time a 30-day forecast is made, the falling quake counts already
+carry the decline.
+
+**Rejected.** Retuning the Field's training after seeing the ablation. Reporting the forcing
+Field's +0.71 as the pump's worth.
+
+### D-100 · 2026-10-29 · P8 — `craton bench run --carry`: one new task, not a day of reruns
+
+A phase that adds one task used to rerun every method on every task (about 8 hours for P8c). A
+run with `--tasks` and `--carry` copies each task it skipped from the method's newest accepted
+run, only if the method's configuration is the same and each task's frozen fingerprint is the
+one that run was scored on, and the copied result names its run (`carried_from`). Anything
+else is refused. A carried number is always one the ratchet already judged. P8e's runs carried
+11 to 17 tasks each; no code a carried task runs was changed except a guard in anisotropic
+ETAS for a box with no quake big enough to have a shape (Groningen), a case that used to crash.
+
+**Rejected.** Running everything again (hours of identical numbers). Running only the new task
+and letting the ratchet call the rest missing (every run would fail it).

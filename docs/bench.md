@@ -109,6 +109,20 @@ CB-20's rule for 2009: CB-03's days and quakes, with Fonzetti et al.'s machine-l
 - **Fingerprint:** `ef0b759db5f55a6d`
 - **Test data:** days 365 · M>=3 315 · M>=1.5 11,070 · magnitude types ML 10,492, Md 510, Mw 68 · largest 6.1 · overlay laquila_ml_2009 · overlay snapshot 3d8cd35895da9077 · overlay quakes 190,872 · matched 17,218 · added 173,654 · added M>=2 in window 264 · magnitude map 0 0.404, 1 1.2, 2 2.1, 3 2.974, 4 3.974
 
+## CB-30 · Human-made quakes
+
+Quakes people set off, where the push is measured: Groningen's gas field (the reservoir's modelled pressure, a map a year) and Oklahoma's wastewater (every Arbuckle disposal well's monthly volume). From 2017-01-01, 97 forecasts of 30 days each; every method fits on the box's past and reads the forcing only as far as it was known at each period's start. The number is the gain over ETAS fitted on the box's own past, mean of the two cases; `etas_forced`, ETAS whose background follows the push, is the physics floor.
+
+- **Metric:** bits per quake above ETAS fitted on the box's own past, mean of the two cases (higher is better)
+- **Fingerprint:** `9a9ad2ad549566b4`
+
+| Case | Forcing | Box | Cells | mc | Scored from | Scored quakes | Largest | ETAS fits on |
+|---|---|---|---|---|---|---|---|---|
+| Groningen gas field | gas production; the reservoir's modelled pressure, one map a year | 53-53.6° N, 6.4-7.3° E | 0.05° | 1 | 1.5 | 98 | 3.43 | 506 |
+| Oklahoma wastewater | wastewater disposal into the Arbuckle; every such well's (class 2D) monthly volume | 34-37° N, 99.5-96° W | 0.1° | 2.5 | 3 | 594 | 5.06 | 7,265 |
+
+Snapshots: groningen `b392ac5e4c87e6dc`, oklahoma `1989705b223c5506`.
+
 ## CB-05 · Calibration
 
 

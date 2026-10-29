@@ -603,3 +603,59 @@ Surprises / problems:
 Decisions: D-094, D-095, D-096.
 
 Next: P8e, Groningen and Oklahoma (pressure → quakes).
+
+## 2026-10-29 — P8e — Where people pushed the crust
+
+TLDR: two places where the push behind the quakes is measured, Groningen's gas field (the
+reservoir's pressure, one map a year) and Oklahoma's wastewater (every Arbuckle disposal well,
+month by month), make a new task, CB-30: eight years of 30-day forecasts from 2017, when both
+pushes were being turned down. Craton beats ETAS by +0.71 bits per quake and a physics floor
+that follows the pump by +0.25, on every seed. But the same Field trained without the pump
+does almost as well (+0.67): the gain is from reading the quakes, and "pressure → quakes" was
+not learned in a way the score can see.
+
+Built:
+- Token Spec 1.2.0 (D-097): instruments `fluid_injection`, `reservoir_pressure`, unit `m3`; a
+  token must name a spec at least as new as its instrument
+- adapters `uic_workbook` (regulator injection workbooks) and `pressure_grid` (a reservoir
+  model's grid CSV), with a standard-library `.xlsx` reader and an RD New → WGS84 converter;
+  `fdsn_catalog` takes a region's `magnitude_aliases` and a source `start` (D-098)
+- regions `groningen` (1,866 KNMI quakes, 474,099 pressure tokens, snapshot b392ac5e4c87e6dc) and
+  `oklahoma` (16,838 ComCat quakes, 1,029,067 well-month tokens, snapshot 1989705b223c5506)
+- `craton/bench/forcing.py`: forcing tokens → pushes → per-cell features, nothing read before
+  its period has ended; one reader per instrument (`PUSH_READERS`), the extension point
+- `craton/bench/induced.py`: CB-30, frozen; the physics floor `etas_forced` (D-099)
+- `craton/field/forced.py`, `configs/field/forced.yaml`: the Field with ten forcing features
+  per cell, both cases at once; `craton-mini` answers CB-30 through it
+- `scripts/ablations/forcing_blind.py`; `scripts/figures/pump.py` and its figure
+- `craton bench run --carry` (D-100); data cards for both new sources; tests 412 → 429
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261029-164113-craton-mini`):
+- CB-30 +0.707 ± 0.045 (new). Groningen −10.196 bits per M1.5+ quake (ETAS −10.553, floor
+  −10.517), Oklahoma −9.791 per M3+ quake (ETAS −10.848, floor −9.972). Floor +0.456,
+  ETAS-aniso −0.0004, Poisson −1.137.
+- Without the forcing: Groningen −10.213, Oklahoma −9.847 (seeds −10.28, −9.37, −9.89), CB-30
+  +0.67. The pump's worth: +0.02 and +0.06, inside the noise; it narrows Oklahoma's seed spread
+  from 0.46 to 0.05 bits.
+- Every other number identical to P8c (carried, D-100).
+
+Surprises / problems:
+- KNMI's FDSN service writes its magnitude `MLn`, and `MLnq` before 2015; the first build kept
+  only the 842 quakes from 2015 on.
+- The proportional law (rate ∝ push) fits neither place: its fitted share came out at zero.
+  Oklahoma's quakes rose 30× while the volume doubled, and fell 97% while it fell by half. What
+  fits is the cell's own background turned by the push to a power near 2 to 3.
+- Oklahoma's floor first read every disposal well and lost to ETAS on the test; Arbuckle
+  disposal fell 67%, the rest didn't fall. The case now reads the Arbuckle only. That choice was
+  made after seeing the floor's test score, and is logged as such (D-099).
+- Every forecaster still expects far too much of Oklahoma: 609 M3+ quakes came, ETAS expected
+  2,292, Craton 1,583. The Field trained only on years when the push rose; it can move ETAS by
+  at most 4×.
+- ETAS-aniso crashed on Groningen, where no quake is big enough to get an ellipse.
+- `datetime.fromtimestamp` refuses moments before 1970 on Windows; the pressure model starts in 1957.
+
+Decisions: D-097, D-098, D-099, D-100.
+
+Next: P8f, the curriculum (planets → regions → central Italy), with the GPS features (D-085),
+the catalogue-completeness fix (D-096), the global-network region (D-093) and a training
+history that includes a cut in the push.

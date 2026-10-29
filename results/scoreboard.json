@@ -643,6 +643,40 @@
         "M3.shuffle_bits": 1.9899527985327194,
         "M3.where_bits": -3.704268559127483
       }
+    },
+    "CB-30": {
+      "task_id": "CB-30",
+      "metric": "bits per quake above ETAS fitted on the box's own past, mean of the two cases",
+      "direction": "higher",
+      "fingerprint": "9a9ad2ad549566b4ac85ca50b5d2b1bdb976ef8226cac302d6c6bec5287e2789",
+      "mean": 0.7071029824431264,
+      "std": 0.04529362926269969,
+      "n_seeds": 3,
+      "run_id": "20261029-164113-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-10-29T17:04:40Z",
+      "extras": {
+        "groningen.bits": -10.195856197265067,
+        "groningen.bits_mc": -9.351265309766008,
+        "groningen.expected": 112.66106501148958,
+        "groningen.gain": 0.3573530116542519,
+        "groningen.gain_over_physics": 0.3208796315948674,
+        "groningen.how_big_bits": -3.6813049581840303,
+        "groningen.how_many_bits": -1.8666131809209183,
+        "groningen.observed": 103.0,
+        "groningen.physics_gain": 0.03647338005938453,
+        "groningen.where_bits": -5.144749253326129,
+        "oklahoma.bits": -9.790724525432761,
+        "oklahoma.bits_mc": -8.489007679693694,
+        "oklahoma.expected": 1583.460917031903,
+        "oklahoma.gain": 1.056852953232001,
+        "oklahoma.gain_over_physics": 0.18100593342856897,
+        "oklahoma.how_big_bits": -3.1671995018778856,
+        "oklahoma.how_many_bits": -1.6940875470579864,
+        "oklahoma.observed": 609.0,
+        "oklahoma.physics_gain": 0.875847019803432,
+        "oklahoma.where_bits": -7.315512273991799
+      }
     }
   },
   "baselines": {
@@ -2786,6 +2820,144 @@
           "M3.where_bits": -3.8622268250538796
         }
       }
+    },
+    "CB-30": {
+      "etas": {
+        "task_id": "CB-30",
+        "metric": "bits per quake above ETAS fitted on the box's own past, mean of the two cases",
+        "direction": "higher",
+        "fingerprint": "9a9ad2ad549566b4ac85ca50b5d2b1bdb976ef8226cac302d6c6bec5287e2789",
+        "mean": 0.0,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261029-161328-etas",
+        "model": "etas",
+        "accepted": "2026-10-29T17:04:40Z",
+        "extras": {
+          "groningen.bits": -10.55320920891932,
+          "groningen.bits_mc": -9.632978423818122,
+          "groningen.expected": 145.24794927863266,
+          "groningen.gain": 0.0,
+          "groningen.gain_over_physics": -0.03647338005938453,
+          "groningen.how_big_bits": -3.6813049581840303,
+          "groningen.how_many_bits": -1.9464337970070238,
+          "groningen.observed": 103.0,
+          "groningen.physics_gain": 0.03647338005938453,
+          "groningen.where_bits": -5.422281648894274,
+          "oklahoma.bits": -10.847577478664762,
+          "oklahoma.bits_mc": -9.46176231135995,
+          "oklahoma.expected": 2292.1125110520215,
+          "oklahoma.gain": 0.0,
+          "oklahoma.gain_over_physics": -0.875847019803432,
+          "oklahoma.how_big_bits": -3.1671995018778856,
+          "oklahoma.how_many_bits": -2.845737593260423,
+          "oklahoma.observed": 609.0,
+          "oklahoma.physics_gain": 0.875847019803432,
+          "oklahoma.where_bits": -7.220715181021363
+        }
+      },
+      "poisson": {
+        "task_id": "CB-30",
+        "metric": "bits per quake above ETAS fitted on the box's own past, mean of the two cases",
+        "direction": "higher",
+        "fingerprint": "9a9ad2ad549566b4ac85ca50b5d2b1bdb976ef8226cac302d6c6bec5287e2789",
+        "mean": -1.137231472309945,
+        "std": 1.5376248333459267e-8,
+        "n_seeds": 3,
+        "run_id": "20261029-161853-poisson",
+        "model": "poisson",
+        "accepted": "2026-10-29T17:04:40Z",
+        "extras": {
+          "groningen.bits": -10.724618558332224,
+          "groningen.bits_mc": -9.80035742720931,
+          "groningen.expected": 147.75339640078818,
+          "groningen.gain": -0.17140934941290512,
+          "groningen.gain_over_physics": -0.20788272947228967,
+          "groningen.how_big_bits": -3.6813049581840303,
+          "groningen.how_many_bits": -1.9592211386945089,
+          "groningen.observed": 103.0,
+          "groningen.physics_gain": 0.03647338005938453,
+          "groningen.where_bits": -5.580903656619694,
+          "oklahoma.bits": -12.950631073871747,
+          "oklahoma.bits_mc": -11.603823342962528,
+          "oklahoma.expected": 2437.337145546918,
+          "oklahoma.gain": -2.103053595206985,
+          "oklahoma.gain_over_physics": -2.978900615010417,
+          "oklahoma.how_big_bits": -3.1671995018778856,
+          "oklahoma.how_many_bits": -3.5875396066036487,
+          "oklahoma.observed": 609.0,
+          "oklahoma.physics_gain": 0.875847019803432,
+          "oklahoma.where_bits": -8.581966762885127
+        }
+      },
+      "etas_forced": {
+        "task_id": "CB-30",
+        "metric": "bits per quake above ETAS fitted on the box's own past, mean of the two cases",
+        "direction": "higher",
+        "fingerprint": "9a9ad2ad549566b4ac85ca50b5d2b1bdb976ef8226cac302d6c6bec5287e2789",
+        "mean": 0.4561601999314083,
+        "std": 5.917162102765941e-8,
+        "n_seeds": 3,
+        "run_id": "20261029-162500-etas-forced",
+        "model": "etas_forced",
+        "accepted": "2026-10-29T17:04:40Z",
+        "extras": {
+          "groningen.bits": -10.516735828859934,
+          "groningen.bits_mc": -9.534989025739206,
+          "groningen.expected": 74.1306476460981,
+          "groningen.gain": 0.03647338005938453,
+          "groningen.gain_over_physics": 0.0,
+          "groningen.how_big_bits": -3.6813049581840303,
+          "groningen.how_many_bits": -1.9108514123188087,
+          "groningen.observed": 103.0,
+          "groningen.physics_gain": 0.03647338005938453,
+          "groningen.where_bits": -5.421390653523106,
+          "oklahoma.bits": -9.97173045886133,
+          "oklahoma.bits_mc": -8.615958659962338,
+          "oklahoma.expected": 1867.1968247341238,
+          "oklahoma.gain": 0.875847019803432,
+          "oklahoma.gain_over_physics": 0.0,
+          "oklahoma.how_big_bits": -3.1671995018778856,
+          "oklahoma.how_many_bits": -2.0406643922814425,
+          "oklahoma.observed": 609.0,
+          "oklahoma.physics_gain": 0.875847019803432,
+          "oklahoma.where_bits": -7.149941362196913
+        }
+      },
+      "etas_aniso": {
+        "task_id": "CB-30",
+        "metric": "bits per quake above ETAS fitted on the box's own past, mean of the two cases",
+        "direction": "higher",
+        "fingerprint": "9a9ad2ad549566b4ac85ca50b5d2b1bdb976ef8226cac302d6c6bec5287e2789",
+        "mean": -0.00035369803197552824,
+        "std": 5.4243743926487425e-12,
+        "n_seeds": 3,
+        "run_id": "20261029-170430-etas-aniso",
+        "model": "etas_aniso",
+        "accepted": "2026-10-29T17:04:40Z",
+        "extras": {
+          "groningen.bits": -10.55320920891932,
+          "groningen.bits_mc": -9.632978423818122,
+          "groningen.expected": 145.24794927863266,
+          "groningen.gain": 0.0,
+          "groningen.gain_over_physics": -0.03647338005938453,
+          "groningen.how_big_bits": -3.6813049581840303,
+          "groningen.how_many_bits": -1.9464337970070238,
+          "groningen.observed": 103.0,
+          "groningen.physics_gain": 0.03647338005938453,
+          "groningen.where_bits": -5.422281648894274,
+          "oklahoma.bits": -10.848284874728714,
+          "oklahoma.bits_mc": -9.461762026169394,
+          "oklahoma.expected": 2292.110112589462,
+          "oklahoma.gain": -0.0007073960639510565,
+          "oklahoma.gain_over_physics": -0.8765544158673831,
+          "oklahoma.how_big_bits": -3.1671995018778856,
+          "oklahoma.how_many_bits": -2.8457336536649915,
+          "oklahoma.observed": 609.0,
+          "oklahoma.physics_gain": 0.875847019803432,
+          "oklahoma.where_bits": -7.2214265166807445
+        }
+      }
     }
   },
   "history": [
@@ -3054,6 +3226,41 @@
       "kind": "model",
       "accepted": "2026-10-29T10:56:01Z",
       "summary": "2 new, 15 same"
+    },
+    {
+      "run_id": "20261029-161328-etas",
+      "model": "etas",
+      "kind": "baseline",
+      "accepted": "2026-10-29T17:04:40Z",
+      "summary": "1 new, 12 same"
+    },
+    {
+      "run_id": "20261029-161853-poisson",
+      "model": "poisson",
+      "kind": "baseline",
+      "accepted": "2026-10-29T17:04:40Z",
+      "summary": "1 new, 11 same"
+    },
+    {
+      "run_id": "20261029-162500-etas-forced",
+      "model": "etas_forced",
+      "kind": "baseline",
+      "accepted": "2026-10-29T17:04:40Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261029-164113-craton-mini",
+      "model": "craton-mini",
+      "kind": "model",
+      "accepted": "2026-10-29T17:04:40Z",
+      "summary": "1 new, 17 same"
+    },
+    {
+      "run_id": "20261029-170430-etas-aniso",
+      "model": "etas_aniso",
+      "kind": "baseline",
+      "accepted": "2026-10-29T17:04:40Z",
+      "summary": "1 new, 11 same"
     }
   ]
 }
