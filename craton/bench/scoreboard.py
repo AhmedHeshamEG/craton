@@ -58,7 +58,7 @@ def _says(name: str, health: dict[str, Any]) -> str:
             picks = [y for y in years if int(y) % 10 == 5] or years[:1]
             mc_bits.append(f"{mt} " + ", ".join(f"{per_year[y]:.1f} in {y}" for y in picks))
         mc_text = "; ".join(mc_bits)
-        parts = [f"largest {big['type']} {big['magnitude']:g} on {big['day']}", types]
+        parts = [f"largest {big['type']} {round(big['magnitude'], 2):g} on {big['day']}", types]
         if mc_text:
             parts.append(f"completeness {mc_text}")
         if h["longest_gap_days"] is not None:

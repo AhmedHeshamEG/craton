@@ -756,6 +756,72 @@
           "fit_quakes": 1080
         }
       }
+    },
+    "CB-20": {
+      "name": "Apennines, enhanced inputs",
+      "metric": "log-likelihood per earthquake (bits), M\u22653, daily 0.1\u00b0 forecasts, INGV + machine-learning catalogue as input",
+      "direction": "higher",
+      "fingerprint": "22aaa3e64b14c3930b832409d831c9302b549ee1356a6f50de5636d7d33a0596",
+      "files": {
+        "observed.parquet": "d160a0916717b9b2b31c7a5b1a5c3e3b16c2e99f99cd18172d9241ece98e53d3"
+      },
+      "summary": {
+        "days": 494,
+        "M>=3": 1065,
+        "M>=1.5": 42807,
+        "magnitude_types": {
+          "ML": 42381,
+          "Md": 291,
+          "Mw": 135
+        },
+        "largest": 6.5,
+        "overlay": "central_italy_ml_2016",
+        "overlay_snapshot": "66ade7665b03f361",
+        "overlay_quakes": 866295,
+        "matched": 82174,
+        "added": 784121,
+        "added_M>=2_in_window": 6206,
+        "magnitude_map": {
+          "0": 0.551,
+          "1": 1.5,
+          "2": 2.228,
+          "3": 3.149,
+          "4": 4.149
+        }
+      }
+    },
+    "CB-21": {
+      "name": "L'Aquila, enhanced inputs",
+      "metric": "log-likelihood per earthquake (bits), M\u22653, daily 0.1\u00b0 forecasts, INGV + machine-learning catalogue as input",
+      "direction": "higher",
+      "fingerprint": "ef0b759db5f55a6da19a52cbcbb2e804f60669f9a95ce689764b88e9a685e863",
+      "files": {
+        "observed.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f"
+      },
+      "summary": {
+        "days": 365,
+        "M>=3": 315,
+        "M>=1.5": 11070,
+        "magnitude_types": {
+          "ML": 10492,
+          "Md": 510,
+          "Mw": 68
+        },
+        "largest": 6.1,
+        "overlay": "laquila_ml_2009",
+        "overlay_snapshot": "3d8cd35895da9077",
+        "overlay_quakes": 190872,
+        "matched": 17218,
+        "added": 173654,
+        "added_M>=2_in_window": 264,
+        "magnitude_map": {
+          "0": 0.404,
+          "1": 1.2,
+          "2": 2.1,
+          "3": 2.974,
+          "4": 3.974
+        }
+      }
     }
   }
 }

@@ -354,6 +354,34 @@ few past quakes for ETAS itself to be fitted (D-091). That rule was written afte
 counted the never-seen half is below ETAS on every seed (−1.42 on average). So from now on the bar for
 never-seen regions is ETAS-incomplete, not plain ETAS (D-093). Step by step: [`lessons/P8.md`](lessons/P8.md).
 
+## What the network missed
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/missed-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/missed-light.png">
+    <img alt="Bars of M2+ quakes per hour for the 72 hours after the Mw 6.5 Norcia earthquake of 30 October 2016. Grey: the quakes in INGV's routine catalogue. Stacked on top in orange: the quakes a machine-learning catalogue found that INGV doesn't have. First day: INGV has 1,208; machine learning finds 2,223 more." src="docs/assets/missed-dark.png" width="100%">
+  </picture>
+</p>
+
+In Norcia's first day the routine catalogue holds 1,208 quakes above M2. Machine-learning catalogues,
+built later from the same seismograms, find 2,223 more. CB-20 and CB-21 rerun CB-02 and CB-03 with those
+extra quakes added to every forecaster's history. The days and scored quakes stay the same (D-094).
+
+| bits per M3+ quake | ETAS | ETAS-incomplete | Craton |
+|---|---|---|---|
+| CB-02, 2016-17, INGV only | −7.118 | −7.059 | **−6.818** |
+| CB-20, the same days, INGV + machine learning | −6.985 | −6.955 | −7.028 |
+| CB-03, L'Aquila 2009, INGV only | −9.396 | −9.295 | **−8.233** |
+| CB-21, the same days, INGV + machine learning | −9.360 | −9.260 | **−8.224** |
+
+The better catalogue helps ETAS (+0.13 bits per quake on 2016). It hurts Craton, which falls below ETAS on
+CB-20. The Field learned from INGV alone, and part of what it learned is that INGV misses quakes after a big
+shock: it forecasts about 1.9 times ETAS's count. Fill those gaps in and it still multiplies, so it expects
+1,560 M3+ quakes where 1,065 came. On L'Aquila the machine-learning catalogue adds few quakes, and Craton
+stays 1.1 bits above ETAS. Part of Craton's edge on CB-02 turns out to be a learned fix for the catalogue's
+gaps (D-096).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:

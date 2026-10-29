@@ -448,6 +448,12 @@ ETAS wins: Craton −0.22 bits per quake (expected ≈ +0.2), level without the 
 GPS adds +0.13 on every seed, all in the count, most likely from coseismic jumps and afterslip; it joins
 the Fields in P8f (D-085).
 
+**P8c, done (2026-10-29):** CB-20 and CB-21 rerun CB-02's and CB-03's days with INGV plus every quake
+a machine-learning catalogue adds (Tan et al. 2021; Fonzetti et al. 2025), magnitudes mapped onto INGV's
+scale (D-094, D-095). The catalogue helps ETAS (+0.13 on 2016). Craton: CB-20 −7.028, **below** ETAS on
+the same input (−6.985, expected ≈ +1.1); CB-21 −8.224, +1.14 over ETAS (expected ≈ +1.8). The Field had
+learned INGV's gaps as a constant and counts them twice once they're filled (D-096); the fix is P8f's.
+
 **Not in this phase:** the hidden-state layer (P9).
 
 **Done when**

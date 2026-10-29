@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-from craton.spec.timeaxis import SECONDS_PER_DAY, to_iso
+from craton.spec.timeaxis import SECONDS_PER_DAY, to_iso, year_of
 from craton.spec.token import Token
 
 GAP_DAYS = 30
@@ -54,7 +54,7 @@ class Collector:
             self.count += 1
             self.first = t.time if self.first is None else min(self.first, t.time)
             self.last = t.time if self.last is None else max(self.last, t.time)
-            self.per_year[int((t.time_iso or "0000")[:4])] += 1
+            self.per_year[year_of(t.time)] += 1
             self.see(t)
 
     def see(self, t: Token) -> None:
@@ -86,7 +86,7 @@ class CatalogCollector(Collector):
         m = t.value[0]
         self.times.append(t.time)
         self.types[mt] += 1
-        self.mags[mt].append((int((t.time_iso or "0000")[:4]), m))
+        self.mags[mt].append((year_of(t.time), m))
         if self.largest is None or m > self.largest[0]:
             self.largest = (m, mt, _day(t.time), t.qualifiers.get("event_id", ""))
 

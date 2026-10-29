@@ -12,3 +12,4 @@ Every source Craton reads, who made it, under what terms, and what to watch out 
 | [`ingv_catalog`](ingv_catalog.md) | INGV earthquake catalogue (ISIDe) | `seismic_catalog` | `CC-BY-4.0` |
 | [`jma_hypocenter`](jma_hypocenter.md) | JMA Unified Hypocenter Catalogue (the Seismological Bulletin of Japan) | `seismic_catalog` | `CC-BY-4.0` |
 | [`ngl_gnss`](ngl_gnss.md) | GNSS daily positions, Nevada Geodetic Laboratory (IGS20) | `gnss_daily` | `LicenseRef-NGL-as-is` |
+| [`zenodo_catalog`](zenodo_catalog.md) | Research earthquake catalogues on Zenodo (one CSV per record) | `seismic_catalog` | `LicenseRef-per-region` |

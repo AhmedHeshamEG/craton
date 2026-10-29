@@ -37,8 +37,8 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
 | CB-18 | Ladder rung 3 | · | · | P16 |
 | CB-19 | 30-day forecast | −6.226 ± 0.13 ↑ · craton-mini | −6.001 ± 0 ↑ · etas_aniso | P8 |
-| CB-20 | Apennines, enhanced inputs | · | · | P8 |
-| CB-21 | L'Aquila, enhanced inputs | · | · | P8 |
+| CB-20 | Apennines, enhanced inputs | −7.028 ± 0.017 ↑ · craton-mini | −6.955 ± 0 ↑ · etas_incomplete | P8 |
+| CB-21 | L'Aquila, enhanced inputs | −8.224 ± 0.0067 ↑ · craton-mini | −9.26 ± 0 ↑ · etas_incomplete | P8 |
 | CB-22 | World sequences | 0.3612 ± 0.083 ↑ · craton-mini | 0.3363 ± 1.6e−05 ↑ · etas_incomplete | P8 |
 | CB-23 | Hidden-state truth | · | · | P9 |
 | CB-24 | Migration | · | · | P9 |
@@ -108,6 +108,14 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-19 | etas_aniso | −6.001 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
 | CB-19 | etas | −6.002 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 382 expected; M≥1.5: −2.61 bits/quake; days with too few M≥3: 25% |
 | CB-19 | poisson | −10.52 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, 30-day 0.1° forecasts | M≥3: 1,064 quakes, 72 expected; M≥1.5: −7.6 bits/quake; days with too few M≥3: 62% |
+| CB-20 | etas_incomplete | −6.955 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 881 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 3% |
+| CB-20 | etas | −6.985 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 803 expected; M≥1.5: −2.75 bits/quake; days with too few M≥3: 3% |
+| CB-20 | etas_aniso | −6.987 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 803 expected; M≥1.5: −2.75 bits/quake; days with too few M≥3: 3% |
+| CB-20 | poisson | −14.64 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 75 expected; M≥1.5: −9.69 bits/quake; days with too few M≥3: 21% |
+| CB-21 | etas_incomplete | −9.26 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 78 expected; M≥1.5: −4.35 bits/quake; days with too few M≥3: 6% |
+| CB-21 | etas | −9.36 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 73 expected; M≥1.5: −4.4 bits/quake; days with too few M≥3: 7% |
+| CB-21 | etas_aniso | −9.364 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 73 expected; M≥1.5: −4.4 bits/quake; days with too few M≥3: 7% |
+| CB-21 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
 | CB-22 | etas_incomplete | 0.3363 ± 1.6e−05 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-22 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-22 | etas_aniso | −0.1055 ± 7.9e−06 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
@@ -118,6 +126,11 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-10-29 10:56 | `20261029-105451-craton-mini` | craton-mini | 2 new, 15 same |
+| 2026-10-29 10:56 | `20261029-090914-etas-aniso` | etas_aniso (baseline) | 2 new, 9 same |
+| 2026-10-29 10:56 | `20261029-080630-etas-incomplete` | etas_incomplete (baseline) | 2 new, 8 same |
+| 2026-10-29 10:56 | `20261029-053104-etas` | etas (baseline) | 2 new, 10 same |
+| 2026-10-29 10:56 | `20261029-043011-poisson` | poisson (baseline) | 2 new, 9 same |
 | 2026-10-26 10:27 | `20261026-102634-craton-mini` | craton-mini | 2 new, 13 same |
 | 2026-10-26 10:27 | `20261026-085543-etas-incomplete` | etas_incomplete (baseline) | 1 new, 7 same |
 | 2026-10-26 10:27 | `20261026-064021-etas-aniso` | etas_aniso (baseline) | 1 new, 8 same |
@@ -162,6 +175,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `fdsn_catalog` | 59,362 | 1990-01-01 → 2026-09-30 | 0 | largest Mw 8.2 on 2021-07-29; M 93, ML 55,612, Md 8, Ms 2, Mw 887, mb 2,760; completeness ML 2.7 in 1995, 2.7 in 2005, 2.7 in 2015, 2.7 in 2025; longest quiet spell 4.89 days |
 
+### alto_tiberina_ml · snapshot `7dc58756437161b6` · 2010-01-01 → 2023-05-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `zenodo_catalog` | 411,540 | 2010-01-01 → 2023-04-30 | 0 | largest ML 3.9 on 2023-03-09; ML 411,540; completeness ML -0.6 in 2015; longest quiet spell 0.93 days |
+
 ### california · snapshot `2e933cc433533857` · 1981-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
@@ -175,6 +194,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | `iers_tides` | 686,709 | 1985-01-01 → 2026-09-30 | 0 | 320,757 at earthquakes + 365,952 hourly; peak 0.319 m up, 0.080 m north, 0.079 m east |
 | `ingv_catalog` | 320,757 | 1985-01-02 → 2026-09-30 | 126 (magnitude_type:M 120, event_type:controlled explosion 5) | largest Mw 6.5 on 2016-10-30; ML 290,892, Md 29,466, Mw 399; completeness ML 1.5 in 2005, 1.2 in 2015, 1.1 in 2025; Md 2.6 in 1985, 2.6 in 1995, 2.4 in 2005, 1.5 in 2015; longest quiet spell 10.93 days |
 | `ngl_gnss` | 751,394 | 1995-06-27 → 2026-09-30 | 0 | 293 stations, median 1,927 days each, median coverage 83%, 964 gaps over 30 days |
+
+### central_italy_ml_2016 · snapshot `66ade7665b03f361` · 2016-08-15 → 2017-08-16
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `zenodo_catalog` | 866,295 | 2016-08-15 → 2017-08-15 | 33,755 (not_kept 20,943, invalid:not_finite 7,197) | largest ML 6.03 on 2016-08-24; ML 866,295; completeness ML 0.3 in 2016; longest quiet spell 0.14 days |
 
 ### chile · snapshot `16c9638835d229d7` · 1985-01-01 → 2026-10-01
 
@@ -193,6 +218,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `jma_hypocenter` | 335,667 | 1983-01-01 → 2024-12-31 | 4,948,419 (below_min_magnitude 4,386,385, no_magnitude 189,931) | largest Mw 9 on 2011-03-11; Mj 335,666, Mw 1; longest quiet spell 1.44 days |
+
+### laquila_ml_2009 · snapshot `3d8cd35895da9077` · 2009-01-01 → 2010-01-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `zenodo_catalog` | 190,872 | 2009-01-07 → 2009-12-31 | 16 (invalid:unparseable 16) | largest ML 5.9 on 2009-04-13; ML 190,872; completeness ML 0.1 in 2009; longest quiet spell 5.96 days |
 
 ### new_zealand · snapshot `0ad42fd967748d63` · 1987-01-01 → 2026-10-01
 

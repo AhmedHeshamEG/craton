@@ -1334,3 +1334,69 @@ ETAS fitted there; benchmarks are immutable); the bar a phase has to clear on it
 
 **Rejected.** Re-scoring CB-22 with Maule counted (the floor itself fails there, D-091). Calling
 the zero-shot result a win over every floor (it isn't one).
+
+### D-094 · 2026-10-29 · P8 — CB-20 and CB-21: INGV plus what the machine-learning catalogue adds
+
+`craton/bench/enhanced.py`. The plan said "the ML catalogue as input". Measured first
+(above M2 on INGV's scale, after mapping magnitudes): Tan et al.'s 2016-17 catalogue holds
+7,102 quakes INGV doesn't, 2,279 of them in Norcia's first day (INGV has 1,208 there).
+Fonzetti et al.'s L'Aquila catalogue holds 264 INGV doesn't, but it has *fewer* quakes than
+INGV in the first hours after the mainshock (91 against 226 in six hours). So replacing
+INGV with either catalogue would throw away quakes; a union never does.
+
+- **The input is the union.** Every INGV quake as INGV has it, plus every machine-learning
+  quake with no INGV quake within 3 s and 10 km. Every method reads the same union (ETAS
+  too); the scored quakes, the days, the splits and the training data are CB-02's and
+  CB-03's, unchanged. So CB-20 minus CB-02 is what the catalogue is worth to one method.
+- **Magnitudes are mapped, never mixed.** Each catalogue computes its own local magnitude
+  (Tan's runs a median 0.26 below INGV's, Fonzetti's 0.09, Poggiali's 0.50). A quantile map
+  from matched pairs puts the added quakes on INGV's scale. Only pairs below INGV M3 fit it,
+  so the quakes CB-20 and CB-21 score never shape it. The pairs come from the test window
+  itself; the catalogue is already hindsight, and the map is 100 numbers.
+- **Training is untouched,** so CB-20 and CB-21 reuse CB-02's and CB-03's trained models
+  (`ForecastSpec.train_task`): same weights, new inputs.
+- Spike (ETAS, seed 0): the union lifts ETAS on CB-02's days from −7.118 to −6.959 bits per
+  quake, and on CB-03's from −9.396 to −9.360.
+
+**Rejected.** Replacing INGV inside the catalogue's box (loses quakes on L'Aquila's first
+day). A constant magnitude shift (the scales differ in slope: Tan's M3 is INGV's 3.15, its
+M0 INGV's 0.55). Fitting the map on all pairs (the scored M3+ quakes would shape the input).
+Retraining on the union (the catalogues start where training ends).
+
+### D-095 · 2026-10-29 · P8 — Three catalogues in, one left out of the forecasts
+
+All three are CSV files on Zenodo under CC BY 4.0, read by one adapter (`zenodo_catalog`,
+one format) with each file's columns named in its region's YAML, and checked against the
+record's MD5.
+
+- **L'Aquila: the 190k file with 1-D locations,** over the 148k relocated one. Above M2 the
+  larger one holds 10% more quakes; 0.1° cells don't need double-difference locations. (The
+  relocated file also has its latitude and longitude headers swapped.)
+- **Alto Tiberina (Poggiali et al. 2025) is built but no forecast reads it.** 411,540 quakes
+  from 2010 to 2023, and 27 of them above M2 that INGV lacks: its value is below M2, where
+  the forecasts don't look yet. It is there for the hidden-state work (P9).
+- Tan's `split` flag (likely duplicates, 20,943 rows) is honoured; 7,197 rows with no
+  magnitude are rejected.
+
+**Rejected.** A per-catalogue adapter (one format, three configs). Using Tan's `mw` column
+(converted from `ml_median` by a formula, so no more information and one more step).
+
+### D-096 · 2026-10-29 · P8 — CB-20's loss is published as it is
+
+The Field on CB-20 scores −7.028 bits per quake, below ETAS on the same input (−6.985) and
+below its own CB-02 score (−6.818). The counts say why. On CB-02 the Field expects 1.86 times
+ETAS's M3+ count, about the 1,065 that came: part of what it learned from INGV alone is that
+INGV misses quakes after big shocks. On CB-20 the history has those quakes, ETAS's own count
+rises from 583 to 803, and the Field still multiplies by 1.94, so it expects 1,558. Where the
+quakes fall is scored the same on both (−4.20 bits). On CB-21 the added quakes are few and
+nothing changes (−8.224 against −8.233).
+
+- **No retuning on the test.** Feeding the Field INGV while ETAS reads the union, or scaling
+  its correction down, would be choices made after seeing CB-20. The score stands.
+- **The fix goes to P8f:** train on histories with the gaps filled in as well as without
+  them, so the Field learns the catalogue's blindness as something it reads, not a constant.
+  The same lesson as CB-22's Chile (D-093): the blindness belongs in the input.
+
+**Rejected.** Dropping CB-20 (a benchmark is never dropped). Retraining the Field on the
+union (the machine-learning catalogues start nine days before CB-02's test, so there is no
+training data with it).

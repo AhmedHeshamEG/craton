@@ -1,0 +1,32 @@
+# Tan et al. (2021): a machine-learning catalogue of the 2016-17 central Italy sequence,
+# ~900,000 quakes picked by a neural network on 139 stations and relocated with hindsight.
+# It feeds CB-20 only, layered over INGV's catalogue (D-094); CB-02 never reads it.
+name: central_italy_ml_2016
+description: The 2016-17 Amatrice-Visso-Norcia sequence, Tan et al.'s machine-learning catalogue.
+box:
+  lat_min: 42.0
+  lat_max: 44.0
+  lon_min: 11.5
+  lon_max: 14.0
+start: "2016-08-15T00:00:00Z"   # the catalogue's first day
+end: "2017-08-16T00:00:00Z"     # the day after its last
+adapters: [zenodo_catalog]
+sources:
+  zenodo_catalog:
+    record: 4736089
+    file: Amatrice_CAT5.v20210504.csv
+    md5: 381ed815227c5aeecf849b49bdcf4dc2
+    provider: Tan, Waldhauser & Ellsworth (2021), machine-learning catalogue
+    license: CC-BY-4.0
+    citation: "Tan et al. (2021), The Seismic Record 1(1), 11-19; doi:10.5281/zenodo.4736089"
+    magnitude_type: ML
+    columns:
+      lat: lat
+      lon: lon
+      depth: dep
+      magnitude: ml_median
+      id: id
+      horizontal_err: [EH1, EH2]
+      vertical_err: EZ
+    time_parts: [year, month, day, hour, minute, second]
+    keep: {split: "0"}            # 1 marks a likely duplicate (the authors' flag)

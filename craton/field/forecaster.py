@@ -268,7 +268,7 @@ class FieldForecaster:
         cfg = config or self.config
         manifest = json.loads((ctx.split_dir(spec.fit_split) / "manifest.json").read_text("utf-8"))
         name = (
-            f"field-{cfg.name}-{FIELD_VERSION}-{spec.task_id}-{manifest['id'][:12]}-"
+            f"field-{cfg.name}-{FIELD_VERSION}-{spec.trained_as}-{manifest['id'][:12]}-"
             f"{field_hash(cfg)[:8]}-s{seed}"
         )
         return checkpoints_dir(ctx.root) / name
