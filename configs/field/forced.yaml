@@ -1,0 +1,35 @@
+# The forced Field (P8e, CB-30): the world Field's network, reading each cell's Omori memory
+# plus the push people gave it (craton.bench.forcing). One Field for both human-made cases,
+# Groningen and Oklahoma, trained on their 30-day spans before 2017; the cases themselves
+# (boxes, cells, magnitudes, forcing) are CB-30's, in craton/bench/induced.py.
+name: forced
+description: ETAS start + Omori memory + the measured push, learned on Groningen and Oklahoma.
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  dropout: 0.1
+  max_nudge: 4.0
+
+memory:
+  m_min: 1.5          # unused: every case counts from its own mc - 0.5
+  start: "1990-01-01T00:00:00Z"
+
+train:
+  first_day: "2006-01-01T00:00:00Z"   # unused: each case starts at its own train_from
+  validation_every: 8
+  days_per_step: 8
+  lr: 3.0e-4
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 6
+  members: 4
+  seeds: [0, 1, 2]
+
+world:
+  cut: "2017-01-01T00:00:00Z"
+  steps_per_epoch: 300
+  regions:
+    groningen: {mc: 1.0}
+    oklahoma: {mc: 2.5}
