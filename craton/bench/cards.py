@@ -84,6 +84,15 @@ ABOUT = {
         "ETAS and their metric, the point-process log-likelihood per test quake in nats. A "
         "method enters as their ETAS times a factor per 0.1° cell and day, fixed at midnight."
     ),
+    "CB-30": (
+        "Quakes people set off, where the push is measured: Groningen's gas field (the "
+        "reservoir's modelled pressure, a map a year) and Oklahoma's wastewater (every Arbuckle "
+        "disposal well's monthly volume). From 2017-01-01, 97 forecasts of 30 days each; every "
+        "method fits on the box's past and reads the forcing only as far as it was known at "
+        "each period's start. The number is the gain over ETAS fitted on the box's own past, "
+        "mean of the two cases; `etas_forced`, ETAS whose background follows the push, is the "
+        "physics floor."
+    ),
 }
 
 
@@ -101,6 +110,31 @@ def _sequences(summary: dict[str, Any]) -> list[str]:
         out.append(
             f"| {seq.name} | {seq.region} | {seq.half.replace('_', '-')} | {v['mc']:g} | "
             f"{scored} | {v['largest']} | {v['fit_quakes']:,} |"
+        )
+    snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
+    return [*out, "", f"Snapshots: {snaps}."]
+
+
+def _lons(lo: float, hi: float) -> str:
+    return f"{-lo:g}-{-hi:g}° W" if hi <= 0 else f"{lo:g}-{hi:g}° E"
+
+
+def _cases(summary: dict[str, Any]) -> list[str]:
+    """CB-30's frozen cases: the box, the magnitudes, what is scored and what ETAS fits on."""
+    from craton.bench.induced import CASES
+
+    out = [
+        "| Case | Forcing | Box | Cells | mc | Scored from | Scored quakes | Largest "
+        "| ETAS fits on |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for c in CASES:
+        v = summary[c.key]
+        lat0, lat1, lon0, lon1 = v["box"]
+        out.append(
+            f"| {c.name} | {c.about} | {lat0:g}-{lat1:g}° N, {_lons(lon0, lon1)} | "
+            f"{c.cell_deg:g}° | {c.mc:g} | {c.scored:g} | {v.get(f'M>={c.scored:g}', '·')} | "
+            f"{v['largest']:.2f} | {v['fit_quakes']:,} |"
         )
     snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
     return [*out, "", f"Snapshots: {snaps}."]
@@ -190,7 +224,7 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary and task_id not in ("CB-09", "CB-22"):
+        if summary and task_id not in ("CB-09", "CB-22", "CB-30"):
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
@@ -205,6 +239,8 @@ def render() -> str:
             lines += ["", *_planets(summary)]
         if task_id == "CB-22" and summary:
             lines += ["", *_sequences(summary)]
+        if task_id == "CB-30" and summary:
+            lines += ["", *_cases(summary)]
     lines += [
         "",
         "## Add a method",

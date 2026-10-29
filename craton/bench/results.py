@@ -38,6 +38,8 @@ class TaskResult(_Strict):
     values: tuple[float, ...]
     #: Secondary numbers, one per seed (CSEP tests, per-instrument bits, …). Never ratcheted.
     extras: dict[str, tuple[float, ...]] = Field(default_factory=dict)
+    #: Copied unchanged from this earlier accepted run of the same method (``--carry``).
+    carried_from: str | None = None
 
     @model_validator(mode="after")
     def _one_value_per_seed(self) -> TaskResult:

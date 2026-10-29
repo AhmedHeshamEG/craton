@@ -1151,6 +1151,9 @@ assert to_seconds(ERA_A.start) < to_seconds("2016-08-25T00:00:00Z")
 # The P7 trust tasks register themselves through the same registry (CB-05 … CB-11).
 # P8c: CB-20 and CB-21, the Italian forecasts with machine-learning catalogues as input.
 from craton.bench import enhanced as _enhanced  # noqa: E402, F401
+
+# P8e: CB-30, quakes people set off, where the push is measured.
+from craton.bench import induced as _induced  # noqa: E402, F401
 from craton.bench import locks as _locks  # noqa: E402, F401
 
 # P8d, the whole Earth: CB-22 (and CB-29, EarthquakeNPP).

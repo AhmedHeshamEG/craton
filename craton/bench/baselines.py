@@ -560,3 +560,8 @@ from craton.trust.ood import FingerprintKnn, NoDetector  # noqa: E402
 
 register_method(NoDetector())
 register_method(FingerprintKnn())
+
+# CB-30's physics floor lives with its task, as CB-06's do.
+from craton.bench.induced import EtasForced  # noqa: E402
+
+register_method(EtasForced())

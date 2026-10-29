@@ -36,6 +36,7 @@ UNITS: Mapping[str, str] = {
     "Cel": "degree Celsius",
     "K": "kelvin",
     "mm/a": "millimetres per year",
+    "m3": "cubic metre",
     "log10(m2)": "base-10 logarithm of a permeability in square metres",
     "log10(mm)": "base-10 logarithm of a length in millimetres",
 }

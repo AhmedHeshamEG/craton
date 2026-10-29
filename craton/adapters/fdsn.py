@@ -87,9 +87,13 @@ MAGNITUDE_SIGMA = {"Mw": 0.1, "ML": 0.2}
 SILENT_EVENT_TYPES = ("", "unknown", "not reported", "not existing")
 
 
-def magnitude_type(raw: str) -> str | None:
-    """The spec's word for a service's magnitude type, or None if there isn't one."""
-    word = MAGNITUDE_ALIASES.get(raw.strip().lower())
+def magnitude_type(raw: str, extra: dict[str, str] | None = None) -> str | None:
+    """The spec's word for a service's magnitude type, or None if there isn't one.
+
+    ``extra`` holds a region's own spellings (``sources.fdsn_catalog.magnitude_aliases``):
+    KNMI writes its Dutch local magnitude ``MLn``, an ML on its own calibration."""
+    word = {k.lower(): v for k, v in (extra or {}).items()}.get(raw.strip().lower())
+    word = word or MAGNITUDE_ALIASES.get(raw.strip().lower())
     if word is None and raw.strip() in MAGNITUDE_TYPES:
         word = raw.strip()
     return word if word in MAGNITUDE_TYPES else None
@@ -220,6 +224,11 @@ class FdsnCatalog(Adapter):
         report = FetchReport()
         have = raw.current(self.name)
         windows = month_windows(region)
+        if opts.get("start"):
+            # A service whose catalogue starts after the region does (KNMI: 1986) is asked
+            # only from its own start.
+            first = to_seconds(str(opts["start"]))
+            windows = [(a, b) for a, b in windows if b > first]
         for i, (a, b) in enumerate(windows, 1):
             label = self.label(region.box, a, b)
             if label in have and not refresh:
@@ -274,7 +283,7 @@ class FdsnCatalog(Adapter):
             if not f[10].strip() or not f[4].strip():
                 ctx.reject("no_magnitude" if not f[10].strip() else "no_depth")
                 continue
-            mag_type = magnitude_type(f[9])
+            mag_type = magnitude_type(f[9], opts.get("magnitude_aliases"))
             if mag_type is None:
                 ctx.reject(f"magnitude_type:{f[9].strip() or 'blank'}")
                 continue

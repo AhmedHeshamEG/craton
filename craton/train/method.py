@@ -106,8 +106,11 @@ class CratonMini:
     field_config: str = "mini"
     #: The Field config that answers every other region (CB-22, P8d): one Field for the Earth.
     world_config: str = "world"
+    #: The Field config that answers CB-30 (P8e): quakes plus the measured forcing.
+    forced_config: str = "forced"
     log: Log = _quiet
     _world: list[Any] = field(default_factory=list)
+    _forced: list[Any] = field(default_factory=list)
     _models: dict[tuple[str, int], CratonModel] = field(default_factory=dict)
     _meta: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict)
     _lines: dict[str, Lines] = field(default_factory=dict)
@@ -573,6 +576,14 @@ class CratonMini:
             self._world.append(WorldField(self.world_config, log=self.log))
         return self._world[0]
 
+    def forced_forecaster(self) -> Any:
+        """The forced Field (``craton.field.forced``): CB-30, reading the forcing too."""
+        if not self._forced:
+            from craton.field.forced import ForcedField
+
+            self._forced.append(ForcedField(self.forced_config, log=self.log))
+        return self._forced[0]
+
     def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
         """CB-05 and the other trust tasks: the Field's members and fitted dispersion."""
         if self.field_config:
@@ -655,6 +666,17 @@ class CratonMini:
             fields = [
                 (f / "card.md").read_text("utf-8")
                 for f in sorted(cdir.glob(f"field-{self.field_config}-{FIELD_VERSION}-*-{fh}-s*"))
+                if (f / "card.md").is_file()
+            ]
+        if self.forced_config:
+            from craton.field.config import field_hash, load_field_config
+            from craton.field.forced import FORCED_VERSION
+
+            fh = field_hash(load_field_config(self.forced_config))[:8]
+            pattern = f"forced-{self.forced_config}-{FORCED_VERSION}-*-{fh}-s*"
+            fields += [
+                (f / "card.md").read_text("utf-8")
+                for f in sorted(cdir.glob(pattern))
                 if (f / "card.md").is_file()
             ]
         return checkpoint.write_index(

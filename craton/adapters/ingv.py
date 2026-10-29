@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import urllib.parse
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from craton.adapters import register
@@ -50,7 +50,8 @@ def _short(t: float) -> str:
 def month_windows(region: Region) -> list[tuple[float, float]]:
     """[start, end) windows, one per calendar month, clipped to the region's window."""
     out = []
-    first = datetime.fromtimestamp(region.t_start, UTC)
+    # Arithmetic from the epoch: Windows' fromtimestamp refuses moments before 1970.
+    first = datetime(1970, 1, 1, tzinfo=UTC) + timedelta(seconds=region.t_start)
     y, m = first.year, first.month
     while True:
         lo = to_seconds(datetime(y, m, 1, tzinfo=UTC))

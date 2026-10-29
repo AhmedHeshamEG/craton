@@ -574,6 +574,10 @@ def cmd_bench(args: argparse.Namespace) -> int:
         log=log,
         config_hash=getattr(method, "config_hash", "baseline"),
     )
+    if args.carry:
+        results = harness.carry(root, ctx, results)
+        n = sum(r.carried_from is not None for r in results.results)
+        console.print(f"[dim]carried {n} task(s) unchanged from the last accepted run[/]")
     path = harness.save_pending(root, results)
     if hasattr(method, "write_cards"):
         cards = method.write_cards(root)
@@ -919,6 +923,12 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--freeze", action="store_true", help="freeze the record, or its new tasks")
     b.add_argument("--tasks", nargs="*", help="only these task IDs")
     b.add_argument("--seeds", nargs="*", type=int, help="default: the mini config's seeds")
+    b.add_argument(
+        "--carry",
+        action="store_true",
+        help="run: copy the tasks not run from the method's last accepted run (same config "
+        "and frozen data only)",
+    )
     b.add_argument("--variants", nargs="*", help="ablate: which variants (default: all four)")
     b.set_defaults(func=cmd_bench)
 

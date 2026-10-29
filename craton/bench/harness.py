@@ -43,7 +43,7 @@ from craton.bench.tasks import (
     frozen_path,
     load_frozen,
 )
-from craton.paths import pending_dir
+from craton.paths import pending_dir, runs_dir
 
 Log = Callable[[str], None]
 
@@ -251,6 +251,44 @@ def run(
         created=stamp,
         results=tuple(results),
     )
+
+
+def carry(root: Path, ctx: BenchContext, results: RunResults) -> RunResults:
+    """Fill the tasks a partial run skipped from the method's newest accepted run.
+
+    A phase that adds one task needn't spend hours re-running the others: a result is carried
+    only if its task's frozen fingerprint is the one the earlier run was scored on and the
+    method's configuration is the same, and it says which run it came from. Anything else is
+    refused, so a carried number is always one the ratchet has already judged.
+    """
+    frozen = load_frozen(ctx.region)
+    if frozen is None:
+        raise RuntimeError("CratonBench is not frozen")
+    earlier = sorted(
+        (RunResults.load(p) for p in runs_dir(root).glob("*.json")),
+        key=lambda r: r.created,
+    )
+    earlier = [r for r in earlier if r.model == results.model]
+    if not earlier:
+        raise RuntimeError(f"{results.model} has no accepted run to carry from")
+    last = earlier[-1]
+    if last.config_hash != results.config_hash:
+        raise RuntimeError(
+            f"{last.run_id} ran config {last.config_hash}, this run {results.config_hash}: "
+            "a changed method re-runs every task"
+        )
+    have = {r.task_id for r in results.results}
+    carried = []
+    for r in last.results:
+        if r.task_id in have:
+            continue
+        task = frozen["tasks"].get(r.task_id)
+        if task is None or task["fingerprint"] != r.fingerprint:
+            raise RuntimeError(f"{r.task_id}: its frozen data changed since {last.run_id}")
+        carried.append(r.model_copy(update={"carried_from": r.carried_from or last.run_id}))
+    order = {tid: i for i, tid in enumerate(TASKS)}
+    merged = sorted([*results.results, *carried], key=lambda r: order.get(r.task_id, 999))
+    return results.model_copy(update={"results": tuple(merged)})
 
 
 def save_pending(root: Path, results: RunResults) -> Path:

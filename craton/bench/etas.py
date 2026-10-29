@@ -647,8 +647,10 @@ def forecast_days(
         - omori_integral(t0 - parents.t[None, :], pr.c, pr.p)
     )
     w = np.where(seen, w, 0.0)
-    if anisotropic:
-        shapes = learn_shapes(parents, fit.mc)
+    shapes = learn_shapes(parents, fit.mc) if anisotropic else None
+    if shapes is not None and len(shapes.index) == 0:
+        shapes = None  # no quake big enough to have a shape (Groningen): circles only
+    if shapes is not None:
         shaped = spatial_matrix(pr, parents.select(shapes.index), fit.mc, grid, proj, shapes=shapes)
         # A parent's ellipse replaces its circle on every day that starts after it is known.
         use = day_starts[:, None] >= shapes.ready[None, :]

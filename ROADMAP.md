@@ -430,8 +430,8 @@ scale follow, renumbered.
 7. Figure: one fake planet's 10,000 years next to the real Apennines; and the world map of sequences Craton
    learned from.
 
-**Benchmarks:** **CB-09 (two-planet test + sim-to-real gap, new), CB-19, CB-20, CB-21, CB-22, CB-29
-(new)** + everything before.
+**Benchmarks:** **CB-09 (two-planet test + sim-to-real gap, new), CB-19, CB-20, CB-21, CB-22, CB-29,
+CB-30 (new)** + everything before.
 
 **Built in six parts** (D-078), each on `main` when its tests pass; `v0.9.0` is tagged after the last:
 P8a the two planets and CB-09 · P8b CB-19 · P8d the whole Earth, CB-22 and CB-29 · P8c the ML catalogues,
@@ -453,6 +453,13 @@ a machine-learning catalogue adds (Tan et al. 2021; Fonzetti et al. 2025), magni
 scale (D-094, D-095). The catalogue helps ETAS (+0.13 on 2016). Craton: CB-20 −7.028, **below** ETAS on
 the same input (−6.985, expected ≈ +1.1); CB-21 −8.224, +1.14 over ETAS (expected ≈ +1.8). The Field had
 learned INGV's gaps as a constant and counts them twice once they're filled (D-096); the fix is P8f's.
+
+**P8e, done (2026-10-29):** CB-30, two places where the push is measured: Groningen's gas field
+(the reservoir's pressure) and Oklahoma's wastewater (Arbuckle disposal, well by well). Thirty-day
+forecasts from 2017, when both pushes were turned down. Craton **+0.71** bits per quake over ETAS
+and +0.25 over a physics floor whose background follows the pump, on every seed. The same Field
+without the pump scores +0.67: the gain is from reading the quakes, and the pump only steadies it
+(D-099).
 
 **Not in this phase:** the hidden-state layer (P9).
 

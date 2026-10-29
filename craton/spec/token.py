@@ -35,7 +35,7 @@ from craton.spec.instruments import REGISTRY, word_added_in
 from craton.spec.registry import Kind, Registry
 from craton.spec.timeaxis import EARTH_AGE_S, to_seconds
 
-SPEC_VERSION = "1.1.0"
+SPEC_VERSION = "1.2.0"
 #: What a token says when it asks for nothing newer: tokens are written under the oldest spec
 #: that accepts them (``craton.spec.instruments.WORDS_ADDED``).
 BASE_SPEC = "1.0.0"
@@ -258,6 +258,14 @@ class Token(BaseModel):
                 n=inst.name,
                 kinds=list(inst.kinds),
                 k=self.kind,
+            )
+        if _version(inst.added_in) > _version(self.spec):
+            raise _fail(
+                "spec_too_old",
+                "instrument {n} arrived in spec {a}; this token says {s}",
+                n=inst.name,
+                a=inst.added_in,
+                s=self.spec,
             )
         n = len(inst.channels)
         if len(self.value) != n:

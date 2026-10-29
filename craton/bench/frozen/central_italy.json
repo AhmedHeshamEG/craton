@@ -822,6 +822,58 @@
           "4": 3.974
         }
       }
+    },
+    "CB-30": {
+      "name": "Human-made quakes",
+      "metric": "bits per quake above ETAS fitted on the box's own past, mean of the two cases",
+      "direction": "higher",
+      "fingerprint": "9a9ad2ad549566b4ac85ca50b5d2b1bdb976ef8226cac302d6c6bec5287e2789",
+      "files": {
+        "groningen.parquet": "f0f94542d2da96b69cbc85d1b02f34c4ce7066c39ef6a75a4e0f1d94333a1224",
+        "oklahoma.parquet": "6cc61a1fe672cc5b45d5e129a3b0d4f23b24fd4b1ab9dd2601094e8691d30df2"
+      },
+      "summary": {
+        "snapshots": {
+          "groningen": "b392ac5e4c87e6dc",
+          "oklahoma": "1989705b223c5506"
+        },
+        "groningen": {
+          "box": [
+            53.0,
+            53.6,
+            6.4,
+            7.3
+          ],
+          "window": {
+            "name": "cb30_groningen",
+            "start": "2017-01-01T00:00:00Z",
+            "end": "2024-12-20T00:00:00Z"
+          },
+          "mc": 1.0,
+          "M>=1.5": 98,
+          "M>=1": 227,
+          "largest": 3.434692441,
+          "fit_quakes": 506
+        },
+        "oklahoma": {
+          "box": [
+            34.0,
+            37.0,
+            -99.5,
+            -96.0
+          ],
+          "window": {
+            "name": "cb30_oklahoma",
+            "start": "2017-01-01T00:00:00Z",
+            "end": "2024-12-20T00:00:00Z"
+          },
+          "mc": 2.5,
+          "M>=3": 594,
+          "M>=2.5": 2081,
+          "largest": 5.06,
+          "fit_quakes": 7265
+        }
+      }
     }
   }
 }
