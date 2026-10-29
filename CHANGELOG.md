@@ -6,6 +6,13 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 ## [Unreleased]
 
 ### Added
+- **What the network missed (P8c, D-094, D-095).** Adapter `zenodo_catalog` (research catalogues
+  published as one CSV on Zenodo, MD5-checked) and three machine-learning catalogues: Tan et al. 2021
+  (central Italy 2016-17), Fonzetti et al. 2025 (L'Aquila 2009), Poggiali et al. 2025 (Alto Tiberina).
+- **CB-20 and CB-21, enhanced inputs** (`craton/bench/enhanced.py`): CB-02's and CB-03's days and scored
+  quakes with INGV plus every unmatched machine-learning quake as history, on INGV's magnitude scale.
+  `ForecastSpec.train_task` lets a task reuse another task's trained models.
+- `docs/assets/missed-*.png`, `scripts/figures/missed.py`, `lessons/P8.md` (P8c).
 - **The project page** (`site/`, `scripts/site.py`, `.github/workflows/pages.yml`): every score drawn
   against ETAS on GitHub Pages, rebuilt from `results/` on each push to main.
 - `docs/assets/scorecard-*.png`, `scripts/figures/scorecard.py`: Craton against ETAS on every

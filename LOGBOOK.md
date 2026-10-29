@@ -560,3 +560,46 @@ never-seen regions are claimed against ETAS-incomplete (D-093).
 Decisions: D-093.
 
 Next: P8c, the ML catalogues: CB-20 and CB-21.
+
+## 2026-10-29 — P8c — What the network missed
+
+TLDR: machine-learning catalogues of the 2016-17 sequence and of L'Aquila 2009 are now inputs, through
+two new tasks that score CB-02's and CB-03's quakes with a richer history. The better catalogue helps
+ETAS. It hurts Craton on 2016, which falls below ETAS on CB-20, because the Field had learned INGV's
+gaps as a constant and counts them twice once they're filled. On L'Aquila Craton stays 1.1 bits above
+ETAS.
+
+Built:
+- `zenodo_catalog` adapter (one CSV per Zenodo record, columns named in the region's YAML, MD5-checked);
+  regions `central_italy_ml_2016` (Tan et al. 2021), `laquila_ml_2009` (Fonzetti et al. 2025),
+  `alto_tiberina_ml` (Poggiali et al. 2025, built, not read by any forecast) (D-095)
+- `craton/bench/enhanced.py`: the union of INGV and the unmatched machine-learning quakes (3 s, 10 km),
+  magnitudes moved onto INGV's scale by a quantile map fitted below M3 (D-094); CB-20 and CB-21, frozen
+- `ForecastSpec.train_task`: CB-20 and CB-21 reuse CB-02's and CB-03's trained Fields
+- data health reads a token's year from its time; the scoreboard rounds the largest magnitude
+- `scripts/figures/missed.py` and its figure; `lessons/P8.md` (P8c); tests 402 → 412
+
+Scores (mean ± std over seeds 0, 1, 2; run `20261029-105451-craton-mini`):
+- CB-20 −7.028 ± 0.017 (new). ETAS −6.985, ETAS-incomplete −6.955 (the floor), ETAS-aniso −6.987,
+  Poisson −14.64. Craton is 0.07 below the floor, on every seed (−7.048, −7.021, −7.016).
+- CB-21 −8.224 ± 0.007 (new). ETAS −9.360, ETAS-incomplete −9.260, ETAS-aniso −9.364, Poisson −16.94.
+  Craton +1.04 over the floor, +1.14 over ETAS.
+- The catalogue's worth to each method (CB-20 − CB-02 / CB-21 − CB-03): ETAS +0.13 / +0.04,
+  ETAS-incomplete +0.10 / +0.04, Craton −0.21 / +0.01.
+- CB-01 … CB-29: every other number identical to P8d.
+
+Surprises / problems:
+- The machine-learning catalogues each use their own local magnitude: Tan's reads a median 0.26 below
+  INGV's, Poggiali's 0.50, Fonzetti's 0.09, and not by a constant (Tan's M0 is INGV's 0.55, its M3
+  INGV's 3.15). Without the map, the union would have added thousands of fake small quakes.
+- Fonzetti's catalogue has *fewer* quakes than INGV in the six hours after L'Aquila (91 against 226):
+  machine-learning pickers drown in overlapping waveforms too. That's why the input is a union.
+- The Field's loss on CB-20 is all in *how many*: it expects 1,558 M3+ quakes where 1,065 came (on
+  CB-02, 1,082). *Where* scores −4.20 bits on both. It multiplies ETAS by 1.86 on CB-02 and still by
+  1.94 when the gaps are filled (D-096).
+- Fonzetti's relocated file has its latitude and longitude headers swapped.
+- Each full baseline run takes about an hour (ETAS-incomplete 2.6 h); craton-mini 1.7 h.
+
+Decisions: D-094, D-095, D-096.
+
+Next: P8e, Groningen and Oklahoma (pressure → quakes).
