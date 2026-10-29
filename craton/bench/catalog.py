@@ -100,6 +100,12 @@ CATALOG: tuple[PlannedTask, ...] = (
     PlannedTask(
         "CB-29", "EarthquakeNPP", "their California benchmark, their ETAS: nats per quake", "P8"
     ),
+    PlannedTask(
+        "CB-30",
+        "Human-made quakes",
+        "bits per quake above ETAS in Groningen and Oklahoma, the forcing measured",
+        "P8",
+    ),
 )
 
 BY_ID = {t.task_id: t for t in CATALOG}
