@@ -1,0 +1,30 @@
+# Poggiali et al. (2025): a machine-learning catalogue of the Alto Tiberina fault system,
+# 2010-2023, ~410,000 quakes (deep-learning picks, double-difference relocation). Almost all
+# of it is below M2 (27 quakes above INGV's M2 that INGV lacks), so no forecast task reads it
+# yet; it is here for the hidden-state work (P9) and for anyone mapping the fault.
+name: alto_tiberina_ml
+description: The Alto Tiberina fault system 2010-2023, Poggiali et al.'s machine-learning catalogue.
+box:
+  lat_min: 42.9
+  lat_max: 43.8
+  lon_min: 12.0
+  lon_max: 13.1
+start: "2010-01-01T00:00:00Z"
+end: "2023-05-01T00:00:00Z"
+adapters: [zenodo_catalog]
+sources:
+  zenodo_catalog:
+    record: 15622508
+    file: catalog.csv
+    md5: 79dc91459d7b37650255afde67b28e09
+    provider: Poggiali, Chiaraluce, Ross, Zhu & Marone (2025), machine-learning catalogue
+    license: CC-BY-4.0
+    citation: "Poggiali et al. (2025), BSSA 115(5), 2181-2201; doi:10.5281/zenodo.15622508"
+    magnitude_type: ML
+    columns:
+      time: origintime
+      lat: latitude
+      lon: longitude
+      depth: depth
+      magnitude: magnitude
+      id: evid

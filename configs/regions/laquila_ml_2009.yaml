@@ -1,0 +1,29 @@
+# Fonzetti et al. (2025): a machine-learning catalogue of L'Aquila 2009 (PhaseNet picks,
+# GaMMA association, 90 stations), ~190,000 quakes with 1-D locations and magnitudes.
+# It feeds CB-21 only, layered over INGV's catalogue (D-094); CB-03 never reads it.
+name: laquila_ml_2009
+description: L'Aquila 2009, Fonzetti et al.'s machine-learning catalogue (1-D locations).
+box:
+  lat_min: 41.9
+  lat_max: 42.8
+  lon_min: 13.0
+  lon_max: 13.9
+start: "2009-01-01T00:00:00Z"
+end: "2010-01-01T00:00:00Z"
+adapters: [zenodo_catalog]
+sources:
+  zenodo_catalog:
+    record: 16535092
+    file: catalog_190k_1D_mag.csv
+    md5: 093b1e59f1c9d7c2b4168c85d2946573
+    provider: Fonzetti, Govoni, De Gori, Valoroso & Chiarabba (2025), machine-learning catalogue
+    license: CC-BY-4.0
+    citation: "Fonzetti et al. (2025), Geophys. J. Int., doi:10.1093/gji/ggaf286; doi:10.5281/zenodo.16535092"
+    magnitude_type: ML
+    columns:
+      time: Origin Time
+      lat: Latitude
+      lon: Longitude
+      depth: Depth
+      magnitude: Magnitude
+      id: ID
