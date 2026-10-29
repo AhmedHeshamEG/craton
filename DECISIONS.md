@@ -1315,3 +1315,22 @@ by their metric: test log-likelihood per quake in nats, time in days, space in k
 **Rejected.** Our own ComCat download as CB-29's data (different events from theirs). Our ETAS as
 the reference (the benchmark is theirs). A Monte Carlo cell integral (biased for the tight kernels
 of small quakes, which hold almost all their mass in one cell).
+
+### D-093 · 2026-10-29 · P8 — P8d passes, and the zero-shot bar moves to ETAS-incomplete
+
+P8d met its stop rule as written: Craton is above ETAS on CB-29 (+0.089 nats per quake, every
+seed) and on CB-22's never-seen half (+0.361 bits per quake). The phases after P8 go ahead. Two
+facts stay next to that result wherever it is quoted:
+
+- **Maule.** The 200-quake rule (D-091) was written after seeing Maule 2010. With Maule counted,
+  the never-seen half is below ETAS on every seed (−1.61, −0.80, −1.86; mean −1.42).
+- **The better floor.** ETAS-incomplete scores +0.336 on the never-seen half, level with Craton
+  within noise, and above it in Chile (−0.11) and Alaska (−0.03). What transfers to a new region
+  may be mostly the handling of a network that goes blind after a big shock.
+
+So from here on, a claim about regions Craton never saw is made against ETAS-incomplete, the best
+floor on the board, and not against plain ETAS. CB-22 itself doesn't change (its reference stays
+ETAS fitted there; benchmarks are immutable); the bar a phase has to clear on it does.
+
+**Rejected.** Re-scoring CB-22 with Maule counted (the floor itself fails there, D-091). Calling
+the zero-shot result a win over every floor (it isn't one).

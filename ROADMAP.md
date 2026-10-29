@@ -417,7 +417,8 @@ scale follow, renumbered.
    magnitudes. CB-22 scores it on held-out sequences there **and zero-shot** in regions it never read
    (Turkey via EMSC, Chile and Alaska via ComCat). **CB-29** scores it on EarthquakeNPP, an outside
    benchmark where five neural point processes lost to ETAS. Stop rule, set before any result: lose CB-29
-   or CB-22's never-seen half, and the phases after P8 are redone.
+   or CB-22's never-seen half, and the phases after P8 are redone. It passed on both (D-093), level with
+   ETAS-incomplete on the never-seen half, so later phases claim never-seen regions against ETAS-incomplete.
 3. **Human-made planets with a measured cause:** Groningen (gas production and reservoir pressure) and
    Oklahoma (wastewater injection volumes). Learn "pressure → quakes" where pressure is known.
 4. **Fake planets, as a two-planet test:** an ETAS planet (Craton must tie ETAS: it can't beat the truth) and

@@ -341,7 +341,9 @@ a YAML file, and each speaks in its own magnitudes.
 EarthquakeNPP is someone else's exam: five neural forecasters lost to ETAS on it. Craton beats their ETAS by a
 small, steady margin. Two honest catches. ETAS that knows networks go blind after big shocks is level with
 Craton on the never-seen regions (+0.34), and wins Chile. And Maule 2010 isn't counted, because its box has too
-few past quakes for ETAS itself to be fitted (D-091). Step by step: [`lessons/P8.md`](lessons/P8.md).
+few past quakes for ETAS itself to be fitted (D-091). That rule was written after seeing Maule, and with Maule
+counted the never-seen half is below ETAS on every seed (−1.42 on average). So from now on the bar for
+never-seen regions is ETAS-incomplete, not plain ETAS (D-093). Step by step: [`lessons/P8.md`](lessons/P8.md).
 
 ## Built like a building
 
