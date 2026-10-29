@@ -93,6 +93,22 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Fingerprint:** `4225fb37a25e9adb`
 - **Test data:** context quakes 0 0, 7 8, 30 56, 90 148, 365 874 · test quakes 1,307 · largest test 4.5
 
+## CB-20 · Apennines, enhanced inputs
+
+CB-02 again, the same days and the same scored quakes, but every forecast reads its history from INGV's catalogue plus every quake of Tan et al.'s machine-learning catalogue (2016-17) that INGV doesn't have, moved onto INGV's magnitude scale by a quantile map fitted on matched quakes below M3. The machine-learning catalogue was relocated with hindsight, so it gets its own task. CB-20 minus CB-02 is what the better catalogue is worth to a method.
+
+- **Metric:** log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input (higher is better)
+- **Fingerprint:** `22aaa3e64b14c393`
+- **Test data:** days 494 · M>=3 1,065 · M>=1.5 42,807 · magnitude types ML 42,381, Md 291, Mw 135 · largest 6.5 · overlay central_italy_ml_2016 · overlay snapshot 66ade7665b03f361 · overlay quakes 866,295 · matched 82,174 · added 784,121 · added M>=2 in window 6,206 · magnitude map 0 0.551, 1 1.5, 2 2.228, 3 3.149, 4 4.149
+
+## CB-21 · L'Aquila, enhanced inputs
+
+CB-20's rule for 2009: CB-03's days and quakes, with Fonzetti et al.'s machine-learning catalogue of L'Aquila layered over INGV's as input.
+
+- **Metric:** log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input (higher is better)
+- **Fingerprint:** `ef0b759db5f55a6d`
+- **Test data:** days 365 · M>=3 315 · M>=1.5 11,070 · magnitude types ML 10,492, Md 510, Mw 68 · largest 6.1 · overlay laquila_ml_2009 · overlay snapshot 3d8cd35895da9077 · overlay quakes 190,872 · matched 17,218 · added 173,654 · added M>=2 in window 264 · magnitude map 0 0.404, 1 1.2, 2 2.1, 3 2.974, 4 3.974
+
 ## CB-05 · Calibration
 
 

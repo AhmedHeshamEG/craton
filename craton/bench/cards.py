@@ -66,6 +66,18 @@ ABOUT = {
         "fitted on the box's own past, averaged over the never-seen regions. A sequence counts "
         "only if that ETAS fits on 200+ quakes."
     ),
+    "CB-20": (
+        "CB-02 again, the same days and the same scored quakes, but every forecast reads its "
+        "history from INGV's catalogue plus every quake of Tan et al.'s machine-learning "
+        "catalogue (2016-17) that INGV doesn't have, moved onto INGV's magnitude scale by a "
+        "quantile map fitted on matched quakes below M3. The machine-learning catalogue was "
+        "relocated with hindsight, so it gets its own task. CB-20 minus CB-02 is what the "
+        "better catalogue is worth to a method."
+    ),
+    "CB-21": (
+        "CB-20's rule for 2009: CB-03's days and quakes, with Fonzetti et al.'s "
+        "machine-learning catalogue of L'Aquila layered over INGV's as input."
+    ),
     "CB-29": (
         "EarthquakeNPP (Stockman, Lawson & Werner, TMLR 2026), untouched: their ComCat_25 "
         "California dataset, their 1981-2007 training and 2007-2020 test windows, their fitted "

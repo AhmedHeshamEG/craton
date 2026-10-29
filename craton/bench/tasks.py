@@ -493,6 +493,13 @@ class ForecastSpec:
     thresholds: tuple[float, ...] = (3.0, 1.5)
     #: The largest magnitude a forecast may give any probability to.
     max_magnitude: float = 7.3
+    #: The task whose training this forecast shares (CB-20 trains as CB-02); None: its own.
+    train_task: str | None = None
+
+    @property
+    def trained_as(self) -> str:
+        """The task ID a trained model is filed under."""
+        return self.train_task or self.task_id
 
     @property
     def fit_end(self) -> str:
@@ -1142,6 +1149,8 @@ assert all(t.fit_split in SPLITS for t in TASKS.values() if isinstance(t, Sequen
 assert to_seconds(ERA_A.start) < to_seconds("2016-08-25T00:00:00Z")
 
 # The P7 trust tasks register themselves through the same registry (CB-05 … CB-11).
+# P8c: CB-20 and CB-21, the Italian forecasts with machine-learning catalogues as input.
+from craton.bench import enhanced as _enhanced  # noqa: E402, F401
 from craton.bench import locks as _locks  # noqa: E402, F401
 
 # P8d, the whole Earth: CB-22 (and CB-29, EarthquakeNPP).
