@@ -548,3 +548,15 @@ Decisions: D-086 … D-092.
 
 Next: talk the result through with Hesham (the stop rule), then P8c, the ML catalogues: CB-20 and
 CB-21.
+
+## 2026-10-29 — P8d — The verdict
+
+TLDR: P8d passed its stop rule on both counts, and the plan goes on. It is the first win on a
+benchmark Craton didn't design, and the first sign the Field carries to places it never read. It
+isn't a breakthrough: on the never-seen regions ETAS-incomplete is level with it, and the rule
+that leaves Maule out was written after seeing Maule (with Maule, −1.42 on average). From now on
+never-seen regions are claimed against ETAS-incomplete (D-093).
+
+Decisions: D-093.
+
+Next: P8c, the ML catalogues: CB-20 and CB-21.
