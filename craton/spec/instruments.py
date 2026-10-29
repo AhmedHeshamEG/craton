@@ -222,6 +222,65 @@ GUTENBERG_RICHTER_B = Instrument(
     references=("Aki (1965); Utsu (1966); van der Elst (2021), b-positive",),
 )
 
+# ---------------------------------------------------------------- 1.2.0: what people push in
+
+FLUID_INJECTION = Instrument(
+    name="fluid_injection",
+    description=(
+        "Fluid pumped into the ground through one well over a reporting period: the volume, "
+        "placed at the well and the middle of its injection interval."
+    ),
+    kinds=("forcing",),
+    channels=(
+        Channel("volume", "m3", "Volume injected during the period the resolution names.", 0, 1e9),
+    ),
+    qualifiers=(
+        Qualifier(
+            "well",
+            "The well's identifier at its regulator (a US API number, for one).",
+            True,
+            pattern=r"[A-Za-z0-9_.:/-]{1,64}",
+        ),
+        Qualifier(
+            "well_class",
+            "The regulator's class of the well (disposal, enhanced recovery, …), its own code.",
+            pattern=r".{1,32}",
+        ),
+        Qualifier("fluid", "What was injected, in the regulator's words.", pattern=r".{1,64}"),
+        Qualifier(
+            "formation",
+            "The formation the fluid goes into, in the regulator's words.",
+            pattern=r".{1,128}",
+        ),
+    ),
+    added_in="1.2.0",
+    references=(
+        "Keranen et al. (2014), Science 345, 448-451, doi:10.1126/science.1255802",
+        "Langenbruch & Zoback (2016), Science Advances 2, e1601542",
+    ),
+)
+
+RESERVOIR_PRESSURE = Instrument(
+    name="reservoir_pressure",
+    description=(
+        "Pore-fluid pressure in a reservoir at a point and a moment, from a reservoir model "
+        "matched to the pressures measured in its wells."
+    ),
+    kinds=("forcing",),
+    channels=(Channel("pressure", "MPa", "Pore-fluid pressure.", 0, 300),),
+    qualifiers=(
+        Qualifier("model", "The reservoir model and its version.", True, pattern=r".{1,128}"),
+        Qualifier("reservoir", "The reservoir or formation.", pattern=r".{1,128}"),
+    ),
+    added_in="1.2.0",
+    references=(
+        "Bourne & Oates (2017), JGR Solid Earth 122, 10299-10320, doi:10.1002/2017JB014356",
+    ),
+)
+
+#: Instruments added after 1.0.0, in the order they arrived.
+LATER_INSTRUMENTS = (FLUID_INJECTION, RESERVOIR_PRESSURE)
+
 V1_INSTRUMENTS = (
     SEISMIC_CATALOG,
     MACROSEISMIC_REPORT,
@@ -236,5 +295,5 @@ V1_INSTRUMENTS = (
     GUTENBERG_RICHTER_B,
 )
 
-REGISTRY = Registry(V1_INSTRUMENTS)
+REGISTRY = Registry(V1_INSTRUMENTS + LATER_INSTRUMENTS)
 """The default registry. Adapters and plugins add to it with ``REGISTRY.register(...)``."""
