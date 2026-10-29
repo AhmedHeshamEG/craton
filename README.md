@@ -49,6 +49,15 @@ Craton is that one model.
   </picture>
 </p>
 
+The model that forecasts today, the Field, on real data: midnight after the 2016 Norcia earthquake, ETAS
+makes its forecast, every square of central Italy looks at the others, and the Field nudges ETAS up or down.
+Five short clips, from the map to the whole world, are on the
+[project page](https://ahmedheshameg.github.io/craton/#how).
+
+<p align="center">
+  <img alt="Central Italy as 1,050 squares. ETAS's forecast for the day after the Norcia earthquake rises as grey bars, arcs show which squares the trained Field attends to from Norcia, and the bars move up in orange or down in blue as the Field corrects ETAS." src="docs/assets/field-forecast.gif" width="100%">
+</p>
+
 ## One token, frozen
 
 <p align="center">

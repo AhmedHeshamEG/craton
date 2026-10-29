@@ -67,6 +67,12 @@ td .m { color: var(--muted); font-size: 12px; }
 .pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; border: 1px solid currentColor; }
 .pill.win { color: var(--ok); } .pill.loss { color: var(--bad); } .pill.tie { color: var(--muted); }
 @media (max-width: 40rem) { .wide { display: none; } }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 28px; }
+.clip { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.clip video { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; border-radius: 12px; background: #0b0b0d; border: 1px solid var(--faint); }
+.clip figcaption { font-size: 14px; color: var(--muted); max-width: 60ch; }
+.clip figcaption b { color: var(--ink); font-weight: 500; }
+.clip figcaption i { font-style: normal; color: var(--accent); margin-right: 6px; font-weight: 600; }
 footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-top: 1px solid var(--faint); padding-top: 20px; }
 .err { color: var(--muted); font-size: 14px; }
 </style>
@@ -85,6 +91,18 @@ footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-t
     <div class="tile"><div class="k">Apennines 2016-17 · daily forecasts</div><div class="v" id="t-02">—</div><div class="s">bits per M3+ quake above ETAS (<b id="t-02-p">—</b> more probability)</div></div>
     <div class="tile"><div class="k">L'Aquila 2009 · a whole era held out</div><div class="v" id="t-03">—</div><div class="s">bits per M3+ quake above ETAS (<b id="t-03-p">—</b> more probability)</div></div>
   </div>
+
+  <section id="how">
+    <h2>How the Field works, in five clips</h2>
+    <p class="note">Real data from central Italy and the trained model, no sound. <a href="anim/full.mp4">All five in one video</a>.</p>
+    <div class="clips">
+      <figure class="clip"><video src="anim/1-squares.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Squares"></video><figcaption><i>1</i><b>Squares.</b> Every dot is a real quake; together they draw the Apennines. The map becomes 1,050 squares of about 10 km, and each square is one token.</figcaption></figure>
+      <figure class="clip"><video src="anim/2-memory.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Memory"></video><figcaption><i>2</i><b>Memory.</b> The Amatrice square on 24 August 2016. Nine counters, from one hour to twelve years, hold its past: the fast ones flood at a big quake, the slow ones keep the years.</figcaption></figure>
+      <figure class="clip"><video src="anim/3-forecast.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Forecast"></video><figcaption><i>3</i><b>Forecast.</b> Midnight after Norcia. ETAS forecasts tomorrow, every square looks at the others (the Field's own attention), and the Field nudges ETAS up or down, never more than four times.</figcaption></figure>
+      <figure class="clip"><video src="anim/4-training.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Training"></video><figcaption><i>4</i><b>Training.</b> Tomorrow happens and the less surprised forecast wins. The Field learns that on every day from 1991 to 2016, six copies at once, averaged.</figcaption></figure>
+      <figure class="clip"><video src="anim/5-world.mp4" autoplay muted loop playsinline preload="metadata" aria-label="The world"></video><figcaption><i>5</i><b>The world.</b> One Field learns from Italy, California, Japan and New Zealand, then forecasts Turkey, Chile and Alaska, places it never saw, against ETAS fitted there.</figcaption></figure>
+    </div>
+  </section>
 
   <section id="tests">
     <h2>Every forecasting test, measured from ETAS</h2>
