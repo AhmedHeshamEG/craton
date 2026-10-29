@@ -1,0 +1,40 @@
+# Central and northern Oklahoma: quiet until 2009, then the most seismic place in the
+# contiguous US by 2015 (Prague M5.7 2011, Pawnee M5.8 2016), after wastewater from oil and
+# gas production was pumped into the Arbuckle formation above the basement. Volumes were cut
+# from 2015 on and the quakes fell with them. CB-30's second human-made case (P8e).
+name: oklahoma
+description: Central and northern Oklahoma, south of the Kansas border.
+box:
+  lat_min: 34.0
+  lat_max: 37.0
+  lon_min: -99.5
+  lon_max: -96.0
+start: "2000-01-01T00:00:00Z"
+end: "2025-01-01T00:00:00Z"     # fixed; moving it is a new snapshot
+adapters: [fdsn_catalog, uic_workbook]
+completeness: 2.5               # ComCat in Oklahoma from 2010 (Darold et al. 2015)
+sources:
+  fdsn_catalog:
+    service: https://earthquake.usgs.gov/fdsnws/event/1/query
+    provider: USGS ANSS ComCat (with the Oklahoma Geological Survey)
+    license: LicenseRef-USGS-public-domain
+    min_magnitude: 1.5
+    params: {eventtype: earthquake}
+  uic_workbook:
+    url: https://oklahoma.gov/content/dam/ok/en/occ/documents/og/ogdatafiles/{year}-uic-injection-volumes.xlsx
+    years: [2011, 2024]
+    provider: Oklahoma Corporation Commission, Oil and Gas Conservation Division
+    license: LicenseRef-OCC-public-record
+    unit: bbl
+    months: "{mon} Vol"
+    columns:
+      well: API
+      lat: LAT
+      lon: LON
+      top: InjTopDepth
+      bottom: InjBotDepth
+      total_depth: TotalDepth
+      well_class: WellType
+      fluid: FluidType
+      formation: [FormationName, PermitFormationName]
+      measurement: MeasurementType

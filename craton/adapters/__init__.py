@@ -33,7 +33,17 @@ def get_adapter(name: str) -> Adapter:
 
 
 # The built-ins register themselves on import.
-from craton.adapters import earthquakenpp, fdsn, ingv, jma, ngl, tides, zenodo  # noqa: E402
+from craton.adapters import (  # noqa: E402
+    earthquakenpp,
+    fdsn,
+    gridded,
+    ingv,
+    jma,
+    ngl,
+    tides,
+    uic,
+    zenodo,
+)
 
 __all__ = [
     "ADAPTERS",
@@ -44,10 +54,12 @@ __all__ = [
     "earthquakenpp",
     "fdsn",
     "get_adapter",
+    "gridded",
     "ingv",
     "jma",
     "ngl",
     "register",
     "tides",
+    "uic",
     "zenodo",
 ]

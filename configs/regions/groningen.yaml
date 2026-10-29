@@ -1,0 +1,37 @@
+# The Groningen gas field: the largest in Europe, produced since 1963, shaken since 1991 by
+# quakes the gas extraction set off (Huizinge M3.6, 2012). Production was cut from 2014 and
+# stopped in 2023. Two instruments that know the cause: the reservoir's modelled pressure and
+# KNMI's catalogue. CB-30's first human-made case (P8e).
+name: groningen
+description: The Groningen gas field and its surroundings, northeast Netherlands.
+box:
+  lat_min: 52.95
+  lat_max: 53.65
+  lon_min: 6.3
+  lon_max: 7.4
+start: "1957-10-01T00:00:00Z"   # the pressure model's first date (before production)
+end: "2026-10-01T00:00:00Z"     # fixed; moving it is a new snapshot
+adapters: [fdsn_catalog, pressure_grid]
+completeness: 1.0               # KNMI's network in the field reads M1.0+ from the 2000s
+sources:
+  fdsn_catalog:
+    service: https://rdsa.knmi.nl/fdsnws/event/1/query
+    provider: KNMI (Royal Netherlands Meteorological Institute)
+    license: CC-BY-4.0
+    start: "1986-01-01T00:00:00Z"   # the catalogue's first induced quake is 1986
+    magnitude_aliases: {MLn: ML, MLnq: ML}   # KNMI's Dutch local magnitude (MLnq: the older events)
+  pressure_grid:
+    record: 10245813
+    file: ReservoirModel_pressures_V1_2023.csv
+    md5: 06cbc151d3cffd1ab1fa00b3302bad7f
+    provider: NAM (Nederlandse Aardolie Maatschappij), published by TNO
+    license: LicenseRef-NAM-TNO-no-licence-stated
+    citation: "TNO (2023), Data for TNO Modelchain for Groningen, Zenodo, doi:10.5281/zenodo.10245813"
+    crs: EPSG:28992
+    columns: {x: X, y: Y}
+    dates: "P%Y_%m_%d"
+    unit: bar
+    model: NAM Groningen reservoir model V1 2023
+    reservoir: Rotliegend Slochteren sandstone
+    depth_km: 3.0                   # the reservoir's top lies at about 2.6-3.2 km
+    cell_km: 0.5
