@@ -334,9 +334,15 @@ class WorldField:
         pool = self.build_pool(root)
         cfg = self.config
         t0 = time.perf_counter()
+        starts_from = (
+            field_stage(cfg.curriculum.start_from, self.log).states(root, seed)
+            if cfg.curriculum
+            else []
+        )
         states, runs = [], []
         for m in range(cfg.train.members):
-            st, info = train_world_member(pool, cfg, seed * 100 + m, self.log)
+            init = starts_from[m % len(starts_from)] if starts_from else None
+            st, info = train_world_member(pool, cfg, seed * 100 + m, self.log, init)
             states.append(st)
             runs.append(info)
         folder = self.folder(root, seed)
@@ -347,6 +353,7 @@ class WorldField:
             "config_hash": field_hash(cfg),
             "world_version": WORLD_VERSION,
             "pool": self.pool_id(),
+            "starts_from": cfg.curriculum.start_from if cfg.curriculum else None,
             "craton_version": __version__,
             "tiles": [p.tile.key for p in pool],
             "training_days": int(sum(len(p.train) for p in pool)),
@@ -394,6 +401,16 @@ class WorldField:
         shares = magnitude_shares(fit, spec.grid, spec.max_magnitude)
         first = int(spec.grid.mag_bin_of(np.array([spec.scored]))[0])
         return GriddedForecast(m3.mean(axis=0) / shares[first:].sum(), shares)
+
+
+def field_stage(config_name: str, log: Log = _quiet) -> WorldField:
+    """A curriculum stage by its config: fake planets if it has a ``planets`` section, else
+    real regions."""
+    if load_field_config(config_name).planets is not None:
+        from craton.field.planets import PlanetField
+
+        return PlanetField(config_name, log=log)
+    return WorldField(config_name, log=log)
 
 
 def _net(n_memory: int, grid: csep.Grid, cfg: FieldConfig, dev: torch.device) -> FieldNet:

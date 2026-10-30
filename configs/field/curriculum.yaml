@@ -1,0 +1,29 @@
+# The curriculum Field (P8f): the Italy Field, every member started from an earth Field member
+# (the same seed) instead of from ETAS alone. Stage order: planets -> earth -> central Italy.
+name: curriculum
+description: The Italy Field, fine-tuned from the world Field.
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  dropout: 0.1
+  max_nudge: 4.0
+
+memory:
+  m_min: 1.5
+  start: "1990-01-01T00:00:00Z"
+
+train:
+  first_day: "1991-01-01T00:00:00Z"
+  validation_every: 8
+  days_per_step: 8
+  lr: 3.0e-4          # the world Field's; a start that already works needs smaller steps
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 5
+  members: 6
+  seeds: [0, 1, 2]
+
+curriculum:
+  start_from: earth

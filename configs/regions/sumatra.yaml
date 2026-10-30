@@ -1,0 +1,21 @@
+# Sumatra and the Andaman Sea, seen only through the global network: Sumatra-Andaman 2004 (M9.1)
+# and Nias 2005 (M8.6). A world Field region (P8f) where ComCat goes blind after every great
+# quake, so the Field can learn what a blind network looks like before it meets one.
+name: sumatra
+description: The Sunda megathrust from Java's west tip to the Andaman Islands, 7 S to 14 N.
+box:
+  lat_min: -7.0
+  lat_max: 14.0
+  lon_min: 90.0
+  lon_max: 107.5
+start: "1985-01-01T00:00:00Z"
+end: "2026-10-01T00:00:00Z"
+adapters: [fdsn_catalog]
+completeness: 4.5               # ComCat's global coverage, not a national network
+sources:
+  fdsn_catalog:
+    service: https://earthquake.usgs.gov/fdsnws/event/1/query
+    provider: USGS ANSS ComCat
+    license: LicenseRef-USGS-public-domain
+    min_magnitude: 4.0
+    params: {eventtype: earthquake}

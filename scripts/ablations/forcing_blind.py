@@ -7,6 +7,10 @@ per quake of each, ETAS's, and the difference: the part of Craton's gain the mea
 pays for. About 10 minutes per seed for each Field on the RTX 2060.
 
     uv run --extra cu126 python scripts/ablations/forcing_blind.py 0 1 2
+    uv run --extra cu126 python scripts/ablations/forcing_blind.py --config pumped 0 1 2
+
+``--config pumped`` (P8f) runs the same test on the Field that also trained on pumped planets;
+the blind one sees the same planets without their forcing.
 """
 
 from __future__ import annotations
@@ -22,15 +26,16 @@ from craton.bench.tasks import BenchContext, score_forecast
 from craton.field.forced import ForcedField
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "results" / "ablation" / "forcing_blind.json"
 
 
-def main(seeds: list[int]) -> None:
+def main(seeds: list[int], config: str = "forced") -> None:
+    suffix = "" if config == "forced" else f"-{config}"
+    out = ROOT / "results" / "ablation" / f"forcing_blind{suffix}.json"
     ctx = BenchContext(ROOT)
     task = InducedQuakes()
     fields = {
-        "forcing": ForcedField("forced", log=print, with_forcing=True),
-        "blind": ForcedField("forced", log=print, with_forcing=False),
+        "forcing": ForcedField(config, log=print, with_forcing=True),
+        "blind": ForcedField(config, log=print, with_forcing=False),
     }
     rows = []
     for seed in seeds:
@@ -50,10 +55,14 @@ def main(seeds: list[int]) -> None:
             row["forcing_pays"] = float(row["forcing"]) - float(row["blind"])
             print(json.dumps(row), flush=True)
             rows.append(row)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"rows": rows}, indent=1) + "\n", "utf-8")
-    print(f"wrote {OUT.relative_to(ROOT).as_posix()}")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"rows": rows}, indent=1) + "\n", "utf-8")
+    print(f"wrote {out.relative_to(ROOT).as_posix()}")
 
 
 if __name__ == "__main__":
-    main([int(s) for s in sys.argv[1:]] or [0, 1, 2])
+    args = sys.argv[1:]
+    name = "forced"
+    if args[:1] == ["--config"]:
+        name, args = args[1], args[2:]
+    main([int(s) for s in args] or [0, 1, 2], name)

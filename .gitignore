@@ -11,6 +11,7 @@ __pycache__/
 checkpoints/
 *.ckpt
 *.pt
+/results/reference/*.csv
 
 # editors and OS
 .vscode/

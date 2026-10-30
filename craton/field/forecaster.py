@@ -153,9 +153,15 @@ def build_days(
 
 
 def train_member(
-    days: Days, grid: csep.Grid, cfg: FieldConfig, member_seed: int, log: Log = _quiet
+    days: Days,
+    grid: csep.Grid,
+    cfg: FieldConfig,
+    member_seed: int,
+    log: Log = _quiet,
+    init: dict[str, torch.Tensor] | None = None,
 ) -> tuple[dict[str, torch.Tensor], dict[str, float]]:
-    """One Field trained on ``days``; returns its weights and how training went."""
+    """One Field trained on ``days``; returns its weights and how training went. ``init``
+    starts it from an earlier stage's weights (the curriculum) instead of from ETAS."""
     assert days.counts is not None
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tc = cfg.train
@@ -168,6 +174,8 @@ def train_member(
     torch.manual_seed(member_seed)
     rng = np.random.default_rng(member_seed)
     net = FieldNet(days.memory.shape[-1], grid, cfg.model).to(dev)
+    if init is not None:
+        net.load_state_dict({**init, "place": net.place})
     opt = torch.optim.AdamW(net.parameters(), lr=tc.lr, weight_decay=tc.weight_decay)
     scaler = torch.amp.GradScaler(enabled=dev.type == "cuda")
     mem = torch.from_numpy(days.memory)
@@ -312,8 +320,10 @@ class FieldForecaster:
         states, runs, base = self.grown_from(ctx, spec, seed)
         if base:
             self.log(f"Field {spec.task_id} seed {seed}: keeping {len(states)} members of {base}")
+        starts_from = self.starts_from(ctx, seed)
         for m in range(len(states), cfg.train.members):
-            st, info = train_member(days, spec.grid, cfg, seed * 100 + m, self.log)
+            init = starts_from[m % len(starts_from)] if starts_from else None
+            st, info = train_member(days, spec.grid, cfg, seed * 100 + m, self.log, init)
             states.append(st)
             runs.append(info)
         meta = {
@@ -328,6 +338,7 @@ class FieldForecaster:
             "first_day": cfg.train.first_day,
             "members": runs,
             "grown_from": base or None,
+            "starts_from": cfg.curriculum.start_from if cfg.curriculum else None,
             "etas": {**fit.params.as_dict(), "b": fit.b, "mc": fit.mc},
             "parameters": sum(v.numel() for v in states[0].values()),
             "train_seconds": time.perf_counter() - t0,
@@ -337,6 +348,16 @@ class FieldForecaster:
         (folder / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", "utf-8")
         (folder / "card.md").write_text(card(meta), "utf-8")
         return states, meta
+
+    def starts_from(self, ctx: BenchContext, seed: int) -> list[dict[str, torch.Tensor]]:
+        """The curriculum's previous stage (P8f): the members of the Field this config starts
+        from, trained with the same seed; none for a Field that starts from ETAS alone."""
+        cur = self.config.curriculum
+        if cur is None:
+            return []
+        from craton.field.world import field_stage
+
+        return field_stage(cur.start_from, self.log).states(ctx.root, seed)
 
     def inputs(self, spec: ForecastSpec, ctx: BenchContext) -> Events:
         """The test-time catalogue after the guard, which watches the live edge: the test

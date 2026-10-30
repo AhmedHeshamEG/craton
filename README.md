@@ -325,7 +325,8 @@ four M5s at Campotosto at the sequence's southern end.
 
 GPS was the reason to try a month. Added to the Field it gains +0.13 bits per quake on every seed, all of it
 in *how many*: most likely the stations measuring the big shocks and the slow slip after them. That's useful,
-and it isn't a precursor. It joins every Field in P8f, next to a version with those jumps removed.
+and it isn't a precursor. With those jumps removed, the gain stops being consistent (one seed up, two
+down), so GPS stays out of the Fields until P10's instruments (D-105).
 
 ## One model, the whole Earth
 
@@ -381,6 +382,11 @@ shock: it forecasts about 1.9 times ETAS's count. Fill those gaps in and it stil
 1,560 M3+ quakes where 1,065 came. On L'Aquila the machine-learning catalogue adds few quakes, and Craton
 stays 1.1 bits above ETAS. Part of Craton's edge on CB-02 turns out to be a learned fix for the catalogue's
 gaps (D-096).
+
+A curriculum fixes it: trained first on fake planets, each seen twice (once complete, once through a
+network blinded by its big shocks), then on the world's regions, then on central Italy, the Field gains
++0.09 on CB-20 on every seed. It also loses 0.03 on CB-02, so the board keeps the Field that only knew
+Italy (D-102).
 
 ## Where people pushed the crust
 

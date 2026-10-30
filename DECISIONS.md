@@ -1511,3 +1511,157 @@ ETAS for a box with no quake big enough to have a shape (Groningen), a case that
 
 **Rejected.** Running everything again (hours of identical numbers). Running only the new task
 and letting the ratchet call the rest missing (every run would fail it).
+
+### D-101 · 2026-10-30 · P8 — A second ETAS referee: ETH's ETAS loses to ours, so ours stays the floor
+
+Every gain on the board is measured against Craton's own ETAS (D-033). The obvious attack is that
+it's weak. So P8f fits the ETAS that ETH Zurich's forecasts are built on (lmizrahi/etas, MIT;
+Mizrahi et al. 2021) on exactly CB-02's and CB-03's training data (INGV M2+, central Italy's box,
+targets from 2005 to each cut, every quake since 1990 a possible parent), in a throwaway
+environment (`scripts/reference/eth_etas_invert.py`), and reads it through the same daily 0.1°
+forecasts and scorer as every method (`scripts/ablations/eth_etas_referee.py`).
+
+| | ETH's ETAS | Craton's ETAS | ETH − ours | how many | where |
+|---|---|---|---|---|---|
+| CB-02 | −7.467 | −7.118 | −0.35 | −0.32 | −0.03 |
+| CB-03 | −9.929 | −9.396 | −0.53 | −0.42 | −0.12 |
+
+- **Checked.** In-sample (2005-08) the ETH model, as implemented here, expects 1,578 M2+ quakes
+  where 1,627 happened; the 3% is aftershocks falling outside the box.
+- **Where it loses.** Almost all in *how many*: ETH's fit expects 444 M3+ on CB-02 (ours 583;
+  1,065 came) and 60 on CB-03 (ours 75; 315 came). Its background is uniform over the box, which
+  costs a little *where*.
+- **What this isn't.** ETH's own forecasts simulate whole cascades, thousands of catalogues a day;
+  both ETAS here are read as first-generation daily rates, the same way. A simulated ETH forecast
+  would expect more quakes and might close part of the gap. It was not run (hours per day of
+  test).
+
+So the floor stays Craton's ETAS, and the claim "Craton beats ETAS" now holds against a second,
+independent ETAS too.
+
+**Rejected.** Adding ETH's ETAS to the floor (it's below ours on both tasks). Installing it in
+Craton's environment (it pins its own pandas and geopandas).
+
+### D-102 · 2026-10-30 · P8 — The curriculum: planets → earth → central Italy, measured and not adopted
+
+ROADMAP step 6. Three stages, each a Field config whose members start from the stage before
+(`curriculum.start_from`, `craton.field.world.field_stage`):
+
+1. `planets`: six physics planets of central Italy's box (seeds 1000-1005; CB-09 grades seeds
+   under 200), each also as a **blind twin** whose memory reads the catalogue a network that goes
+   blind after big shocks would record (Helmstetter, Kagan & Jackson 2006: below
+   M − 4.5 − 0.75·log10(days)), with the full catalogue as answers. This is D-096's fix: the same
+   future behind a complete and a blind past.
+2. `earth`: the world Field's regions plus Sumatra (D-104), from planet members.
+3. `curriculum`: CB-02's and CB-03's Italy Field, the same days and seeds as `mini`, from earth
+   members, at the world Field's learning rate (3·10⁻⁴).
+
+Targets set before the run: CB-02 / CB-03 above P6's Field; CB-20 above ETAS-incomplete.
+
+| 3 seeds, bits per M3+ quake | curriculum | `mini` (P6) | paired gain |
+|---|---|---|---|
+| CB-02 | −6.847 ± 0.016 | −6.815 ± 0.013 | −0.032 (every seed) |
+| CB-03 | −8.248 ± 0.005 | −8.231 ± 0.006 | −0.016 (every seed) |
+| CB-20 | −6.940 ± 0.012 | −7.028 ± 0.017 | +0.088 (every seed) |
+| CB-21 | −8.239 ± 0.004 | −8.224 ± 0.007 | −0.015 (every seed) |
+
+- **CB-20 met:** above ETAS-incomplete (−6.955) on every seed, by 0.015 on the mean, all in *how
+  many*. The blind twins taught the Field to read completeness instead of assuming INGV's gaps.
+- **CB-02 / CB-03 missed:** a small loss on every seed. The same lesson costs at home: on INGV the
+  gaps are real, and the Field now fills them a little less.
+- **Without the planets** (`regions_first`, world → Italy, seed 0): CB-02 −0.064, CB-03 −0.008,
+  CB-20 +0.173. Not run on more seeds; it is below the full curriculum at home.
+
+**Not adopted.** The board takes a model only if no score drops, and three do. `mini` stays
+on CB-02, CB-03, CB-20 and CB-21; nothing on the board moves. The stages and configs stay in the
+code, so a later phase can start from them.
+
+**Rejected.** Shipping the curriculum for CB-20 alone (one task's model would differ from the
+rest, D-085's reason). Retuning the stages' lengths or learning rates after seeing CB-02.
+
+### D-103 · 2026-10-30 · P8 — Pumped planets: a cut in the push, and the pump is still worth nothing
+
+D-099 guessed why the forced Field learned nothing from the pump: its training years (2012-16)
+only ever saw the push rise. P8f gives it pushes that fall. The physics planet already has fluid
+sources that switch on and, one to five years later, off (`craton.sim.rate_state`); P8f reads
+each one as forcing, `p0` (MPa) for every day it's on, month by month, in its own cell
+(`craton.field.planets.pumped_pushes`). Six such planets (seeds 2000-2005, none of them a CB-09
+planet), 30-day starts every 6 days from 1991, join Groningen and Oklahoma in the forced Field's
+pool (`configs/field/pumped.yaml`). The forcing-blind ablation sees the same planets without
+their forcing, so the comparison stays fair (`forcing_blind.py --config pumped`).
+
+| 3 seeds | CB-30 over ETAS | pump's worth (with − without) |
+|---|---|---|
+| P8e forced Field | +0.707 ± 0.045 | +0.04 (Groningen +0.02, Oklahoma +0.06) |
+| P8f pumped Field | +0.695 ± 0.006 | +0.00 (Groningen −0.01, Oklahoma +0.01) |
+
+- **Target missed.** "Forcing − blind > noise" on CB-30: no. The pump's worth went from noise to
+  zero.
+- **What did change.** The seeds agree: ± 0.006 against ± 0.045. Groningen is level
+  (−10.198 mean against −10.196, its seeds now within 0.06), Oklahoma too.
+- **Oklahoma is still over-forecast**: 1,610-1,639 M3+ expected where 609 came. A planet's
+  source switches off cleanly and its quakes fade within months; Oklahoma's volumes fell over
+  two years while the quakes fell faster than the volume. The planets taught a cut, just not
+  that one.
+
+Not adopted: the board keeps the forced Field (a lower mean, inside the noise, is not an
+improvement, and the board takes no model that lowers a score).
+
+**Rejected.** Raising the planets' share in the pool or the stride after seeing CB-30 (tuning on
+the test). Fitting the planets' source law to Oklahoma (the planets would stop being a separate
+witness).
+
+### D-104 · 2026-10-30 · P8 — Sumatra, a region seen only through the global network: no change
+
+D-093 left Craton level with ETAS-incomplete on CB-22's never-seen half and behind it in Chile
+(−0.11) and Alaska (−0.03): a network that goes blind after a great quake is what transfers, and
+the world Field had only seen dense national networks. P8f adds one region seen only through
+ComCat, `configs/regions/sumatra.yaml` (7° S-14° N, 90-107.5° E, completeness M4.5; Sumatra-
+Andaman 2004 and Nias 2005 are inside the training years). Chile itself is never trained on: it
+is a never-seen region of CB-22.
+
+| CB-22, seed 0 | never-seen | Turkey | Chile | Alaska | seen |
+|---|---|---|---|---|---|
+| world Field (board) | +0.361 | +0.44 | +0.51 | +0.14 | +0.36 |
+| world + Sumatra | +0.360 | +0.43 | +0.46 | +0.19 | +0.34 |
+| earth (planets first, + Sumatra) | +0.254 | +0.36 | +0.23 | +0.18 | +0.29 |
+| ETAS-incomplete (the bar, D-093) | +0.336 | +0.22 | +0.60 | +0.20 | +0.05 |
+
+- **Target missed.** Chile and Alaska stay below ETAS-incomplete; one region of global-network
+  data doesn't teach the blindness. One seed only: the world Field's seeds spread 0.08 on CB-22,
+  and nothing here was close enough to the target to buy two more.
+- **The planets hurt transfer.** Started from the planet Field, the earth Field loses 0.1 on the
+  never-seen half and on every seen region. Six planets of one box at one completeness pull the
+  correction toward central Italy's kind of catalogue.
+
+Not adopted. The board's world Field stays.
+
+**Rejected.** Training on Chile before 2010 (it would stop being never-seen). Adding more global
+regions until Chile improves (choosing training data by the test).
+
+### D-105 · 2026-10-30 · P8 — GPS without its jumps: the 30-day gain stops being consistent, so GPS stays out
+
+D-085 kept GPS for P8f with one condition: test a version with the quakes' own offsets taken out.
+`scripts/ablations/gps_thirty_days.py --no-jumps` removes every day-to-day step of a station's
+smoothed position bigger than 4 mm (`JUMP_MM`; a coseismic offset or an antenna change) before the
+30-day departures are computed, so only slow motion is left: trend changes, afterslip, transients.
+Same seeds, same Field, CB-19.
+
+| CB-19 (bits per M3+ quake) | seed 0 | seed 1 | seed 2 | mean |
+|---|---|---|---|---|
+| the Field (board) | −6.234 | −6.354 | −6.090 | −6.226 |
+| with GPS (D-085) | −6.173 | −6.136 | −5.978 | −6.096 |
+| with GPS, jumps removed | −6.261 | −5.919 | −6.137 | −6.106 |
+
+- **With the jumps**, GPS gained on every seed (+0.06, +0.22, +0.11).
+- **Without them**, the mean gain is the same (+0.12) but it is one seed's: +0.44 on seed 1, and
+  −0.03 and −0.05 on the other two. So nothing here separates "GPS saw slow motion" from noise,
+  and the seed-by-seed consistency that was the only argument for GPS is gone.
+
+**GPS stays out of the Fields.** Joining it would retrain every Field task (CB-02, CB-03, CB-09,
+CB-19 and the locks) for a gain inside the seed spread (0.13), on one task, of a kind that is most
+likely the quakes' own size read sooner. It comes back with P10's instruments, where continuous
+signals are the subject.
+
+**Rejected.** Shipping the with-jumps version for CB-19 alone (D-085's reason still holds: one
+task's configuration diverging from the rest).

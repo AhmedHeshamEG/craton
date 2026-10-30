@@ -261,6 +261,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `ingv_catalog` | 61,086 | 1985-01-06 → 2026-09-30 | 154 (event_type:experimental explosion 88, magnitude_type:M 57) | largest Mw 6.1 on 2026-06-01; ML 49,241, Md 11,608, Mw 228, mb 9; completeness ML 2.3 in 2005, 1.6 in 2015, 1.6 in 2025; Md 2.9 in 1985, 2.6 in 1995, 3.0 in 2005, 1.6 in 2015; longest quiet spell 16.14 days |
 
+### sumatra · snapshot `560a85bfd6186c39` · 1985-01-01 → 2026-10-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `fdsn_catalog` | 19,263 | 1985-01-02 → 2026-09-30 | 0 | largest Mw 9.1 on 2004-12-26; M 1, ML 2, Md 3, Ms 26, Mw 2,142, mb 17,089; longest quiet spell 21.08 days |
+
 ### turkey · snapshot `bfb1790b549c2dfe` · 1998-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
