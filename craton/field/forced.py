@@ -88,6 +88,8 @@ class ForcedField(WorldField):
             "validation_every": cfg.train.validation_every,
             "forcing": list(FEATURES) if self.with_forcing else [],
         }
+        if cfg.planets is not None:  # P8f: pumped planets (a config without them keeps its pool)
+            body["pumped_planets"] = cfg.planets.model_dump(mode="json")
         return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:12]
 
     def _forcing(
@@ -176,6 +178,12 @@ class ForcedField(WorldField):
                 f"{meta['seconds']:.0f}s"
             )
             out.append(PoolTile(tile, folder, train, val))
+        if cfg.planets is not None:
+            from craton.field.planets import build_pumped_pool
+
+            out += build_pumped_pool(
+                self, root, self.pool_dir(root), PERIOD_DAYS, self.with_forcing
+            )
         return out
 
     def pool_dir(self, root: Path) -> Path:

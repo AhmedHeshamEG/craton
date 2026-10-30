@@ -5,11 +5,28 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-10-30 · P8 Other planets: real, human-made and fake
+
 ### Fixed
 - Anisotropic ETAS no longer fails on a box with no quake big enough to have a shape.
 - Month windows before 1970 (Windows refuses `datetime.fromtimestamp` there).
 
 ### Added
+- **The curriculum (P8f, D-102).** Field configs can start every member from an earlier stage's
+  Field (`curriculum.start_from`, `field_stage`): `planets` (six physics planets, each with a
+  blind twin that reads what a network blinded by big shocks would record) → `earth` → `curriculum`.
+  CB-20 +0.09 over P6's Field on every seed; CB-02 −0.03, CB-03 −0.02. Measured, not adopted.
+- **Pumped planets** (`craton/field/planets.py`, `configs/field/pumped.yaml`, D-103): physics
+  planets whose fluid sources switch off, as forcing for the forced Field. CB-30 +0.695 ± 0.006,
+  the pump still worth +0.00. Not adopted.
+- Region `sumatra` (ComCat, M4.5; D-104) and the ablation `world_sumatra`: CB-22 unchanged.
+- `scripts/ablations/gps_thirty_days.py --no-jumps` and any daily or 30-day task (D-105): GPS
+  without coseismic offsets loses its consistency; GPS stays out of the Fields.
+- **A second ETAS referee** (`scripts/reference/eth_etas_invert.py`,
+  `scripts/ablations/eth_etas_referee.py`, D-101): ETH Zurich's ETAS fitted on CB-02's and CB-03's
+  data scores −7.467 / −9.929, below Craton's ETAS (−7.118 / −9.396), which stays the floor.
+- `scripts/ablations/curriculum.py`, `earth_on_world.py`; `forcing_blind.py --config`;
+  `lessons/P8.md` (P8f and P8 in one page).
 - **Where people pushed the crust (P8e, D-097 … D-100).** Token Spec 1.2.0 with two forcing
   instruments, `fluid_injection` and `reservoir_pressure`, and the unit `m3`. Adapters
   `uic_workbook` (regulator injection workbooks, read by a standard-library `.xlsx` reader) and
@@ -73,7 +90,8 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 ### Changed
 - The roadmap no longer says GPS strain is known to beat ETAS at 30 days: the paper it cited can't
   be found (D-083).
-- **P8 is built in six parts** (D-078); the version stays 0.8.x until the last one.
+- **P8 is built in six parts** (D-078); the version stayed 0.8.x until the last one.
+- The board doesn't change in P8f: every CB-02 to CB-30 score is P8e's.
 - **The roadmap grows to 17 phases** (D-077): P8 Other planets, P9 The hidden state, P10 Listening,
   P11 The storm detector, then the ghost (P12), the translator (P13), the microscope and the law
   (P14), long horizons with the predictability horizon (P15) and scale (P16). Each phase now carries

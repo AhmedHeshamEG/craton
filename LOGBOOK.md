@@ -659,3 +659,48 @@ Decisions: D-097, D-098, D-099, D-100.
 Next: P8f, the curriculum (planets → regions → central Italy), with the GPS features (D-085),
 the catalogue-completeness fix (D-096), the global-network region (D-093) and a training
 history that includes a cut in the push.
+
+## 2026-10-30 — P8f — Fake planets first
+
+TLDR: the curriculum, planets → the world's regions → central Italy, trained and scored on
+three seeds. It fixes the one thing P8c broke, CB-20 +0.09 on every seed (now just above
+ETAS-incomplete), and costs a little at home, CB-02 −0.03 and CB-03 −0.02 on every seed. So the
+board keeps P6's Field. The four other fixes queued for P8f were each measured against a target
+set before the run, and none met it. P8 ships as v0.9.0.
+
+Built:
+- `craton/field/planets.py`: the planet stage (six physics planets, seeds 1000-1005, each with a
+  blind twin read through Helmstetter's short-term incompleteness), pumped planets for the
+  forced Field
+- `curriculum.start_from` and `planets` config sections, old hashes unchanged; `field_stage`;
+  every Field can start its members from an earlier stage's
+- configs `planets`, `earth`, `curriculum`, `regions_first`, `world_sumatra`, `pumped`; region
+  `sumatra` (19,263 ComCat quakes, snapshot 560a85bfd6186c39)
+- `scripts/ablations/curriculum.py`, `earth_on_world.py`, `eth_etas_referee.py`;
+  `forcing_blind.py --config`; `gps_thirty_days.py --no-jumps`;
+  `scripts/reference/eth_etas_invert.py`; tests 429 → 436
+
+Scores (mean ± std over seeds 0, 1, 2, paired against `mini`):
+- curriculum: CB-02 −6.847 ± 0.016 (mini −6.815, −0.03), CB-03 −8.248 ± 0.005 (−8.231, −0.02),
+  CB-20 −6.940 ± 0.012 (−7.028, +0.09; ETAS-incomplete −6.955), CB-21 −8.239 ± 0.004 (−8.224, −0.02)
+- regions first, no planets (seed 0): CB-02 −0.064, CB-20 +0.173, CB-03 −0.008
+- pumped planets: CB-30 +0.695 ± 0.006 (board +0.707 ± 0.045), the pump's worth +0.00
+- world + Sumatra (seed 0): CB-22 never-seen +0.360 (board's seed +0.361); Chile +0.46, Alaska
+  +0.19, both still below ETAS-incomplete; planets first: +0.254
+- GPS without jumps, CB-19: −6.261 / −5.919 / −6.137 (plain −6.226 mean)
+- ETH's ETAS: CB-02 −7.467, CB-03 −9.929, below ours (−7.118, −9.396)
+- the board: unchanged, every number P8e's
+
+Surprises / problems:
+- On held-out planet days the Field beats ETAS by 0.13-0.18 nats per quake, and the planets
+  still hurt transfer: started from them, the earth Field loses 0.1 on CB-22.
+- ETH's inversion converged and then crashed writing its output (a `None` parameter); the
+  parameters were read back from its log. It also needs pandas below 3.
+- Two seeds run at once overwrote each other's lines in one results file; seed 1 was rescored
+  from its saved checkpoints.
+- Two trainers at once leave about 2 GB of RAM free on this machine and swap; the GPU sits at
+  ~40%. Batches are built on one CPU core.
+
+Decisions: D-101, D-102, D-103, D-104, D-105.
+
+Next: P9, the hidden state.

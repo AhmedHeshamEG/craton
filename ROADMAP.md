@@ -461,6 +461,13 @@ and +0.25 over a physics floor whose background follows the pump, on every seed.
 without the pump scores +0.67: the gain is from reading the quakes, and the pump only steadies it
 (D-099).
 
+**P8f, done (2026-10-30), P8 shipped as v0.9.0:** the curriculum, planets (with blind twins) →
+the world's regions → central Italy (D-102). CB-20 **+0.09** over P6's Field on every seed, now just
+above ETAS-incomplete; CB-02 −0.03 and CB-03 −0.02, on every seed. So the board keeps P6's Field.
+Pumped planets leave the pump worth nothing on CB-30 (D-103); a global-network region (Sumatra)
+leaves CB-22 unchanged (D-104); GPS without its jumps loses its consistency and stays out (D-105);
+ETH's ETAS scores below ours on CB-02 and CB-03, so ours stays the floor (D-101).
+
 **Not in this phase:** the hidden-state layer (P9).
 
 **Done when**

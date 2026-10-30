@@ -52,7 +52,7 @@ class FieldWorld(_Strict):
     """How one Field learns from many regions at once (P8d): every region is cut into tiles of
     CB-02's size, each tile a place the Field reads like central Italy."""
 
-    regions: dict[str, WorldRegion] = Field(min_length=1)
+    regions: dict[str, WorldRegion] = Field(description="Real regions; none for planets only.")
     cut: str = Field(description="Nothing at or after this moment is trained on, anywhere.")
     tile_lat: float = Field(default=3.0, gt=0)
     tile_lon: float = Field(default=3.5, gt=0)
@@ -62,6 +62,27 @@ class FieldWorld(_Strict):
     max_validation_days: int = Field(default=200, gt=0, description="Kept per tile.")
 
 
+class FieldPlanets(_Strict):
+    """Fake planets as a stage of the curriculum (P8f): simulated catalogues of central Italy's
+    box, never the ones CB-09 scores (those are its first seeds under 200)."""
+
+    kind: str = Field(default="physics_planet", description="A CB-09 kind of planet.")
+    first_seed: int = Field(default=1000, ge=200, description="Above every CB-09 planet's seed.")
+    count: int = Field(default=6, gt=0)
+    blind_twins: bool = Field(
+        default=True,
+        description="Each planet also read through a network that goes blind after big quakes, "
+        "answers from the full catalogue, so completeness is something the Field reads.",
+    )
+
+
+class FieldCurriculum(_Strict):
+    """Where a Field starts (P8f): every member from a member of an earlier stage's Field,
+    trained on more of the Earth, instead of from ETAS alone."""
+
+    start_from: str = Field(description="The Field config whose members this one starts from.")
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -69,6 +90,8 @@ class FieldConfig(_Strict):
     memory: FieldMemory
     train: FieldTrain
     world: FieldWorld | None = None
+    curriculum: FieldCurriculum | None = None
+    planets: FieldPlanets | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -81,7 +104,8 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 def field_hash(config: FieldConfig) -> str:
     dump = config.model_dump(mode="json")
-    if dump.get("world") is None:
-        dump.pop("world", None)  # a config from before P8d keeps its hash and checkpoints
+    for later in ("world", "curriculum", "planets"):
+        if dump.get(later) is None:
+            dump.pop(later, None)  # a config from before P8d / P8f keeps its hash and checkpoints
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

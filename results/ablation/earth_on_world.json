@@ -1,0 +1,27 @@
+{
+  "0": {
+    "primary": 0.25390140412713635,
+    "el_mayor.gain": 0.36528562887916216,
+    "ridgecrest.gain": 0.26795981750773024,
+    "tohoku.gain": 0.2972337338142772,
+    "kumamoto.gain": 0.4314381210574254,
+    "darfield.gain": 0.13464055209716008,
+    "kaikoura.gain": 0.2243166700424979,
+    "van.gain": 0.571416202677467,
+    "elazig.gain": 0.020882262382031058,
+    "kahramanmaras.gain": 0.4799139206108709,
+    "maule.gain": -5.326355430286597,
+    "iquique.gain": 0.3726170057556786,
+    "illapel.gain": 0.08679132564283165,
+    "anchorage.gain": 0.48118560280012446,
+    "chignik.gain": -0.13199376654939599,
+    "seen.mean_gain": 0.2868124205663755,
+    "seen.california.mean_gain": 0.3166227231934462,
+    "seen.japan.mean_gain": 0.3643359274358513,
+    "seen.new_zealand.mean_gain": 0.17947861106982899,
+    "zero_shot.mean_gain": 0.2686875076170868,
+    "zero_shot.turkey.mean_gain": 0.35740412855678966,
+    "zero_shot.chile.mean_gain": 0.22970416569925511,
+    "zero_shot.alaska.mean_gain": 0.17459591812536424
+  }
+}
