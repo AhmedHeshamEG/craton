@@ -94,28 +94,28 @@ def bank(a: float = 0.04, ta_years: float = 10.0) -> StateBank:
 def test_steady_state_stays_at_the_background() -> None:
     b = bank()
     b.decay_to(100.0)
-    assert b.mean_rate(1.0)[0, 0] == pytest.approx(1.0)
+    assert float(b.mean_rate(1.0)[0, 0]) == pytest.approx(1.0)
 
 
 def test_a_step_up_bursts_then_fades_and_a_step_down_goes_quiet() -> None:
     b = bank()
     b.step(np.array([0.2]))  # 5 A·sigma up
-    first = b.mean_rate(1.0)[0, 0]
+    first = float(b.mean_rate(1.0)[0, 0])
     b.decay_to(30.0)
-    later = b.mean_rate(1.0)[0, 0]
+    later = float(b.mean_rate(1.0)[0, 0])
     assert first > later > 1.0
     assert first < np.exp(5.0)
     d = bank()
     d.step(np.array([-0.2]))
-    assert d.mean_rate(1.0)[0, 0] < 0.01
+    assert float(d.mean_rate(1.0)[0, 0]) < 0.01
 
 
 def test_the_day_average_matches_a_numerical_integral() -> None:
     b = bank(0.04, 1.0)
     b.step(np.array([0.3]))
     b.decay_to(0.5)
-    g0 = np.exp(b.lg[0, 0])
+    g0 = np.exp(float(b.lg[0, 0]))
     ta = 365.25
     t = np.linspace(0.0, 1.0, 200_001)
     g = 1.0 + (g0 - 1.0) * np.exp(-t / ta)
-    assert b.mean_rate(1.0)[0, 0] == pytest.approx(np.trapezoid(1.0 / g, t), rel=1e-6)
+    assert float(b.mean_rate(1.0)[0, 0]) == pytest.approx(np.trapezoid(1.0 / g, t), rel=1e-6)

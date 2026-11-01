@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
+import torch
 import yaml
 from pydantic import BaseModel, ConfigDict
 
@@ -204,31 +205,48 @@ def receivers(grid: csep.Grid, proj: etas.Projection, cfg: CrsConfig) -> FloatAr
 # ---------------------------------------------------------------- Dieterich's clock
 
 
-@dataclass
-class StateBank:
-    """log(γ·τ̇) per receiver and per (A·σ, t_a) pair: 0 in steady state."""
+def _device() -> torch.device:
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    a_sigma: FloatArray  # (C,)
-    ta_days: FloatArray  # (C,)
-    lg: FloatArray  # (P, C)
-    t: float  # days
+
+class StateBank:
+    """log(γ·τ̇) per receiver and per (A·σ, t_a) pair: 0 in steady state.
+
+    A million numbers stepped at every quake and every day: torch, on the GPU when there is
+    one, in float64 (the day's mean subtracts two nearly equal logs when t_a is long).
+    """
+
+    def __init__(
+        self,
+        a_sigma: FloatArray,
+        ta_days: FloatArray,
+        lg: FloatArray,
+        t: float,
+        device: torch.device | None = None,
+    ) -> None:
+        dev = device or _device()
+        self.a_sigma = torch.as_tensor(a_sigma, dtype=torch.float64, device=dev)  # (C,)
+        self.ta_days = torch.as_tensor(ta_days, dtype=torch.float64, device=dev)  # (C,)
+        self.lg = torch.as_tensor(lg, dtype=torch.float64, device=dev)  # (P, C)
+        self.t = t  # days
 
     def decay_to(self, t: float) -> None:
         dt = t - self.t
         if dt <= 0:
             return
         x = dt / self.ta_days
-        self.lg = np.logaddexp(self.lg - x, np.log(-np.expm1(-x)))
+        self.lg = torch.logaddexp(self.lg - x, torch.log(-torch.expm1(-x)))
         self.t = t
 
-    def step(self, dcff: FloatArray) -> None:
-        self.lg = self.lg - dcff[:, None] / self.a_sigma[None, :]
+    def step(self, dcff: FloatArray | torch.Tensor) -> None:
+        d = torch.as_tensor(dcff, dtype=torch.float64, device=self.lg.device)
+        self.lg = self.lg - d[:, None] / self.a_sigma[None, :]
 
-    def mean_rate(self, span: float) -> FloatArray:
+    def mean_rate(self, span: float) -> torch.Tensor:
         """(P, C) average of R/r over the next ``span`` days, nothing new happening."""
         x = span / self.ta_days
-        inner = np.logaddexp(self.lg - x, np.log(-np.expm1(-x)))
-        return np.asarray(1.0 + (inner - self.lg) / x, dtype=np.float64)
+        inner = torch.logaddexp(self.lg - x, torch.log(-torch.expm1(-x)))
+        return 1.0 + (inner - self.lg) / x
 
 
 # ---------------------------------------------------------------- the floor
@@ -296,7 +314,9 @@ class Crs:
 
         days = np.concatenate([fit_days, test_days])
         is_test = np.concatenate([np.zeros(len(fit_days), bool), np.ones(len(test_days), bool)])
-        ll = np.zeros(aa.size)
+        dev = bank.lg.device
+        r0_t = torch.as_tensor(r0, dtype=torch.float64, device=dev)[:, None]
+        ll_t = torch.zeros(aa.size, dtype=torch.float64, device=dev)
         test_rates = np.empty((len(test_days), grid.n_cells, aa.size))
         j, n_finite, k_test = 0, 0, 0
         for day, test in zip(days.tolist(), is_test.tolist(), strict=True):
@@ -314,17 +334,20 @@ class Crs:
                 bank.step(np.clip(dc, -cfg.max_stress_mpa, cfg.max_stress_mpa))
                 j += 1
             bank.decay_to(day)
-            rate = bank.mean_rate(1.0).reshape(grid.n_cells, per_cell, -1).mean(axis=1)
-            lam = r0[:, None] * rate
+            rate = bank.mean_rate(1.0).reshape(grid.n_cells, per_cell, -1).mean(dim=1)
+            lam = r0_t * rate
             if test:
-                test_rates[k_test] = lam
+                test_rates[k_test] = lam.cpu().numpy()
                 k_test += 1
             else:
                 n = counts.get(int(day))
-                ll -= lam.sum(axis=0)
+                ll_t -= lam.sum(dim=0)
                 if n is not None:
-                    hit = n > 0
-                    ll += (n[hit, None] * np.log(np.maximum(lam[hit], 1e-300))).sum(axis=0)
+                    hit = np.flatnonzero(n > 0)
+                    nh = torch.as_tensor(n[hit], dtype=torch.float64, device=dev)[:, None]
+                    lh = lam[torch.as_tensor(hit, device=dev)].clamp_min(1e-300)
+                    ll_t += (nh * torch.log(lh)).sum(dim=0)
+        ll = ll_t.cpu().numpy()
         best = int(np.argmax(ll))
         out = CrsRun(
             np.ascontiguousarray(test_rates[:, :, best]),
