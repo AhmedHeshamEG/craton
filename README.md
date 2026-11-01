@@ -414,6 +414,31 @@ the quakes; the pump only makes it steadier from seed to seed. Craton hasn't lea
 and the reason is in the training years: before 2017 nobody had turned the pump down hard, so there was no
 cut to learn from.
 
+## Which way the crust is squeezed
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/squeeze-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/squeeze-light.png">
+    <img alt="Seven panels of earthquake dots in grey: central Italy, California, Japan, New Zealand, Turkey, Chile and Alaska. On top, short orange bars, one per half-degree cell, point along the direction of largest horizontal squeeze measured by the World Stress Map. Right: copying the neighbouring cells' answers is 16.6 degrees off, one direction per region 26.7, the long axis of the quake cloud 44.7, a coin 45." src="docs/assets/squeeze-dark.png" width="100%">
+  </picture>
+</p>
+
+A model that understands the crust should know things about it nobody showed it. The first: which way
+the rock is being squeezed. The World Stress Map has read that direction in 100,842 places, from how quakes
+slipped, how boreholes break and how cracks open. CB-23 hides all of it and asks for the direction in 983
+cells across seven regions, from the quake catalogue alone: where, when, how big, never how they slipped.
+
+| degrees off (lower is better) | all seven regions |
+|---|---|
+| a coin | 45 |
+| the long axis of the quake cloud (quakes only) | 44.7 |
+| one direction per region (reads the other cells' answers) | 26.7 |
+| the neighbouring cells' answers, within ~100 km | **16.6** |
+
+Drawing a line through the quakes is worth nothing: the squeeze isn't written on the dots' shape. Craton's
+answer arrives with its hidden-state layer (P9c). The bar is the neighbours' 16.6°, read from quakes alone.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -452,7 +477,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 
 ```
 CORE       ██████████████████████████████   8/8    foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/7    other planets, hidden state, listening, storm detector, ghost, translator, microscope
+DISCOVERY  ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    other planets, hidden state, listening, storm detector, ghost, translator, microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon + how far ahead the crust is predictable, then mini → planet
 ```
 
@@ -466,8 +491,8 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P5** Fusion: quakes + GPS + the Moon | multimodal models |
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
-| ◻️ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets (5 of 6 parts in: the two fake planets, the 30-day forecast, the whole Earth, the machine-learning catalogues, Groningen and Oklahoma) | more pretraining data, synthetic data |
-| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw | latent variables, AlphaFold's pair representation |
+| ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
+| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (1 of 5 parts in: the stress exam, CB-23) | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
 | ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |

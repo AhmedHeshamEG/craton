@@ -81,7 +81,10 @@ CATALOG: tuple[PlannedTask, ...] = (
         "P8",
     ),
     PlannedTask(
-        "CB-23", "Hidden-state truth", "inferred stress axes vs stress inversions (degrees)", "P9"
+        "CB-23",
+        "Hidden-state truth",
+        "degrees between SHmax inferred from quakes and the World Stress Map's",
+        "P9",
     ),
     PlannedTask("CB-24", "Migration", "learned wiring vs the order 2016-17 lit up", "P9"),
     PlannedTask(

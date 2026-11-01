@@ -2958,6 +2958,119 @@
           "oklahoma.where_bits": -7.2214265166807445
         }
       }
+    },
+    "CB-23": {
+      "stress_regional": {
+        "task_id": "CB-23",
+        "metric": "degrees between inferred and measured SHmax, mean over cells, then over regions",
+        "direction": "lower",
+        "fingerprint": "fc7056d6f3c077d899d3754eabe4cffd67a51957e60ef4f1985df019b5cd17ab",
+        "mean": 26.74817710618881,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261101-085021-stress-regional",
+        "model": "stress_regional",
+        "accepted": "2026-11-01T08:51:02Z",
+        "extras": {
+          "alaska.cells": 56.0,
+          "alaska.deg": 27.496330968232655,
+          "alaska.within_20": 0.44642857142857145,
+          "california.cells": 145.0,
+          "california.deg": 16.04904163054585,
+          "california.within_20": 0.696551724137931,
+          "central_italy.cells": 25.0,
+          "central_italy.deg": 21.568816489788386,
+          "central_italy.within_20": 0.7600000000000001,
+          "chile.cells": 137.0,
+          "chile.deg": 21.274736437841117,
+          "chile.within_20": 0.708029197080292,
+          "japan.cells": 401.0,
+          "japan.deg": 34.834655720158636,
+          "japan.within_20": 0.42643391521197005,
+          "new_zealand.cells": 95.0,
+          "new_zealand.deg": 28.172156111593903,
+          "new_zealand.within_20": 0.30526315789473685,
+          "seen.deg": 25.156167488021694,
+          "turkey.cells": 124.0,
+          "turkey.deg": 37.84150238516113,
+          "turkey.within_20": 0.33064516129032256,
+          "zero_shot.deg": 28.8708565970783
+        }
+      },
+      "stress_interpolation": {
+        "task_id": "CB-23",
+        "metric": "degrees between inferred and measured SHmax, mean over cells, then over regions",
+        "direction": "lower",
+        "fingerprint": "fc7056d6f3c077d899d3754eabe4cffd67a51957e60ef4f1985df019b5cd17ab",
+        "mean": 16.578069473895646,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261101-085036-stress-interpolation",
+        "model": "stress_interpolation",
+        "accepted": "2026-11-01T08:51:02Z",
+        "extras": {
+          "alaska.cells": 56.0,
+          "alaska.deg": 17.85769149600994,
+          "alaska.within_20": 0.6785714285714285,
+          "california.cells": 145.0,
+          "california.deg": 12.01692465225902,
+          "california.within_20": 0.7931034482758621,
+          "central_italy.cells": 25.0,
+          "central_italy.deg": 22.11065956650913,
+          "central_italy.within_20": 0.7600000000000001,
+          "chile.cells": 137.0,
+          "chile.deg": 17.013188841004926,
+          "chile.within_20": 0.7883211678832117,
+          "japan.cells": 401.0,
+          "japan.deg": 22.641860848835748,
+          "japan.within_20": 0.5785536159600998,
+          "new_zealand.cells": 95.0,
+          "new_zealand.deg": 11.173740096968805,
+          "new_zealand.within_20": 0.8315789473684211,
+          "seen.deg": 16.985796291143174,
+          "turkey.cells": 124.0,
+          "turkey.deg": 13.23242081568194,
+          "turkey.within_20": 0.8306451612903226,
+          "zero_shot.deg": 16.0344337175656
+        }
+      },
+      "quake_lineation": {
+        "task_id": "CB-23",
+        "metric": "degrees between inferred and measured SHmax, mean over cells, then over regions",
+        "direction": "lower",
+        "fingerprint": "fc7056d6f3c077d899d3754eabe4cffd67a51957e60ef4f1985df019b5cd17ab",
+        "mean": 44.6720462790945,
+        "std": 0.0,
+        "n_seeds": 3,
+        "run_id": "20261101-085056-quake-lineation",
+        "model": "quake_lineation",
+        "accepted": "2026-11-01T08:51:02Z",
+        "extras": {
+          "alaska.cells": 56.0,
+          "alaska.deg": 47.79357785453316,
+          "alaska.within_20": 0.21428571428571427,
+          "california.cells": 145.0,
+          "california.deg": 47.67308139755115,
+          "california.within_20": 0.1724137931034483,
+          "central_italy.cells": 25.0,
+          "central_italy.deg": 32.95088857067241,
+          "central_italy.within_20": 0.48,
+          "chile.cells": 137.0,
+          "chile.deg": 50.27720728770208,
+          "chile.within_20": 0.051094890510948905,
+          "japan.cells": 401.0,
+          "japan.deg": 44.10565165132777,
+          "japan.within_20": 0.2194513715710723,
+          "new_zealand.cells": 95.0,
+          "new_zealand.deg": 43.68058134695955,
+          "new_zealand.within_20": 0.30526315789473685,
+          "seen.deg": 42.102550741627724,
+          "turkey.cells": 124.0,
+          "turkey.deg": 46.2233358449154,
+          "turkey.within_20": 0.21774193548387097,
+          "zero_shot.deg": 48.098040329050214
+        }
+      }
     }
   },
   "history": [
@@ -3261,6 +3374,27 @@
       "kind": "baseline",
       "accepted": "2026-10-29T17:04:40Z",
       "summary": "1 new, 11 same"
+    },
+    {
+      "run_id": "20261101-085021-stress-regional",
+      "model": "stress_regional",
+      "kind": "baseline",
+      "accepted": "2026-11-01T08:51:02Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261101-085036-stress-interpolation",
+      "model": "stress_interpolation",
+      "kind": "baseline",
+      "accepted": "2026-11-01T08:51:02Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261101-085056-quake-lineation",
+      "model": "quake_lineation",
+      "kind": "baseline",
+      "accepted": "2026-11-01T08:51:02Z",
+      "summary": "1 new"
     }
   ]
 }

@@ -565,3 +565,10 @@ register_method(FingerprintKnn())
 from craton.bench.induced import EtasForced  # noqa: E402
 
 register_method(EtasForced())
+
+# CB-23's floors live with their task: two read the other cells' answers, one reads quakes.
+from craton.bench.stress import QuakeLineation, StressInterpolation, StressRegional  # noqa: E402
+
+register_method(StressRegional())
+register_method(StressInterpolation())
+register_method(QuakeLineation())

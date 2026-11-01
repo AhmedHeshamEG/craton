@@ -5,6 +5,15 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+### Added
+- **CB-23, which way the crust is squeezed (P9a, D-106 … D-108).** 983 half-degree cells in
+  central Italy and CB-22's six regions, graded against the World Stress Map 2025: give the
+  direction of largest horizontal stress from the quake catalogue alone. Floors
+  `stress_interpolation` 16.6°, `stress_regional` 26.7°, `quake_lineation` 44.7° (a coin: 45°).
+- **Truth sources** (`craton/bench/truth.py`): data a task grades against and no model reads,
+  kept out of the token store, with data cards (`docs/data/world_stress_map.md`).
+- Figure `docs/assets/squeeze-{dark,light}.png` (`scripts/figures/squeeze.py`); `lessons/P9.md`.
+
 ## [0.9.0] — 2026-10-30 · P8 Other planets: real, human-made and fake
 
 ### Fixed

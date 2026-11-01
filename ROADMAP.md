@@ -6,9 +6,9 @@ the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
 CORE       ██████████████████████████████   8/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/7    P8–P14  other planets, hidden state, listening, storm detector, ghost, translator, microscope
+DISCOVERY  ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    P8–P14  other planets, hidden state, listening, storm detector, ghost, translator, microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P15–P16 any time horizon + the predictability horizon, then mini → planet
-ALL        ██████████████░░░░░░░░░░░░░░░░   8/17
+ALL        ████████████████░░░░░░░░░░░░░░   9/17
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -59,7 +59,7 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-20 | **Apennines, enhanced inputs** | CB-02's scoring, with the 2016–17 ML catalogue as input (relocated with hindsight, so its own task) | ETAS on the same inputs | P8 |
 | CB-21 | **L'Aquila, enhanced inputs** | CB-03's scoring, with the 2009 ML catalogue as input | ETAS on the same inputs | P8 |
 | CB-22 | **World sequences** | Daily forecasts on 14 held-out sequences: six in regions trained on (California, Japan, New Zealand), eight in regions never seen (Turkey, Chile, Alaska); gain per quake, the never-seen half is the headline | ETAS fitted on each box's own past | P8 |
-| CB-23 | **Hidden-state truth** | Inferred stress axes vs focal-mechanism stress inversions (angle); inferred pressure vs Vp/Vs and CO₂ maps | Regional-average stress | P9 |
+| CB-23 | **Hidden-state truth** | SHmax inferred from quakes alone vs the World Stress Map 2025, 0.5° cells in seven regions (degrees; pressure gets its own ID when open data exists, D-108) | Regional-average stress; interpolation of the other cells | P9 |
 | CB-24 | **Migration** | Connection graph learned before 2016 vs the order the 2016–17 sequence lit up | Distance only | P9 |
 | CB-25 | **Mainshock days** | Skill on held-out world M6+ days: Molchan curve, false alarms per hit | ETAS | P11 |
 | CB-26 | **Distilled law** | A symbolic formula's held-out gain over ETAS vs the network's | the network itself | P14 |
@@ -497,12 +497,13 @@ which places talk to each other, and the inference is graded against data it nev
    rate-and-state-shaped law (seismicity as a stress meter, Dieterich 1994); trained end to end.
 2. **The pair representation:** which cells excite which, learned from 40 years of co-activation; one
    connection graph per region.
-3. **Graded against independent truth:** stress orientation vs the 72,000 focal mechanisms of the 2016–17
-   ML catalogue (stress inversions); pressure vs Vp/Vs tomography and the Apennine CO₂ outflow maps.
+3. **Graded against independent truth:** stress orientation vs the World Stress Map 2025 (CB-23, D-107; the
+   2016–17 ML focal mechanisms planned here are not public); pressure vs an open map when one exists (Vp/Vs
+   tomography and the Apennine CO₂ map are published as figures only, D-108).
 4. **The migration test:** the graph learned on data before 2016 vs the order the 2016–17 sequence lit up
    (Amatrice → Visso → Norcia → Campotosto).
 5. A Coulomb rate-and-state (CRS) baseline on CB-02 (Mancini et al. 2019 beat ETAS after Visso).
-6. Figure: Italy's inferred pressure map next to the CO₂ map it was never shown.
+6. Figure: the inferred stress (and pressure, if graded) next to the truth it was never shown.
 
 **Benchmarks:** **CB-23 (hidden-state truth), CB-24 (migration), new**; CRS joins the floors.
 
@@ -512,10 +513,13 @@ which places talk to each other, and the inference is graded against data it nev
 - the referee passes every map shown in public
 - `lessons/P9.md` written
 
-**Expect:** CB-23 stress axes within ~20° of the inversions · CB-24 the true next patch in the graph's top 3 ·
+**Expect:** CB-23 stress axes within ~20° of the World Stress Map · CB-24 the true next patch in the graph's top 3 ·
 CB-02 ≈ +0.9 · CB-03 ≈ +1.6.
 
 **Learn:** stress, pore pressure, Coulomb failure, rate-and-state as a stress meter, inverse problems.
+
+Built in five parts (D-106), the tests first: **P9a** CB-23 and its floors · **P9b** CB-24 and a CRS floor ·
+**P9c** the hidden-state layer · **P9d** the wiring · **P9e** the figure, the referee, v0.10.0.
 
 ## P10 · Listening: continuous noise as instruments → v0.11.0
 **Goal:** two instruments that report every day, quake or no quake: seismic noise power and seismic velocity
@@ -759,6 +763,6 @@ Negative results are results: they go on the scoreboard and in the logbook like 
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
 - [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [x] P7 The 8 locks
-- [ ] P8 Other planets · [ ] P9 Hidden state · [ ] P10 Listening · [ ] P11 Storm detector
+- [x] P8 Other planets (v0.9.0) · [ ] P9 Hidden state (P9a ✓ CB-23) · [ ] P10 Listening · [ ] P11 Storm detector
 - [ ] P12 Ghost + atlas · [ ] P13 Translator · [ ] P14 Microscope + law
 - [ ] P15 Long horizons · [ ] P16 Scale + open platform

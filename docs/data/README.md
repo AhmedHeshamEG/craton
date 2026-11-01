@@ -15,3 +15,11 @@ Every source Craton reads, who made it, under what terms, and what to watch out 
 | [`pressure_grid`](pressure_grid.md) | Reservoir pressure from a history-matched model, on a grid (one CSV) | `reservoir_pressure` | `LicenseRef-per-region` |
 | [`uic_workbook`](uic_workbook.md) | Injection well volumes, one regulator workbook a year (form 1012A layout) | `fluid_injection` | `LicenseRef-per-region` |
 | [`zenodo_catalog`](zenodo_catalog.md) | Research earthquake catalogues on Zenodo (one CSV per record) | `seismic_catalog` | `LicenseRef-per-region` |
+
+## Truth sources
+
+Data a task grades against and no model reads: kept out of the token store, so no region can list it (`craton/bench/truth.py`).
+
+| Source | What | Graded | Licence |
+|---|---|---|---|
+| [`world_stress_map`](world_stress_map.md) | World Stress Map Database Release 2025 (truth only, never tokens) | CB-23 | `CC-BY-4.0` |

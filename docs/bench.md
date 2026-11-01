@@ -188,6 +188,25 @@ CB-02's calendar and scoring on six simulated planets where the truth is known. 
 | physics planet | 1 | 2.47 | 0.995 | 0.0666 | 0.698 | 1.89 | 0.88 | 108 |
 | physics planet | 2 | 2.43 | 1 | 0.0548 | 0.67 | 1.15 | 1.08 | 127 |
 
+## CB-23 · Hidden-state truth
+
+Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
+
+- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
+- **Fingerprint:** `fc7056d6f3c077d8`
+
+| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
+|---|---|---|---|---|---|
+| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
+| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
+| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
+| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
+| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
+| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
+| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
+
+Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
+
 ## CB-22 · World sequences
 
 CB-02's question anywhere on Earth: the year after the first big shock of fourteen sequences, each on a 3° × 3.5° box centred on it, in its region's own magnitudes (scored from completeness + 1). Six are in regions models may train on up to 2007; eight are in regions they must never have read. The number is the gain over ETAS fitted on the box's own past, averaged over the never-seen regions. A sequence counts only if that ETAS fits on 200+ quakes.

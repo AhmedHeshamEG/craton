@@ -1665,3 +1665,66 @@ signals are the subject.
 
 **Rejected.** Shipping the with-jumps version for CB-19 alone (D-085's reason still holds: one
 task's configuration diverging from the rest).
+
+### D-106 · 2026-11-01 · P9 — P9 is five sessions, the tests first
+
+P9 asks for three things nobody has measured in Craton yet (the stress the crust is under, its
+fluid pressure, which places set each other off), a new layer in the Field and a new floor. The
+tests come before the model (as P3 came before P4), so the split is:
+
+- **P9a** CB-23, the stress truth, and its floors (this session)
+- **P9b** CB-24, the migration test, and a Coulomb rate-and-state (CRS) floor on CB-02
+- **P9c** the hidden-state layer in the Field; CB-02, CB-03 and CB-23
+- **P9d** the pair representation (the wiring); CB-24; the pressure truth if open data exists
+- **P9e** the figure, the referee on every map shown in public, the lesson; v0.10.0
+
+No version bump or tag until P9e.
+
+**Rejected.** Building the layer first and the test after (a test designed after seeing what a
+model can do gets designed around it).
+
+### D-107 · 2026-11-01 · P9 — CB-23 grades stress against the World Stress Map 2025
+
+The plan said "stress inversions of the 72,000 focal mechanisms of the 2016-17 ML catalogue".
+That catalogue of mechanisms is not public (Meier, Lanza & Martínez-Garzón, EGU23: over
+56,000, about 8,000 well constrained; no deposit found). What is public, on every continent,
+is the World Stress Map (Heidbach et al. 2025, CC BY 4.0, 100,842 records): the azimuth of the
+largest horizontal squeeze (SHmax) from focal mechanisms, formal inversions of them, borehole
+breakouts, hydraulic fractures and fault slip, each graded A to E. It holds INGV's moment
+tensors for Italy among them.
+
+- **Truth.** Records of quality A-C (WSM's own line for "constrains the orientation"), crust
+  above 40 km. Cells of 0.5° (the finest WSM grid) with three or more records; a cell's
+  azimuth is the axial mean weighted by 1/σ² of each record's quality (A 15°, B 20°, C 25°).
+- **Regions.** Central Italy and CB-22's six, so the test runs anywhere a region file exists:
+  25 cells in central Italy, 56 in Alaska, 401 in Japan; 983 in all.
+- **Inputs.** A method reads the region's quakes before a cut (central Italy: 2016-08-24, the
+  history CB-02's model has; elsewhere 2007-01-01, the world Field's cut), from the region's
+  completeness. Positions, times, magnitudes; never how a quake slipped. WSM is kept out of the
+  token store entirely (a truth source, `craton/bench/truth.py`), so nothing can train on it.
+- **Score.** The angle between the method's and WSM's azimuth, 0-90°, mean over a region's
+  cells, then over the seven regions. No answer counts 45°, a coin's error. Lower is better.
+- **Floors.** `stress_regional` (one WSM mean per region, from the other cells),
+  `stress_interpolation` (the other cells within ~100 km, Gaussian) and `quake_lineation`
+  (quakes only: the long axis of the epicentres within 50 km). The two WSM floors read the
+  answers of every other cell, so the task calls them once per cell with that cell left out.
+  Beating them from quakes alone would mean knowing something local about the stress that the
+  quakes' positions don't show on their face.
+
+**Rejected.** Our own stress inversion of INGV's moment tensors (Italy only, and WSM already
+holds those mechanisms, graded). Dropping cells whose readings disagree (it would pick the
+easy cells). A per-region choice of "SHmax along or across the lineation" (it would be chosen
+by reading the answers).
+
+### D-108 · 2026-11-01 · P9 — The pressure truth waits for open data, under its own task ID
+
+CB-23 was planned to grade inferred fluid pressure too, against Vp/Vs tomography and the
+Apennine CO₂ degassing map. Neither is open as data: the Vp/Vs models of the 2016-17 sequence
+(Chiarabba et al. 2018 and after) and Chiodini's map of deep CO₂ (2004, and the spring series
+of 2020) are published as figures only. Digitising a figure into a benchmark would make the
+test someone else's drawing, redistributed. CB-23 is therefore stress only, and the pressure
+truth gets a new task ID when an open source exists (candidates: the MaGA gas-emission
+database, magadb.net; the authors' grids on request). P9d looks again.
+
+**Rejected.** Digitising the published maps. Grading pressure against the locations of
+known CO₂ springs alone (they mark where gas reaches the surface, not the pressure at depth).

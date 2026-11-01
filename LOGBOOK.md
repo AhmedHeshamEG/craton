@@ -704,3 +704,42 @@ Surprises / problems:
 Decisions: D-101, D-102, D-103, D-104, D-105.
 
 Next: P9, the hidden state.
+
+## 2026-11-01 — P9a — Which way the crust is squeezed
+
+TLDR: P9 is split in five (D-106), the tests first. P9a builds CB-23: the direction of largest
+horizontal squeeze in 983 half-degree cells of seven regions, graded against the World Stress
+Map 2025, from the quake catalogue alone. Floors: the neighbours' answers 16.6°, one direction
+per region 26.7°, the quake cloud's long axis 44.7° (a coin 45°). No Craton number yet; the
+hidden-state layer is P9c.
+
+Built:
+- `craton/bench/truth.py`: truth sources, data a task grades against and no model reads, kept
+  out of the token store; the World Stress Map 2025 (CC BY 4.0, 100,842 records, 77,364 of
+  quality A-C with an azimuth), pinned by its sha256, with a data card
+- `craton/bench/stress.py`: CB-23 (`StressMapper` protocol, axial maths, cells), floors
+  `stress_regional`, `stress_interpolation`, `quake_lineation`
+- data cards list truth sources; bench card section for CB-23; figure
+  `scripts/figures/squeeze.py`; `lessons/P9.md` begun; tests 436 → 451
+
+Scores (CB-23, degrees, lower is better; the floors are deterministic):
+- `stress_interpolation` 16.58 (central Italy 22.1, California 12.0, Japan 22.6, New Zealand
+  11.2, Turkey 13.2, Chile 17.0, Alaska 17.9)
+- `stress_regional` 26.75 (central Italy 21.6, Japan 34.8, Turkey 37.8)
+- `quake_lineation` 44.67: by faulting style 38° on normal faults, 47° strike-slip, 50° thrusts
+- the rest of the board: unchanged
+
+Surprises / problems:
+- The plan's truth doesn't exist as open data: the 2016-17 machine-learning focal mechanisms
+  (>56,000, Meier et al. EGU23) were never deposited; the Vp/Vs models and the CO₂ degassing map
+  are figures in papers. Stress moved to the World Stress Map (D-107); pressure waits (D-108).
+- INGV's FDSN event service returns TDMT moment tensors inside bulk QuakeML queries (21 of 144
+  M3.5+ events in the week of Norcia), CC BY 4.0. Not used: WSM already grades them.
+- Central Italy is the one region where a single direction does as well as the neighbours
+  (21.6° vs 22.1°): the Apennines are squeezed one way along their length, and a cell's own
+  readings scatter by ~20°.
+- The README still showed P8 unticked and Discovery at 0/7 after v0.9.0; fixed.
+
+Decisions: D-106, D-107, D-108.
+
+Next: P9b, CB-24 (the migration test) and a Coulomb rate-and-state floor on CB-02.
