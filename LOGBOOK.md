@@ -743,3 +743,40 @@ Surprises / problems:
 Decisions: D-106, D-107, D-108.
 
 Next: P9b, CB-24 (the migration test) and a Coulomb rate-and-state floor on CB-02.
+
+## 2026-11-01 — P9b — Where the sequence goes next, and the physics floor
+
+TLDR: two new yardsticks, no new model. CB-24 asks, before each new 0.1° cell of a sequence
+lights up, which dark cell is next, over sixteen sequences; the cell nearest the last lit one is
+in the top 3 9.3% of the time, a coin 0.3%. The Coulomb rate-and-state floor scores −7.518 bits
+per quake on CB-02, below ETAS's −7.118, as Mancini et al. 2019 found without slip models.
+
+Built:
+- `craton/bench/migration.py`: CB-24 (lightings, `MigrationRanker` protocol, ties scored in
+  expectation), floors `distance_only` and `quake_history`, a bench card section
+- `craton/bench/crs.py` + `configs/floors/crs.yaml`: fault-plane vectors, Wells & Coppersmith
+  rectangles through `cutde` (new dependency), isotropic 1/r³ sources, Dieterich's state in log
+  space, the fit and forecast in one pass; the state bank in torch on the GPU
+- figure `scripts/figures/migration.py`; `lessons/P9.md` P9b; tests 451 → 464
+
+Scores:
+- CB-24 (top-3 share): `distance_only` 0.0933 (central Italy 0.145, L'Aquila 0.121,
+  Ridgecrest 0.29; seen 0.128, zero-shot 0.059), `quake_history` 0.0145
+- `crs`: CB-02 −7.518, CB-03 −12.23, CB-20 −7.466, CB-21 −12.23, CB-09 −15.31, CB-05 0.520,
+  CB-11 6.09%, CB-22 −9.54 (Iquique −55), CB-07 1, CB-08 1 (over the moment budget, like ETAS)
+- the rest of the board: unchanged
+
+Surprises / problems:
+- The plan's four named patches can't be a test (n = 4); the 0.1° cells make it 16 sequences
+  of up to 50 rankings each.
+- `cutde`'s `disp`/`strain` are pairwise (one observation per triangle): the first sign test
+  gave half the slip. The `_matrix` forms are the right ones, and the slip vector needs a minus
+  sign with our corner order.
+- The full CRS run took six hours on the CPU; the state bank moved to the GPU (CB-02 666 s →
+  158 s, same score). Heavy maths starts on the GPU from now on.
+- The fit picks A·σ at the edge of Mancini's grid (0.01 MPa). Not extended: tuning a floor
+  after seeing its fit stops it being a floor.
+
+Decisions: D-109, D-110.
+
+Next: P9c, the hidden-state layer.

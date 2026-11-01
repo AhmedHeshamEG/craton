@@ -439,6 +439,33 @@ cells across seven regions, from the quake catalogue alone: where, when, how big
 Drawing a line through the quakes is worth nothing: the squeeze isn't written on the dots' shape. Craton's
 answer arrives with its hidden-state layer (P9c). The bar is the neighbours' 16.6°, read from quakes alone.
 
+## Where the sequence went next
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/migration-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/migration-light.png">
+    <img alt="Map of central Italy with grey dots for the quakes before 2016. Orange squares mark the 0.1 degree cells that had their first M3+ quake in the year after the Amatrice shock, brighter the earlier they lit; Amatrice, Visso, Norcia and Campotosto are labelled. Right: the cell nearest the one that lit last is in the top 3 for 9 percent of lightings over sixteen sequences, the busiest cells before the sequence 1 percent, a coin 0.3 percent." src="docs/assets/migration-dark.png" width="100%">
+  </picture>
+</p>
+
+In 2016 central Italy didn't shake in one place. Amatrice went in August, Visso and Norcia 25-30 km north
+in October, Campotosto to the south in January. CB-24 cuts sixteen sequences like it into 0.1° cells and
+asks, before each new cell lights up, which dark cell is next. A method sees the decades before and the
+cells lit so far, nothing else, so the question is how the faults are wired, never where aftershocks are
+piling up.
+
+| next cell in the top 3 | all sixteen | central Italy |
+|---|---|---|
+| a coin | 0.3% | |
+| the busiest cells before the sequence | 1.4% | 5.3% |
+| the cells nearest the one that lit last | **9.3%** | 14.5% |
+
+The physics answer joins the board too: Coulomb stress with rate-and-state friction, built from the
+catalogue alone. On the Apennines it scores −7.52 bits per quake, ETAS −7.12, Craton −6.82. Physics with
+guessed fault geometry loses to plain statistics, the same thing Mancini et al. found in 2019 before they
+fed it measured slip. Craton's turn on CB-24 is P9d, the wiring it learns from decades of quakes.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -492,7 +519,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
-| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (1 of 5 parts in: the stress exam, CB-23) | latent variables, AlphaFold's pair representation |
+| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (2 of 5 parts in: the stress exam CB-23, the migration exam CB-24, the physics floor) | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
 | ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |
