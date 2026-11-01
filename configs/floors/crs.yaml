@@ -1,0 +1,26 @@
+# The Coulomb rate-and-state floor (craton/bench/crs.py).
+#
+# Every number here is a choice from the literature, not fitted on any test: Mancini et al.
+# (2019, JGR 124, 8626) for the central Apennines, Dieterich (1994) for the law, Wells &
+# Coppersmith (1994) for rupture sizes, Chen et al. (2013) for small quakes as isotropic
+# sources. Only (A·sigma, t_a) is chosen, by likelihood on the fit split's days, from the grids
+# below (Mancini's ranges).
+
+friction: 0.4            # effective friction mu' = mu (1 - B)
+shear_modulus_mpa: 30000.0
+poisson: 0.25
+stress_drop_mpa: 3.0     # sets an isotropic source's radius, inside which its stress stops growing
+finite_from: 5.4         # quakes this big become rectangles (Mancini's primary sources)
+max_stress_mpa: 1.0      # |dCFF| cap at a receiver, the near-field singularity of a rectangle
+depths_km: [2.0, 5.0, 8.0, 11.0]   # receivers per cell, in depth (Mancini: 0-12 km)
+subcells: 3              # and 3 x 3 across each cell
+default_depth_km: 10.0   # a quake whose catalogue gives no depth
+a_sigma_mpa: [0.01, 0.02, 0.04, 0.07, 0.1]
+ta_years: [1.0, 10.0, 40.0, 100.0, 1000.0]
+
+# The faults that load and the faults that fail, per region (strike, dip, rake; Aki-Richards).
+# A region not listed has no orientation: every quake is an isotropic source there.
+regions:
+  # The central Apennines' NW-SE normal faults dipping SW (DISS; Mancini's CRS-1 receivers;
+  # Mt Vettore-Mt Bove, the Norcia fault, strikes ~155 and dips ~45).
+  central_italy: {strike: 155.0, dip: 45.0, rake: -90.0}
