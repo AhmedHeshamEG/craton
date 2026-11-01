@@ -41,7 +41,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-21 | L'Aquila, enhanced inputs | −8.224 ± 0.0067 ↑ · craton-mini | −9.26 ± 0 ↑ · etas_incomplete | P8 |
 | CB-22 | World sequences | 0.3612 ± 0.083 ↑ · craton-mini | 0.3363 ± 1.6e−05 ↑ · etas_incomplete | P8 |
 | CB-23 | Hidden-state truth | · | 16.58 ± 0 ↓ · stress_interpolation | P9 |
-| CB-24 | Migration | · | · | P9 |
+| CB-24 | Migration | · | 0.09329 ± 0 ↑ · distance_only | P9 |
 | CB-25 | Mainshock days | · | · | P11 |
 | CB-26 | Distilled law | · | · | P14 |
 | CB-27 | Predictability horizon | · | · | P15 |
@@ -124,6 +124,8 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-23 | stress_interpolation | 16.58 ± 0 ↓ | degrees between inferred and measured SHmax, mean over cells, then over regions |  |
 | CB-23 | stress_regional | 26.75 ± 0 ↓ | degrees between inferred and measured SHmax, mean over cells, then over regions |  |
 | CB-23 | quake_lineation | 44.67 ± 0 ↓ | degrees between inferred and measured SHmax, mean over cells, then over regions |  |
+| CB-24 | distance_only | 0.09329 ± 0 ↑ | share of next lit cells in the method's top 3, mean over sequences |  |
+| CB-24 | quake_history | 0.01448 ± 0 ↑ | share of next lit cells in the method's top 3, mean over sequences |  |
 | CB-29 | etas | 7.256 ± 0 ↓ | negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits |  |
 | CB-30 | etas_forced | 0.4562 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
 | CB-30 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
@@ -134,6 +136,8 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-01 09:39 | `20261101-093943-quake-history` | quake_history (baseline) | 1 new |
+| 2026-11-01 09:39 | `20261101-093910-distance-only` | distance_only (baseline) | 1 new |
 | 2026-11-01 08:51 | `20261101-085056-quake-lineation` | quake_lineation (baseline) | 1 new |
 | 2026-11-01 08:51 | `20261101-085036-stress-interpolation` | stress_interpolation (baseline) | 1 new |
 | 2026-11-01 08:51 | `20261101-085021-stress-regional` | stress_regional (baseline) | 1 new |
