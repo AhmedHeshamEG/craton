@@ -93,6 +93,17 @@ ABOUT = {
         "mean of the two cases; `etas_forced`, ETAS whose background follows the push, is the "
         "physics floor."
     ),
+    "CB-23": (
+        "Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of "
+        "central Italy and CB-22's six regions that holds at least three World Stress Map "
+        "readings (quality A-C, above 40 km), a method gives the azimuth of the largest "
+        "horizontal stress (SHmax), reading only the region's quakes before a cut: where, when "
+        "and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° "
+        "(a coin gets 45°), mean over a region's cells, then over the regions. Two floors read "
+        "the answers of the other cells (`stress_regional`, one mean per region; "
+        "`stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes "
+        "only, as Craton does."
+    ),
 }
 
 
@@ -135,6 +146,25 @@ def _cases(summary: dict[str, Any]) -> list[str]:
             f"| {c.name} | {c.about} | {lat0:g}-{lat1:g}° N, {_lons(lon0, lon1)} | "
             f"{c.cell_deg:g}° | {c.mc:g} | {c.scored:g} | {v.get(f'M>={c.scored:g}', '·')} | "
             f"{v['largest']:.2f} | {v['fit_quakes']:,} |"
+        )
+    snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
+    return [*out, "", f"Snapshots: {snaps}."]
+
+
+def _stress(summary: dict[str, Any]) -> list[str]:
+    """CB-23's frozen regions: cells, records, how much a cell's own readings disagree."""
+    from craton.bench.stress import CASES
+
+    out = [
+        "| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |",
+        "|---|---|---|---|---|---|",
+    ]
+    for c in CASES:
+        v = summary[c.region]
+        out.append(
+            f"| {c.region.replace('_', ' ')} | {c.half.replace('_', '-')} | "
+            f"{v['history_quakes']:,} M{c.mc:g}+ ({c.cut[:10]}) | {v['cells']} | "
+            f"{v['records']:,} | {v['median_spread_deg']:g}° |"
         )
     snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
     return [*out, "", f"Snapshots: {snaps}."]
@@ -224,7 +254,7 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary and task_id not in ("CB-09", "CB-22", "CB-30"):
+        if summary and task_id not in ("CB-09", "CB-22", "CB-23", "CB-30"):
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
@@ -241,6 +271,8 @@ def render() -> str:
             lines += ["", *_sequences(summary)]
         if task_id == "CB-30" and summary:
             lines += ["", *_cases(summary)]
+        if task_id == "CB-23" and summary:
+            lines += ["", *_stress(summary)]
     lines += [
         "",
         "## Add a method",
