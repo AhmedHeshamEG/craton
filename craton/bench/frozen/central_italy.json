@@ -874,6 +874,75 @@
           "fit_quakes": 7265
         }
       }
+    },
+    "CB-23": {
+      "name": "Hidden-state truth",
+      "metric": "degrees between inferred and measured SHmax, mean over cells, then over regions",
+      "direction": "lower",
+      "fingerprint": "fc7056d6f3c077d899d3754eabe4cffd67a51957e60ef4f1985df019b5cd17ab",
+      "files": {
+        "central_italy.parquet": "f48cfef6d9be52f510497fe2d188cd7ff78d818e551783b43c62465bcf33d28a",
+        "california.parquet": "e7f355e632b5db16fdde7333ddec04ec9bbaf00707eb61716bbb3feee97b5d05",
+        "japan.parquet": "cbfa9c5a762d957f9e34793a74fe5dec946340088f93b167bce2c07bfb69f28f",
+        "new_zealand.parquet": "b0ca962a40e2e69b612733ffbe5cd9b92e1252514020337a1d133b96cb66cad8",
+        "turkey.parquet": "726b447f6f5c44524e529809154a03903524a8d05c253f96a82fadf4f3c22e0b",
+        "chile.parquet": "c4d3391b391fc6036f92162418b67ac0efedadf0e9a0002e569378604b64bb2d",
+        "alaska.parquet": "2eedf91b31d002ce4187565280ab5d54d749c00267fdff06b9073585a00b8aaf"
+      },
+      "summary": {
+        "snapshots": {
+          "central_italy": "96a163f798d8f9cc",
+          "california": "2e933cc433533857",
+          "japan": "646e06efcb8292d8",
+          "new_zealand": "0ad42fd967748d63",
+          "turkey": "bfb1790b549c2dfe",
+          "chile": "16c9638835d229d7",
+          "alaska": "857cc9fcdf860e01"
+        },
+        "wsm_records": 77364,
+        "central_italy": {
+          "cells": 25,
+          "records": 421,
+          "median_spread_deg": 19.8,
+          "history_quakes": 28173
+        },
+        "california": {
+          "cells": 145,
+          "records": 2485,
+          "median_spread_deg": 13.7,
+          "history_quakes": 56106
+        },
+        "japan": {
+          "cells": 401,
+          "records": 16382,
+          "median_spread_deg": 21.4,
+          "history_quakes": 65964
+        },
+        "new_zealand": {
+          "cells": 95,
+          "records": 1178,
+          "median_spread_deg": 14.5,
+          "history_quakes": 66703
+        },
+        "turkey": {
+          "cells": 124,
+          "records": 1041,
+          "median_spread_deg": 14.4,
+          "history_quakes": 17703
+        },
+        "chile": {
+          "cells": 137,
+          "records": 1991,
+          "median_spread_deg": 13.7,
+          "history_quakes": 4253
+        },
+        "alaska": {
+          "cells": 56,
+          "records": 310,
+          "median_spread_deg": 13.8,
+          "history_quakes": 7618
+        }
+      }
     }
   }
 }
