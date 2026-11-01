@@ -86,7 +86,12 @@ CATALOG: tuple[PlannedTask, ...] = (
         "degrees between SHmax inferred from quakes and the World Stress Map's",
         "P9",
     ),
-    PlannedTask("CB-24", "Migration", "learned wiring vs the order 2016-17 lit up", "P9"),
+    PlannedTask(
+        "CB-24",
+        "Migration",
+        "where a sequence lights up next: the true next cell in the top 3, sixteen sequences",
+        "P9",
+    ),
     PlannedTask(
         "CB-25",
         "Mainshock days",

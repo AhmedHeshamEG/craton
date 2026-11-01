@@ -163,6 +163,34 @@ Snapshots: groningen `b392ac5e4c87e6dc`, oklahoma `1989705b223c5506`.
 - **Fingerprint:** `ad899191ff41ab37`
 - **Test data:** reads ['CB-02', 'CB-03']
 
+## CB-24 · Migration
+
+Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored size (completeness + 1) on or after the day of the first big shock. Before every next lighting a method sees the cells lit so far and the quakes before the sequence, never the sequence's other quakes, and ranks the cells still dark. The number is how often the cell that really lit next is in its top 3, over the first 50 lightings of each of sixteen sequences (central Italy 2016 and 2009, and CB-22's fourteen), mean over sequences; a coin gets 3 in ~1,000. Floors: `distance_only` (nearest to the cell that lit last) and `quake_history` (the busiest cells before the sequence).
+
+- **Metric:** share of next lit cells in the method's top 3, mean over sequences (higher is better)
+- **Fingerprint:** `cde95aab4bcb3c14`
+
+| Sequence | Lights at | Cells lit in a year | Scored | Days to the last scored |
+|---|---|---|---|---|
+| amatrice_norcia | M3+ | 39 | 38 | 349.96 |
+| laquila | M3+ | 34 | 33 | 302.82 |
+| el_mayor | M3.5+ | 70 | 50 | 89.14 |
+| ridgecrest | M3.5+ | 32 | 31 | 355.02 |
+| tohoku | M4+ | 675 | 50 | 2.27 |
+| kumamoto | M4+ | 29 | 28 | 322.62 |
+| darfield | M4+ | 39 | 38 | 323.02 |
+| kaikoura | M4+ | 117 | 50 | 0.57 |
+| van | M4+ | 59 | 50 | 173 |
+| elazig | M4+ | 27 | 26 | 337.46 |
+| kahramanmaras | M4+ | 194 | 50 | 0.31 |
+| maule | M5.5+ | 44 | 43 | 352.15 |
+| iquique | M5.5+ | 28 | 27 | 160.2 |
+| illapel | M5.5+ | 43 | 42 | 307.22 |
+| anchorage | M4+ | 18 | 17 | 308.52 |
+| chignik | M4+ | 67 | 50 | 64.59 |
+
+Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
+
 ## CB-29 · EarthquakeNPP
 
 EarthquakeNPP (Stockman, Lawson & Werner, TMLR 2026), untouched: their ComCat_25 California dataset, their 1981-2007 training and 2007-2020 test windows, their fitted ETAS and their metric, the point-process log-likelihood per test quake in nats. A method enters as their ETAS times a factor per 0.1° cell and day, fixed at midnight.

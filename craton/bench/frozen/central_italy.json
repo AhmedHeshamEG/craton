@@ -943,6 +943,137 @@
           "history_quakes": 7618
         }
       }
+    },
+    "CB-24": {
+      "name": "Migration",
+      "metric": "share of next lit cells in the method's top 3, mean over sequences",
+      "direction": "higher",
+      "fingerprint": "cde95aab4bcb3c14abefa254d4b9b4441e10b749e6f46a4507f1dc6f9fc4cbae",
+      "files": {
+        "amatrice_norcia.parquet": "0b3442a410cf24d27ebffefdfe748b28b47765c7a689b55ab7f45a3b471ba34a",
+        "laquila.parquet": "8edf6f207a3f76bf06fcadae4451d6c2b6fb8f079ea35a268ce6ddf60d682582",
+        "el_mayor.parquet": "a087a052fc4d268690a4d1f59b173f984cdea3b97f40e135add671ab7de4bf89",
+        "ridgecrest.parquet": "54032e975140cf6bf99da0048ce8204c6fd3562b06c3e9c3c1dfc7742c0ef5c1",
+        "tohoku.parquet": "eb533820bb6464ee84beb98ded1ce51a056098da694474aa689521338c0ba935",
+        "kumamoto.parquet": "81cc91584835f9f164f2562771bcdce3ff2f76ec1c8d2e1f7c94845601ef25df",
+        "darfield.parquet": "ff46f81ddea1b2d247a3811aadfc066f2ba1f32a6a64a4592867629f7907443d",
+        "kaikoura.parquet": "5b65d039ad05c5180e69d6c90c6a394deaf82fe737a21988193080180b117b92",
+        "van.parquet": "3191db229ba39fc2fc203ff41b93356692a9982183106ed0a32c3c2d8292f16b",
+        "elazig.parquet": "b3c5efca8b633bc60943c12c38fffd7fddd373ff10dcd7e5327f56878d1532ec",
+        "kahramanmaras.parquet": "ebe5a748fb4ba1f74f2948b8267ced1f7b06f13c7e25c0d5678526c5beef5f2c",
+        "maule.parquet": "5e9c0a90c09b6fabd0429c81eaab93d8c3f20d8f3b8891a7d32d6d43198eec6b",
+        "iquique.parquet": "d0ab28af70fa0b4744ed470141843c100245d06a9fe88fc04fe164bbe7cab0eb",
+        "illapel.parquet": "50fb7b090d194a0ae434fb1f3b8cfaa793bbdc42b5661600df756e694966076b",
+        "anchorage.parquet": "c332daf4ffdfa8b7e2a2cb7eda00ad87a2549fe85013d4fae2b61b679ca0f9b2",
+        "chignik.parquet": "91c33eee8db468344dabc1a067f048b9b51bc149bf4a3e6dc8d46b0aad116e96"
+      },
+      "summary": {
+        "snapshots": {
+          "central_italy": "96a163f798d8f9cc",
+          "california": "2e933cc433533857",
+          "japan": "646e06efcb8292d8",
+          "new_zealand": "0ad42fd967748d63",
+          "turkey": "bfb1790b549c2dfe",
+          "chile": "16c9638835d229d7",
+          "alaska": "857cc9fcdf860e01"
+        },
+        "amatrice_norcia": {
+          "lit": 39,
+          "scored": 38,
+          "threshold": 3.0,
+          "days_to_last_scored": 349.96
+        },
+        "laquila": {
+          "lit": 34,
+          "scored": 33,
+          "threshold": 3.0,
+          "days_to_last_scored": 302.82
+        },
+        "el_mayor": {
+          "lit": 70,
+          "scored": 50,
+          "threshold": 3.5,
+          "days_to_last_scored": 89.14
+        },
+        "ridgecrest": {
+          "lit": 32,
+          "scored": 31,
+          "threshold": 3.5,
+          "days_to_last_scored": 355.02
+        },
+        "tohoku": {
+          "lit": 675,
+          "scored": 50,
+          "threshold": 4.0,
+          "days_to_last_scored": 2.27
+        },
+        "kumamoto": {
+          "lit": 29,
+          "scored": 28,
+          "threshold": 4.0,
+          "days_to_last_scored": 322.62
+        },
+        "darfield": {
+          "lit": 39,
+          "scored": 38,
+          "threshold": 4.0,
+          "days_to_last_scored": 323.02
+        },
+        "kaikoura": {
+          "lit": 117,
+          "scored": 50,
+          "threshold": 4.0,
+          "days_to_last_scored": 0.57
+        },
+        "van": {
+          "lit": 59,
+          "scored": 50,
+          "threshold": 4.0,
+          "days_to_last_scored": 173.0
+        },
+        "elazig": {
+          "lit": 27,
+          "scored": 26,
+          "threshold": 4.0,
+          "days_to_last_scored": 337.46
+        },
+        "kahramanmaras": {
+          "lit": 194,
+          "scored": 50,
+          "threshold": 4.0,
+          "days_to_last_scored": 0.31
+        },
+        "maule": {
+          "lit": 44,
+          "scored": 43,
+          "threshold": 5.5,
+          "days_to_last_scored": 352.15
+        },
+        "iquique": {
+          "lit": 28,
+          "scored": 27,
+          "threshold": 5.5,
+          "days_to_last_scored": 160.2
+        },
+        "illapel": {
+          "lit": 43,
+          "scored": 42,
+          "threshold": 5.5,
+          "days_to_last_scored": 307.22
+        },
+        "anchorage": {
+          "lit": 18,
+          "scored": 17,
+          "threshold": 4.0,
+          "days_to_last_scored": 308.52
+        },
+        "chignik": {
+          "lit": 67,
+          "scored": 50,
+          "threshold": 4.0,
+          "days_to_last_scored": 64.59
+        }
+      }
     }
   }
 }

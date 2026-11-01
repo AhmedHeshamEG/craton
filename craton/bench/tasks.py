@@ -1156,6 +1156,9 @@ from craton.bench import enhanced as _enhanced  # noqa: E402, F401
 from craton.bench import induced as _induced  # noqa: E402, F401
 from craton.bench import locks as _locks  # noqa: E402, F401
 
+# P9b: CB-24, where a sequence lights up next.
+from craton.bench import migration as _migration  # noqa: E402, F401
+
 # P8d, the whole Earth: CB-22 (and CB-29, EarthquakeNPP).
 from craton.bench import npp as _npp  # noqa: E402, F401
 

@@ -104,6 +104,16 @@ ABOUT = {
         "`stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes "
         "only, as Craton does."
     ),
+    "CB-24": (
+        "Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored "
+        "size (completeness + 1) on or after the day of the first big shock. Before every "
+        "next lighting a method sees the cells lit so far and the quakes before the sequence, "
+        "never the sequence's other quakes, and ranks the cells still dark. The number is how "
+        "often the cell that really lit next is in its top 3, over the first 50 lightings of "
+        "each of sixteen sequences (central Italy 2016 and 2009, and CB-22's fourteen), mean "
+        "over sequences; a coin gets 3 in ~1,000. Floors: `distance_only` (nearest to the "
+        "cell that lit last) and `quake_history` (the busiest cells before the sequence)."
+    ),
 }
 
 
@@ -166,6 +176,21 @@ def _stress(summary: dict[str, Any]) -> list[str]:
             f"{v['history_quakes']:,} M{c.mc:g}+ ({c.cut[:10]}) | {v['cells']} | "
             f"{v['records']:,} | {v['median_spread_deg']:g}° |"
         )
+    snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
+    return [*out, "", f"Snapshots: {snaps}."]
+
+
+def _migration(summary: dict[str, Any]) -> list[str]:
+    """CB-24's frozen sequences: how many cells lit, how many are scored, over how long."""
+    out = [
+        "| Sequence | Lights at | Cells lit in a year | Scored | Days to the last scored |",
+        "|---|---|---|---|---|",
+    ]
+    for key, v in summary.items():
+        if key == "snapshots":
+            continue
+        days = "·" if v["days_to_last_scored"] is None else f"{v['days_to_last_scored']:g}"
+        out.append(f"| {key} | M{v['threshold']:g}+ | {v['lit']} | {v['scored']} | {days} |")
     snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
     return [*out, "", f"Snapshots: {snaps}."]
 
@@ -254,7 +279,7 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary and task_id not in ("CB-09", "CB-22", "CB-23", "CB-30"):
+        if summary and task_id not in ("CB-09", "CB-22", "CB-23", "CB-24", "CB-30"):
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
@@ -273,6 +298,8 @@ def render() -> str:
             lines += ["", *_cases(summary)]
         if task_id == "CB-23" and summary:
             lines += ["", *_stress(summary)]
+        if task_id == "CB-24" and summary:
+            lines += ["", *_migration(summary)]
     lines += [
         "",
         "## Add a method",
