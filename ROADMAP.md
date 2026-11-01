@@ -60,7 +60,7 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-21 | **L'Aquila, enhanced inputs** | CB-03's scoring, with the 2009 ML catalogue as input | ETAS on the same inputs | P8 |
 | CB-22 | **World sequences** | Daily forecasts on 14 held-out sequences: six in regions trained on (California, Japan, New Zealand), eight in regions never seen (Turkey, Chile, Alaska); gain per quake, the never-seen half is the headline | ETAS fitted on each box's own past | P8 |
 | CB-23 | **Hidden-state truth** | SHmax inferred from quakes alone vs the World Stress Map 2025, 0.5° cells in seven regions (degrees; pressure gets its own ID when open data exists, D-108) | Regional-average stress; interpolation of the other cells | P9 |
-| CB-24 | **Migration** | Connection graph learned before 2016 vs the order the 2016–17 sequence lit up | Distance only | P9 |
+| CB-24 | **Migration** | Where a sequence lights up next: the true next 0.1° cell in the method's top 3, given only the cells lit so far and the past; sixteen sequences (D-109) | Distance only; the busiest cells | P9 |
 | CB-25 | **Mainshock days** | Skill on held-out world M6+ days: Molchan curve, false alarms per hit | ETAS | P11 |
 | CB-26 | **Distilled law** | A symbolic formula's held-out gain over ETAS vs the network's | the network itself | P14 |
 | CB-27 | **Predictability horizon** | Skill over ETAS vs lead time (1 day → 1 year): where it reaches zero, with error bars | — | P15 |

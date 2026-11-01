@@ -572,3 +572,14 @@ from craton.bench.stress import QuakeLineation, StressInterpolation, StressRegio
 register_method(StressRegional())
 register_method(StressInterpolation())
 register_method(QuakeLineation())
+
+# CB-24's floors live with their task.
+from craton.bench.migration import DistanceOnly, QuakeHistory  # noqa: E402
+
+register_method(DistanceOnly())
+register_method(QuakeHistory())
+
+# The Coulomb rate-and-state floor (P9b): ETAS's background, physics for how quakes make quakes.
+from craton.bench.crs import Crs  # noqa: E402
+
+register_method(Crs())

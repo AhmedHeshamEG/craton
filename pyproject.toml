@@ -26,6 +26,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
+    "cutde>=26.3",
     "numpy>=2.1",
     "pyarrow>=26",
     "pydantic>=2.9",
@@ -103,7 +104,7 @@ strict = true
 packages = ["craton"]
 
 [[tool.mypy.overrides]]
-module = ["torch", "torch.*"]
+module = ["torch", "torch.*", "cutde", "cutde.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -1728,3 +1728,73 @@ database, magadb.net; the authors' grids on request). P9d looks again.
 
 **Rejected.** Digitising the published maps. Grading pressure against the locations of
 known CO₂ springs alone (they mark where gas reaches the surface, not the pressure at depth).
+
+### D-109 · 2026-11-01 · P9 — CB-24 asks where a sequence lights up next, given only the lightings
+
+The plan said "the connection graph learned before 2016 vs the order the 2016-17 sequence lit
+up (Amatrice → Visso → Norcia → Campotosto)". Four patches make a story but not a test: one
+ordering of four things can't separate a method from luck. So the patches are CB-02's 0.1°
+cells, and "lit up" has a definition a script can apply anywhere:
+
+- **A lighting** is a cell's first quake at the scored magnitude (the region's completeness + 1,
+  M3 in central Italy) within 365 days of the first big shock's UTC midnight. The first cell is
+  given; the method ranks every dark cell before each next lighting.
+- **Inputs.** The box's quakes before the cut, and the cells lit so far with the quake that lit
+  each (where, when, how big). Never the sequence's other quakes: with them the test becomes
+  CB-02 at a finer clock, and ETAS's aftershock arithmetic wins it without knowing any wiring.
+- **Score.** The chance the cell that really lit next is in the method's top 3 (the plan's
+  "expect"), ties broken at random in expectation; mean over a sequence's first 50 lightings,
+  then over sequences. The mean reciprocal rank rides along.
+- **Fifty.** Central Italy lit 39 cells in the year, L'Aquila 34; Tohoku lit 675 and Kaikoura
+  117, most within a day, and by then the "order" is the whole box switching on at once.
+- **Sixteen sequences.** Central Italy 2016 and L'Aquila 2009 (CB-02's grid), and CB-22's
+  fourteen in their boxes, so a method that only works on the Apennines shows it. Maule stays
+  in: CB-22 drops it for a reason that belongs to ETAS's fit, which this task doesn't have.
+- **Floors.** `distance_only` (nearest the cell that lit last; nearest to *any* lit cell was
+  tried in the spike and is close, 0.17 vs 0.15 in central Italy, worse on most others) and
+  `quake_history` (busiest cells before the sequence).
+
+**Rejected.** The four named patches as the test (n = 4). Letting methods read the sequence's
+aftershocks (tests the rate, not the wiring). Every lighting of the year (Tohoku would be 675
+rankings of mostly noise). A probability score over cells instead of the top 3 (it would need
+every floor to invent a kernel width, and the plan's bar is a rank).
+
+### D-110 · 2026-11-01 · P9 — The CRS floor: Mancini's recipe from the catalogue alone, anywhere
+
+Step 5 of P9 asks for a Coulomb rate-and-state floor on CB-02, after Mancini et al. (2019),
+whose best model (CRS-7) matched ETAS over the year and beat it after Visso. CRS-7 is built from
+things outside the token store: published finite-fault slip models for the six largest shocks
+and receiver planes from pre-sequence focal mechanisms. The floor (`crs`,
+`craton/bench/crs.py`, `configs/floors/crs.yaml`) keeps Mancini's physics and replaces those two with
+what any catalogue has:
+
+- **Sources.** Every quake of the scored size before a forecast's day. From M5.4, a rectangle
+  of uniform slip (Wells & Coppersmith 1994, centred on the hypocentre); below, or where no
+  orientation is known, isotropic M0/(6πr³) (Chen et al. 2013; Mancini's CRS-7 for M3-4).
+- **Receivers and orientation.** 3 × 3 × 4 points per cell down to 11 km. Central Italy's faults
+  (strike 155°, dip 45°, rake −90°: Mancini's CRS-1, the DISS trend) are a line in
+  `configs/floors/crs.yaml`. Not in the region file: a new field there changes the region's
+  fingerprint and with it the name of every snapshot.
+- **Rates.** Dieterich (1994), state per point, the day's mean R/r in closed form, on ETAS's own
+  declustered background, so `crs` and `etas` differ only in how quakes make quakes.
+- **Fit.** (A·σ, t_a) on the fit split's days over Mancini's grid (0.01-0.1 MPa, 1-1000 years);
+  μ' 0.4, G 30 GPa, ν 0.25, |ΔCFF| capped at 1 MPa (the rectangle's edge singularity).
+- **Engine.** `cutde` (MIT, Ben Thompson; Nikkhoo & Walter 2015 triangular dislocations in a
+  half-space) joins the dependencies: Windows and Linux wheels, CPU, 0.2 s for a rectangle on
+  37,800 receivers. Okada ports were GPL (pyrocko, OkadaPy) or need a Fortran compiler
+  (okada_wrapper). Its sign convention was checked against a displacement jump in the tests.
+  The state bank is torch on the GPU in float64 (CB-02: same score, 666 s → 158 s).
+
+**Results** (deterministic; the fit chose A·σ 0.01 MPa, the grid's edge, and t_a 100 years on
+CB-02). Below ETAS on every forecasting task, the same way Mancini's catalogue-only models were:
+CB-02 −7.518 bits per quake (ETAS −7.118), CB-03 −12.23 (−9.396), CB-20 −7.466 (−6.985),
+CB-21 −12.23, CB-09 −15.31 (−14.57), calibration CB-05 0.520 (0.222), predictability CB-11
+6.09% (1.32%). CB-22 −9.54 bits above ETAS: Iquique alone is −55 (a foreshock sequence; an
+isotropic source with sensitive faults overshoots by orders of magnitude); without it CRS beats
+ETAS in 4 of 13 sequences (Tohoku +0.10, Van +0.59, Illapel +0.11, and Maule +14.9, where ETAS's
+own fit fails). Its job is the bar a physics layer has to clear.
+
+**Rejected.** Digitising slip models from the papers (not open data, Italy only). Optimally
+oriented planes (they need the regional stress tensor, which CB-23 grades). Fitting the
+orientation (a floor that tunes its physics on the data stops being the physics). Extending
+the A·σ grid below Mancini's 0.01 MPa after seeing the fit pick its edge.

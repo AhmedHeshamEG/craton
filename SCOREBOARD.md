@@ -41,7 +41,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-21 | L'Aquila, enhanced inputs | −8.224 ± 0.0067 ↑ · craton-mini | −9.26 ± 0 ↑ · etas_incomplete | P8 |
 | CB-22 | World sequences | 0.3612 ± 0.083 ↑ · craton-mini | 0.3363 ± 1.6e−05 ↑ · etas_incomplete | P8 |
 | CB-23 | Hidden-state truth | · | 16.58 ± 0 ↓ · stress_interpolation | P9 |
-| CB-24 | Migration | · | · | P9 |
+| CB-24 | Migration | · | 0.09329 ± 0 ↑ · distance_only | P9 |
 | CB-25 | Mainshock days | · | · | P11 |
 | CB-26 | Distilled law | · | · | P14 |
 | CB-27 | Predictability horizon | · | · | P15 |
@@ -63,6 +63,7 @@ Bits per M3+ quake above ETAS. A forecast on floor k gives the real quakes 2^k t
 | etas_incomplete (floor) | +0.06 | +0.10 |
 | etas (floor) | +0.00 | +0.00 |
 | etas_aniso (floor) | −0.00 | −0.00 |
+| crs (floor) | −0.40 | −2.84 |
 | poisson (floor) | −7.52 | −7.54 |
 
 ## The floor
@@ -76,19 +77,23 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-02 | etas_incomplete | −7.059 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 638 expected; M≥1.5: −2.73 bits/quake; days with too few M≥3: 4% |
 | CB-02 | etas | −7.118 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 583 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 4% |
 | CB-02 | etas_aniso | −7.119 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 583 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 4% |
+| CB-02 | crs | −7.518 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 877 expected; M≥1.5: −3.45 bits/quake; days with too few M≥3: 3% |
 | CB-02 | poisson | −14.64 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 1,065 quakes, 75 expected; M≥1.5: −9.69 bits/quake; days with too few M≥3: 21% |
 | CB-03 | etas_incomplete | −9.295 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 75 expected; M≥1.5: −4.38 bits/quake; days with too few M≥3: 6% |
 | CB-03 | etas | −9.396 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
 | CB-03 | etas_aniso | −9.401 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 70 expected; M≥1.5: −4.43 bits/quake; days with too few M≥3: 7% |
+| CB-03 | crs | −12.23 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 93 expected; M≥1.5: −6.14 bits/quake; days with too few M≥3: 6% |
 | CB-03 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
 | CB-04 | idw_trend | 17.77 ± 0 ↓ | RMSE (mm), hidden stations, offset per station and component removed | east 24.2 · north 15.2 · up 11.4 mm over 29 stations, 86,373 days |
 | CB-05 | etas_incomplete | 0.1043 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
 | CB-05 | etas | 0.2217 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
 | CB-05 | etas_aniso | 0.2688 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
+| CB-05 | crs | 0.5204 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
 | CB-05 | poisson | 1.577 ± 0 ↓ | calibration error, |log₂(observed ÷ forecast)| over M3+ cell-days ≥ 0.1% likely |  |
 | CB-06 | fingerprint_knn | 0.9982 ± 0 ↑ | AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras |  |
 | CB-06 | no_detector | 0.5 ± 0 ↑ | AUROC of the out-of-distribution score, Calabria + Sicily vs central Italy's test eras |  |
 | CB-07 | poisson | 1 ± 0 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
+| CB-07 | crs | 1 ± 0 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
 | CB-07 | etas | 1.002 ± 0.0002 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
 | CB-07 | etas_aniso | 1.003 ± 0.00021 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
 | CB-07 | etas_incomplete | 1.003 ± 0.00056 ↓ | false alarms under attack ÷ clean false alarms, mean over the counted attacks |  |
@@ -96,13 +101,16 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-08 | etas | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
 | CB-08 | etas_aniso | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
 | CB-08 | etas_incomplete | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
+| CB-08 | crs | 1 ± 0 ↓ | hard physics violations (rates, Gutenberg-Richter, Omori probe, slip budget) |  |
 | CB-09 | etas_incomplete | −14.57 ± 0.44 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
 | CB-09 | etas | −14.57 ± 0.44 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
 | CB-09 | etas_aniso | −14.57 ± 0.44 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
 | CB-09 | poisson | −14.73 ± 0.19 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
+| CB-09 | crs | −15.31 ± 0.42 ↑ | bits per M3+ quake on the physics planet, daily 0.1° forecasts |  |
 | CB-11 | etas_aniso | 1.317 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-11 | etas_incomplete | 1.32 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-11 | etas | 1.324 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
+| CB-11 | crs | 6.09 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-11 | poisson | 24.03 ± 0 ↓ | share of space-time (%) watched to catch 90% of the M4+ quakes |  |
 | CB-17 | context_kde | 19.03 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
 | CB-17 | climatology | 27.72 ± 0 ↓ | bits per quake in a region never trained on, with its first 365 days in context |  |
@@ -112,18 +120,23 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-20 | etas_incomplete | −6.955 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 881 expected; M≥1.5: −2.76 bits/quake; days with too few M≥3: 3% |
 | CB-20 | etas | −6.985 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 803 expected; M≥1.5: −2.75 bits/quake; days with too few M≥3: 3% |
 | CB-20 | etas_aniso | −6.987 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 803 expected; M≥1.5: −2.75 bits/quake; days with too few M≥3: 3% |
+| CB-20 | crs | −7.466 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 917 expected; M≥1.5: −3.45 bits/quake; days with too few M≥3: 3% |
 | CB-20 | poisson | −14.64 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 1,065 quakes, 75 expected; M≥1.5: −9.69 bits/quake; days with too few M≥3: 21% |
 | CB-21 | etas_incomplete | −9.26 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 78 expected; M≥1.5: −4.35 bits/quake; days with too few M≥3: 6% |
 | CB-21 | etas | −9.36 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 73 expected; M≥1.5: −4.4 bits/quake; days with too few M≥3: 7% |
 | CB-21 | etas_aniso | −9.364 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 73 expected; M≥1.5: −4.4 bits/quake; days with too few M≥3: 7% |
+| CB-21 | crs | −12.23 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 94 expected; M≥1.5: −6.14 bits/quake; days with too few M≥3: 6% |
 | CB-21 | poisson | −16.94 ± 0 ↑ | log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input | M≥3: 315 quakes, 20 expected; M≥1.5: −11.5 bits/quake; days with too few M≥3: 11% |
 | CB-22 | etas_incomplete | 0.3363 ± 1.6e−05 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-22 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-22 | etas_aniso | −0.1055 ± 7.9e−06 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-22 | poisson | −5.26 ± 0.00015 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
+| CB-22 | crs | −9.543 ± 0.00015 ↑ | bits per quake above ETAS fitted on the region's own past, mean over never-seen regions |  |
 | CB-23 | stress_interpolation | 16.58 ± 0 ↓ | degrees between inferred and measured SHmax, mean over cells, then over regions |  |
 | CB-23 | stress_regional | 26.75 ± 0 ↓ | degrees between inferred and measured SHmax, mean over cells, then over regions |  |
 | CB-23 | quake_lineation | 44.67 ± 0 ↓ | degrees between inferred and measured SHmax, mean over cells, then over regions |  |
+| CB-24 | distance_only | 0.09329 ± 0 ↑ | share of next lit cells in the method's top 3, mean over sequences |  |
+| CB-24 | quake_history | 0.01448 ± 0 ↑ | share of next lit cells in the method's top 3, mean over sequences |  |
 | CB-29 | etas | 7.256 ± 0 ↓ | negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits |  |
 | CB-30 | etas_forced | 0.4562 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
 | CB-30 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
@@ -134,6 +147,9 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-01 15:43 | `20261101-154324-crs` | crs (baseline) | 10 new |
+| 2026-11-01 09:39 | `20261101-093943-quake-history` | quake_history (baseline) | 1 new |
+| 2026-11-01 09:39 | `20261101-093910-distance-only` | distance_only (baseline) | 1 new |
 | 2026-11-01 08:51 | `20261101-085056-quake-lineation` | quake_lineation (baseline) | 1 new |
 | 2026-11-01 08:51 | `20261101-085036-stress-interpolation` | stress_interpolation (baseline) | 1 new |
 | 2026-11-01 08:51 | `20261101-085021-stress-regional` | stress_regional (baseline) | 1 new |

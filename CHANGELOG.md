@@ -13,6 +13,15 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 - **Truth sources** (`craton/bench/truth.py`): data a task grades against and no model reads,
   kept out of the token store, with data cards (`docs/data/world_stress_map.md`).
 - Figure `docs/assets/squeeze-{dark,light}.png` (`scripts/figures/squeeze.py`); `lessons/P9.md`.
+- **CB-24, where a sequence lights up next (P9b, D-109).** Sixteen sequences on 0.1° cells:
+  before each cell's first quake at the scored size, rank the dark cells, seeing only the past
+  and the cells lit so far. Floors `distance_only` 9.3% in the top 3, `quake_history` 1.4% (a
+  coin: 0.3%).
+- **The CRS floor (P9b, D-110).** Coulomb rate-and-state (Dieterich 1994) from the catalogue
+  alone: rectangles from M5.4 through `cutde` (new dependency, MIT), 1/r³ sources below, ETAS's
+  background, the state bank on the GPU (`craton/bench/crs.py`, `configs/floors/crs.yaml`).
+  CB-02 −7.518 bits per quake (ETAS −7.118).
+- Figure `docs/assets/migration-{dark,light}.png` (`scripts/figures/migration.py`).
 
 ## [0.9.0] — 2026-10-30 · P8 Other planets: real, human-made and fake
 
