@@ -19,6 +19,7 @@ Features are log(ε + counter).
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -57,8 +58,11 @@ class MemorySpec:
         return len(self.lifetimes) * 2 * len(self.spreads)
 
 
-def memory(events: Events, grid: Grid, midnights: FloatArray, spec: MemorySpec) -> np.ndarray:
-    """(days, cells, features) float16: the log counters at each midnight, from quakes before it.
+def counter_states(
+    events: Events, grid: Grid, midnights: FloatArray, spec: MemorySpec
+) -> Iterator[np.ndarray]:
+    """The raw counters at each midnight, from quakes before it: one (cells, lifetimes,
+    weights) array per midnight, the same array updated in place (copy it to keep it).
 
     ``midnights`` must be increasing. A quake at exactly midnight belongs to the day it starts.
     """
@@ -70,19 +74,29 @@ def memory(events: Events, grid: Grid, midnights: FloatArray, spec: MemorySpec) 
     t, c, m = ev.time[keep], cell[keep], ev.mag[keep]
     weights = np.stack([np.ones_like(m), 10.0 ** (PRODUCTIVITY * (m - spec.m_ref))], axis=1)
     taus = np.asarray(spec.lifetimes)
-    k, w = len(taus), weights.shape[1]
-    state = np.zeros((grid.n_cells, k, w))
-    out = np.zeros((len(midnights), grid.n_cells, spec.n_features), np.float16)
+    state = np.zeros((grid.n_cells, len(taus), weights.shape[1]))
     t_prev = spec.start
     i0 = 0
-    for d, now in enumerate(midnights):
+    for now in midnights:
         i1 = int(np.searchsorted(t, now))
         state *= np.exp(-(now - t_prev) / DAY / taus)[None, :, None]
         if i1 > i0:
             fade = np.exp(-((now - t[i0:i1]) / DAY)[:, None] / taus[None, :])
             np.add.at(state, c[i0:i1], fade[:, :, None] * weights[i0:i1, None, :])
         t_prev, i0 = float(now), i1
-        img = state.reshape(grid.n_lat, grid.n_lon, k * w)
+        yield state
+
+
+def memory(events: Events, grid: Grid, midnights: FloatArray, spec: MemorySpec) -> np.ndarray:
+    """(days, cells, features) float16: the log counters at each midnight, from quakes before it.
+
+    ``midnights`` must be increasing. A quake at exactly midnight belongs to the day it starts.
+    Features run spread-major: (spread, lifetime, weight).
+    """
+    kw = len(spec.lifetimes) * 2
+    out = np.zeros((len(midnights), grid.n_cells, spec.n_features), np.float16)
+    for d, state in enumerate(counter_states(events, grid, midnights, spec)):
+        img = state.reshape(grid.n_lat, grid.n_lon, kw)
         parts = []
         for s in spec.spreads:
             if s == 0:
@@ -90,7 +104,7 @@ def memory(events: Events, grid: Grid, midnights: FloatArray, spec: MemorySpec) 
             else:
                 parts.append(
                     np.stack(
-                        [gaussian_filter(img[..., j], s, mode="constant") for j in range(k * w)],
+                        [gaussian_filter(img[..., j], s, mode="constant") for j in range(kw)],
                         axis=-1,
                     )
                 )

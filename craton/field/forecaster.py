@@ -44,8 +44,9 @@ from craton.bench.data import DAY, Events
 from craton.bench.tasks import BenchContext, ForecastSpec, GriddedForecast
 from craton.field.base import etas_daily
 from craton.field.config import FieldConfig, field_hash, load_field_config
+from craton.field.hidden import make_net
 from craton.field.memory import MemorySpec, memory
-from craton.field.model import FieldNet
+from craton.field.steer import quadrupole
 from craton.spec.timeaxis import to_seconds
 from craton.train.checkpoint import checkpoints_dir
 from craton.trust import calibration, guard
@@ -81,6 +82,8 @@ class Days:
     counts: np.ndarray | None  # (days, cells, 2) float32, training days only
     #: Each start forecasts this many days from its midnight (CB-19: 30).
     span_days: int = 1
+    #: (days, cells, counters, 2) float16 quadrupole moments, when the kernel steers (P9c).
+    quad: np.ndarray | None = None
 
 
 def _counts(
@@ -149,7 +152,10 @@ def build_days(
     log_r = np.log(np.maximum(rates, 1e-30))
     log_etas = np.stack([log_r + math.log(1 - big), log_r + math.log(big)], axis=-1)
     counts = _counts(events, grid, starts, fit.mc, span_days, scored) if with_counts else None
-    return Days(starts, mem, log_etas.astype(np.float32), counts, span_days)
+    quad = None
+    if cfg.hidden is not None and cfg.hidden.steer:
+        quad = quadrupole(events, grid, starts, spec, cfg.hidden.steer_sigma_km)
+    return Days(starts, mem, log_etas.astype(np.float32), counts, span_days, quad)
 
 
 def train_member(
@@ -173,7 +179,7 @@ def train_member(
     train_d, val_d = idx[~sees_val], idx[val_mask]
     torch.manual_seed(member_seed)
     rng = np.random.default_rng(member_seed)
-    net = FieldNet(days.memory.shape[-1], grid, cfg.model).to(dev)
+    net = make_net(days.memory.shape[-1], grid, cfg.model, cfg.hidden).to(dev)
     if init is not None:
         net.load_state_dict({**init, "place": net.place})
     opt = torch.optim.AdamW(net.parameters(), lr=tc.lr, weight_decay=tc.weight_decay)
@@ -181,11 +187,13 @@ def train_member(
     mem = torch.from_numpy(days.memory)
     log_e = torch.from_numpy(days.log_etas)
     y = torch.from_numpy(days.counts)
+    quad = None if days.quad is None else torch.from_numpy(days.quad)
 
     def nll(sel: IntArray) -> tuple[torch.Tensor, torch.Tensor]:
         lb = log_e[sel].to(dev)
         with torch.autocast(dev.type, torch.float16, enabled=dev.type == "cuda"):
-            corr = net(mem[sel].to(dev).float(), lb[..., 1])
+            q = None if quad is None else quad[sel].to(dev)
+            corr = net(mem[sel].to(dev).float(), lb[..., 1], *(() if q is None else (q,)))
         lam = lb + corr
         yy = y[sel].to(dev)
         return -(yy * lam - lam.exp()).sum(), yy.sum()
@@ -245,14 +253,16 @@ def predict_members(
     out = np.zeros((len(states), len(days.starts), grid.n_cells))
     mem = torch.from_numpy(days.memory)
     log_e = torch.from_numpy(days.log_etas[..., 1])
+    quad = None if days.quad is None else torch.from_numpy(days.quad)
     for k, state in enumerate(states):
-        net = FieldNet(days.memory.shape[-1], grid, cfg.model)
+        net = make_net(days.memory.shape[-1], grid, cfg.model, cfg.hidden)
         net.load_state_dict(state)
         net.to(dev).eval()
         with torch.no_grad():
             for i in range(0, len(days.starts), INFER_DAYS):
                 lb = log_e[i : i + INFER_DAYS].to(dev)
-                corr = net(mem[i : i + INFER_DAYS].to(dev).float(), lb)
+                more = () if quad is None else (quad[i : i + INFER_DAYS].to(dev),)
+                corr = net(mem[i : i + INFER_DAYS].to(dev).float(), lb, *more)
                 rate = (lb + corr[..., 1]).exp().double().cpu().numpy()
                 out[k, i : i + INFER_DAYS] = rate
     return out
