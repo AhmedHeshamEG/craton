@@ -83,6 +83,29 @@ class FieldCurriculum(_Strict):
     start_from: str = Field(description="The Field config whose members this one starts from.")
 
 
+class FieldHidden(_Strict):
+    """The hidden-state layer (P9c): two blocks that start as the physics. Off, each block is
+    the P6 Field exactly; on, its last layer starts at zero, so the untrained block is too."""
+
+    clock: bool = Field(
+        default=False,
+        description="Clock-shift memory: a learned per-cell, per-day shift of the counter "
+        "lifetimes along log-time (how fast time runs there: the stressing rate).",
+    )
+    max_shift: float = Field(
+        default=2.0, gt=0, description="Largest shift, in steps of the lifetime bank (4x each)."
+    )
+    steer: bool = Field(
+        default=False,
+        description="Steerable kernel: a per-cell angle and stretch of the neighbourhood "
+        "memory, from a rotation-equivariant head (the angle is CB-23's SHmax answer).",
+    )
+    max_stretch: float = Field(
+        default=0.8, gt=0, lt=1, description="Largest e in the kernel's 1 + e cos 2(phi - theta)."
+    )
+    steer_sigma_km: float = Field(default=15.0, gt=0, description="The moments' Gaussian width.")
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -92,6 +115,7 @@ class FieldConfig(_Strict):
     world: FieldWorld | None = None
     curriculum: FieldCurriculum | None = None
     planets: FieldPlanets | None = None
+    hidden: FieldHidden | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -104,8 +128,9 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 def field_hash(config: FieldConfig) -> str:
     dump = config.model_dump(mode="json")
-    for later in ("world", "curriculum", "planets"):
+    for later in ("world", "curriculum", "planets", "hidden"):
         if dump.get(later) is None:
-            dump.pop(later, None)  # a config from before P8d / P8f keeps its hash and checkpoints
+            # a config from before P8d / P8f / P9c keeps its hash and checkpoints
+            dump.pop(later, None)
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

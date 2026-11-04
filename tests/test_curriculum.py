@@ -102,6 +102,7 @@ def test_a_member_starts_from_the_stage_before_without_its_place() -> None:
         log_etas = np.full((n_days, g.n_cells, 2), -6.0, np.float32)
         counts = np.zeros((n_days, g.n_cells, 2), np.float32)
         span_days = 1
+        quad = None
 
     start = FieldNet(n_mem, g, cfg.model)
     torch.nn.init.constant_(start.out.bias, 0.3)

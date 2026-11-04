@@ -780,3 +780,43 @@ Surprises / problems:
 Decisions: D-109, D-110.
 
 Next: P9c, the hidden-state layer.
+
+## 2026-11-03 — P9c — The hidden-state layer: two blocks built, neither kept
+
+TLDR: a negative result. Two blocks that start as the physics went in front of the Field: a
+clock shift (Dieterich's stressing rate, as a slide along the memory's lifetimes) and a
+steerable kernel (a learned, rotation-equivariant stretch of the neighbourhood). Both lose
+CB-02 on all three seeds, so neither is kept and the board doesn't move. The steer head's
+angle scores 43° on CB-23: the quakes' lineation, not the crust's squeeze (regional floor
+26.7°).
+
+Built:
+- `craton/field/hidden.py`: `shift_bank`, `HiddenFieldNet` (clock and steer heads, last layers
+  zero, so the untrained net is the P6 Field bit for bit), `make_net`
+- `craton/field/steer.py`: quadrupole moments q = Q/I of every memory counter, 15 km Gaussian in
+  km, convolutions on the GPU
+- `craton/field/stressmap.py` + `scripts/ablations/steer_stress.py`: CB-23 read off any steering
+  Field's head, anywhere, with no stress label
+- `craton/field/memory.py`: the counters as a generator (`counter_states`), output unchanged
+- `FieldHidden` (optional `hidden:` config section; `mini` keeps hash b99e49ae);
+  `configs/field/hidden_clock.yaml`, `hidden_steer.yaml`; `tests/test_hidden.py` (11 tests)
+
+Scores (paired gain over `mini`, bits per quake, seeds 0 / 1 / 2):
+- clock: CB-02 −0.041 / −0.060 / −0.085, CB-03 −0.000 / +0.025 / +0.023
+- steer: CB-02 −0.020 / −0.007 / −0.029, CB-03 −0.004 / +0.008 / +0.013
+- CB-23 (steer head, degrees, lower is better): 42.8 / 43.5 / 43.5; central Italy 30.7–33.1
+  (lineation 33.0); floors interpolation 16.6, regional 26.7, lineation 44.7
+- the board: unchanged
+
+Surprises / problems:
+- Summing the 0.1° stretch vectors into a 0.5° cell let the quiet cells beside a fault vote
+  90° off (they see the fault side-on). Weighted by each cell's own quakes, fixed by a unit
+  test before any CB-23 score.
+- The angle came out where D-111 said it would: along the faults. Right for the Apennines'
+  normal faults, a coin elsewhere.
+- The clock hurts *where* more than *how many*: sliding a cell's clock reshuffles which nearby
+  cells look alive.
+
+Decisions: D-111, D-112.
+
+Next: P9d, the pair representation as Omori attention, and the camera.

@@ -1798,3 +1798,79 @@ own fit fails). Its job is the bar a physics layer has to clear.
 oriented planes (they need the regional stress tensor, which CB-23 grades). Fitting the
 orientation (a floor that tunes its physics on the data stops being the physics). Extending
 the A·σ grid below Mancini's 0.01 MPa after seeing the fit pick its edge.
+
+### D-111 · 2026-11-02 · P9 — The hidden-state layer is two blocks that start as the physics
+
+Step 1 of P9 asks for a per-cell stress state that turns into rates through a Dieterich-shaped
+law, built as two blocks, each its own ablation against the P6 Field (`mini`), three seeds,
+paired, on CB-02 and CB-03. Both live in `craton/field/hidden.py` (with `craton/field/steer.py`)
+and are switched on by a new optional `hidden:` section of a Field config; `mini` has none, so
+its hash and its checkpoints are untouched (a test holds `b99e49ae`).
+
+- **Clock shift.** Dieterich's aftershock duration is t_a = Aσ/τ̇: a cell loaded faster runs
+  its sequence faster. A clock sped up by 4^s turns each memory counter of lifetime τ into one
+  of τ/4^s, which on the bank (lifetimes four times apart) is a slide of s steps. One s per
+  cell per day, from that cell's memory and its ETAS rate, bounded to ±2 steps, linear between
+  lifetimes and held at the ends. So s is a stressing-rate meter. Pore pressure enters
+  Coulomb stress through the effective normal stress and moves the same clock; without an open
+  pressure truth (D-108) the layer infers the sum, not the parts.
+- **Steerable kernel.** A kernel stretched along θ, g(r)(1 + e cos 2(φ − θ)), sums over past
+  quakes to I + e Re(e^{−2iθ}Q), Q the quadrupole moment Σ g(r) e^{2iφ}. So the neighbourhood
+  counters become log I + log(1 + Re(w̄ q)), q = Q/I per counter (Gaussian 15 km, distances in
+  km so the 0.1° grid's 11 × 8 km cells add no direction of their own), |w| < 0.8. w comes
+  from an SO(2)-equivariant head: complex weights, chosen from rotation-invariant inputs (the
+  cell's own counters and |q|), times q. Rotate the catalogue by α and θ turns by α (tested to
+  10⁻³ degrees). Complex weights rather than real ones because faulting is chiral: a dextral
+  fault's squeeze sits on the other side of its strike from a sinistral one's.
+- **Zero start.** Both heads' last layers start at zero: the untrained blocks pass the P6
+  memory through bit for bit (tested), so each ablation measures what the block learned.
+- **CB-23 without a head.** θ is read as SHmax by `craton/field/stressmap.py`: the steer head
+  of the Field trained for CB-02, run on each CB-23 region's history at its cut, its 0.1° w
+  vectors summed into each 0.5° cell weighted by the cell's own quakes (twelve-year counter)
+  and over members. The weighting was fixed by a unit test before any CB-23 score existed: a
+  cell beside a fault sees the fault side-on, and an unweighted sum let those cells vote 90°
+  off. The head never sees a stress label or a focal mechanism; outside central Italy every
+  region is zero-shot for it.
+
+**Rejected.** A per-cell latent angle as a free parameter (one per cell of one grid: it can't
+move to a new region and nothing forces it to be physical). A generic attention layer with
+more width (the Field already has two; P8f's curriculum showed width without a law to obey
+moves nothing). A separate SHmax head (the plan's rule: the angle is graded, never trained).
+
+### D-112 · 2026-11-03 · P9 — Neither hidden-state block is kept; the code stays, switched off
+
+The two ablations of D-111, three seeds each, paired against `mini` (bits per quake, higher
+is better):
+
+| block | CB-02 s0 / s1 / s2 | CB-03 s0 / s1 / s2 |
+|---|---|---|
+| clock shift | −0.041 / −0.060 / −0.085 | −0.000 / +0.025 / +0.023 |
+| steerable kernel | −0.020 / −0.007 / −0.029 | −0.004 / +0.008 / +0.013 |
+
+Both lose CB-02 on every seed, so neither joins the Field (a block is kept only if it pays,
+and no number may go down). The losses sit mostly in *where* for the clock (−0.03 to −0.05)
+and are split for the steer. The small CB-03 gains are within the seed spread and don't pay for
+the CB-02 loss.
+
+CB-23 from the steer head (`results/ablation/hidden_steer_on_cb23.json`): 42.8°, 43.5°,
+43.5° for the three seeds. That is just inside the quake-lineation floor (44.7°) and far from
+the regional-average floor (26.7°); central Italy, the one region the head trained on, gets
+30.7° to 33.1° against lineation's 33.0°. The angle the forecaster found useful is the
+direction the quakes line up along, which is what D-111 expected from a head that only sees
+quake positions. It matches SHmax where faults are normal and the squeeze runs along them
+(the Apennines), and nowhere else. The plan's CB-23 bar is not met by P9c.
+
+So the code stays in the repo, off by default: `hidden:` is an optional config section,
+`mini`'s hash and checkpoints are untouched, and `hidden_clock` / `hidden_steer` reproduce
+both runs. The stress map module stays as the way any later block's angle is graded on CB-23.
+
+**Why they lost (what the numbers allow, not more).** Each block adds freedom the Field
+already had a cheaper way to use: the Field reads all nine lifetimes at once, so sliding them
+mostly adds noise to a choice it could already make; and on 0.1° cells with a 15 km kernel the
+stretch reshuffles quakes between neighbours the transformer already compares. A block that
+can only say what the inputs already say is a regulariser at best.
+
+**Not tried, on purpose.** Tuning max_shift, sigma or the head width after seeing these scores
+(that is fitting the ablation to the test). Combining the two (each lost alone on the same
+task). These stay open for P9d, where the wiring (Omori attention) gives the angle and the
+clock something the round memory can't already express.
