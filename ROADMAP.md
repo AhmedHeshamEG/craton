@@ -66,7 +66,7 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-27 | **Predictability horizon** | Skill over ETAS vs lead time (1 day → 1 year): where it reaches zero, with error bars | — | P15 |
 | CB-28 | **Velocity gap-fill** | Hide one station's dv/v series, rebuild it | Neighbour average | P10 |
 | CB-29 | **EarthquakeNPP** | The outside benchmark (Stockman et al., TMLR 2026): their California data, splits, ETAS and metric, untouched; nats per quake | Their ETAS | P8 |
-| CB-31 | **Groningen pressure** | The hidden stress map inferred from quakes alone vs the NAM reservoir pressure drop (500 m cells, yearly), at years the model never trained on; rank correlation | Quake density; the CB-30 Field's rate map | P9 |
+| CB-31 | **Groningen pressure** | The hidden stress map inferred from quakes alone vs the NAM reservoir pressure drop (500 m cells, yearly), at years the model never trained on; rank correlation | Quake density; the blind CB-30 Field's rate map (no pressure input) | P9 |
 | CB-32 | **Unseen-region forecast** | CB-02's scoring on whole regions left out of training, one at a time, no fine-tuning | ETAS fitted on the region | P9 |
 | CB-33 | **Planted stress** | The physics planet's true stress history vs the one inferred from its quakes; rank correlation | Quake density | P9 |
 | CB-34 | **Stress from mechanisms** | As CB-23, with focal mechanisms as input, graded only on World Stress Map records that are not from quakes (boreholes, fractures, overcoring) | Regional average; interpolation | P9 |

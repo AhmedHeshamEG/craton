@@ -2002,3 +2002,13 @@ tests a forecaster that understands quakes must pass, each with a truth it is ne
 **Rejected.** More blocks on the catalogue alone (five tries, five losses). Grading the
 pressure head on Oklahoma (open injection volumes are yearly per well, too coarse for a map).
 Feeding focal mechanisms into CB-23 (the World Stress Map is partly built from them: a leak).
+
+### D-117 · 2026-11-05 · P9 — Correction to D-116: Groningen's pressure grid is already an input
+
+D-116 presents the NAM reservoir pressure grid as newly found. It is not: P8e already reads
+it (`craton/adapters/gridded.py`, record 10245813) as the pump that forces CB-30's Groningen
+Field. The plan stands with one rule added: a model graded on CB-31 never reads the pressure
+tokens, in training or at test, and the adapter's tokens are excluded from its inputs by
+source, checked by a test. The CB-30 Field that does read them can't be graded on CB-31. CB-31's
+floors stay quake density and the blind CB-30 Field's rate map (the P8e ablation without the
+pump), which read no pressure either.
