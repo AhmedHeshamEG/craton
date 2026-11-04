@@ -52,6 +52,10 @@ class MemorySpec:
     m_ref: float = M_REF
     lifetimes: tuple[float, ...] = LIFETIMES_DAYS
     spreads: tuple[float, ...] = SPREADS
+    #: (P9d, the camera) The Gutenberg-Richter b to count the world with: each quake below
+    #: its catalogue's completeness at the time stands for the quakes the network missed
+    #: (``craton.field.camera``). None counts what the network saw, as before.
+    world_b: float | None = None
 
     @property
     def n_features(self) -> int:
@@ -68,11 +72,23 @@ def counter_states(
     """
     if np.any(np.diff(midnights) <= 0):
         raise ValueError("midnights must be increasing")
-    ev = events.above(spec.m_min).window(spec.start, float(midnights[-1]))
+    seen = np.ones(len(events))
+    if spec.world_b is not None:
+        from craton.field.camera import world_weights
+
+        before = events.select(events.time < float(midnights[-1]))
+        seen[events.time < float(midnights[-1])] = world_weights(before, spec.world_b, spec.m_min)
+    pick = (
+        (events.mag >= spec.m_min - 1e-9)
+        & (events.time >= spec.start)
+        & (events.time < float(midnights[-1]))
+    )
+    ev, seen = events.select(pick), seen[pick]
     cell = grid.cell_of(ev.lat, ev.lon)
     keep = cell >= 0
     t, c, m = ev.time[keep], cell[keep], ev.mag[keep]
     weights = np.stack([np.ones_like(m), 10.0 ** (PRODUCTIVITY * (m - spec.m_ref))], axis=1)
+    weights[:, 0] *= seen[keep]  # the camera counts the world; productivity is the big ones
     taus = np.asarray(spec.lifetimes)
     state = np.zeros((grid.n_cells, len(taus), weights.shape[1]))
     t_prev = spec.start
