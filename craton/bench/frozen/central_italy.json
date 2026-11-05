@@ -1181,6 +1181,133 @@
           "2022": -0.662
         }
       }
+    },
+    "CB-32": {
+      "name": "Unseen-region forecast",
+      "metric": "bits per quake above ETAS fitted there, by a model that never read the region",
+      "direction": "higher",
+      "fingerprint": "41e6c7b3688246e656224b344c482b52befa828881e7a7b1b0b207e43f80207c",
+      "files": {
+        "cb02.parquet": "d160a0916717b9b2b31c7a5b1a5c3e3b16c2e99f99cd18172d9241ece98e53d3",
+        "cb03.parquet": "39cae62881c4e4f52231b13e2d58d4648cec7e967b448939b4d1aa16bd18c84f",
+        "el_mayor.parquet": "b88d1852855aeae21cb5f893d106fa5ef644653f489cf74606cd9e51ee85508b",
+        "ridgecrest.parquet": "d2d3de46c7d3792f9494aba71f1238833c3fe51909c8078fcdba6b5fab8a7ac2",
+        "tohoku.parquet": "f5a5945ac5a0cf4d371f9786850bdf42607e320106cbf0208e2dfbfac3a57623",
+        "kumamoto.parquet": "e0aeedb3d134e55c8c21311e160a4f130970f0e786179642095874c782f83d15",
+        "darfield.parquet": "764c2c13a68a13d49638ccfa5c671c4209234a17f496fca9d2d53965377f2f63",
+        "kaikoura.parquet": "63606745bbbff2bf9ac14e2fc1f10b99680688a438517fca3f9ce1bca974c5ae"
+      },
+      "summary": {
+        "snapshots": {
+          "california": "2e933cc433533857",
+          "japan": "646e06efcb8292d8",
+          "new_zealand": "0ad42fd967748d63"
+        },
+        "cb02": {
+          "region": "central_italy",
+          "source": "CB-02",
+          "window": {
+            "name": "cb02_test",
+            "start": "2016-08-25T00:00:00Z",
+            "end": "2018-01-01T00:00:00Z"
+          },
+          "mc": 2.0,
+          "M>=3": 1065,
+          "largest": 6.5,
+          "fit_quakes": 28181
+        },
+        "cb03": {
+          "region": "central_italy",
+          "source": "CB-03",
+          "window": {
+            "name": "cb03_test",
+            "start": "2009-01-01T00:00:00Z",
+            "end": "2010-01-01T00:00:00Z"
+          },
+          "mc": 2.0,
+          "M>=3": 315,
+          "largest": 6.1,
+          "fit_quakes": 20474
+        },
+        "el_mayor": {
+          "region": "california",
+          "source": "CB-22:el_mayor",
+          "window": {
+            "name": "cb22_el_mayor",
+            "start": "2010-04-05T00:00:00Z",
+            "end": "2011-04-05T00:00:00Z"
+          },
+          "mc": 2.5,
+          "M>=3.5": 493,
+          "largest": 5.71,
+          "fit_quakes": 6564
+        },
+        "ridgecrest": {
+          "region": "california",
+          "source": "CB-22:ridgecrest",
+          "window": {
+            "name": "cb22_ridgecrest",
+            "start": "2019-07-05T00:00:00Z",
+            "end": "2020-07-04T00:00:00Z"
+          },
+          "mc": 2.5,
+          "M>=3.5": 412,
+          "largest": 7.1,
+          "fit_quakes": 4578
+        },
+        "tohoku": {
+          "region": "japan",
+          "source": "CB-22:tohoku",
+          "window": {
+            "name": "cb22_tohoku",
+            "start": "2011-03-10T00:00:00Z",
+            "end": "2012-03-09T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 3478,
+          "largest": 9.0,
+          "fit_quakes": 8632
+        },
+        "kumamoto": {
+          "region": "japan",
+          "source": "CB-22:kumamoto",
+          "window": {
+            "name": "cb22_kumamoto",
+            "start": "2016-04-15T00:00:00Z",
+            "end": "2017-04-15T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 118,
+          "largest": 7.3,
+          "fit_quakes": 2698
+        },
+        "darfield": {
+          "region": "new_zealand",
+          "source": "CB-22:darfield",
+          "window": {
+            "name": "cb22_darfield",
+            "start": "2010-09-04T00:00:00Z",
+            "end": "2011-09-04T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 216,
+          "largest": 6.2,
+          "fit_quakes": 4094
+        },
+        "kaikoura": {
+          "region": "new_zealand",
+          "source": "CB-22:kaikoura",
+          "window": {
+            "name": "cb22_kaikoura",
+            "start": "2016-11-14T00:00:00Z",
+            "end": "2017-11-14T00:00:00Z"
+          },
+          "mc": 3.0,
+          "M>=4": 330,
+          "largest": 6.7,
+          "fit_quakes": 9574
+        }
+      }
     }
   }
 }
