@@ -200,6 +200,11 @@ class FieldDimless(_Strict):
         description="One more spread: every quake counted over a Gaussian as wide as its own "
         "rupture (Wells & Coppersmith 1994), so distance is in rupture lengths.",
     )
+    anchor: bool = Field(
+        default=False,
+        description="(v2) The box's ETAS rate over its own long-run rate (its 12-year counter): "
+        "how deep into a sequence it is, in no unit. v1 had none.",
+    )
     pool_of: str | None = Field(
         default=None,
         description="Read another config's pool of days (the same regions and cut): the "
@@ -251,5 +256,8 @@ def field_hash(config: FieldConfig) -> str:
     meter = dump.get("meter")
     if meter is not None and meter.get("deplete") is True:
         meter.pop("deplete")  # added after the first meter run; on (the default) keeps its hash
+    dimless = dump.get("dimless")
+    if dimless is not None and dimless.get("anchor") is False:
+        dimless.pop("anchor")  # added in v2 (D-130); off keeps v1's hash and checkpoints
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

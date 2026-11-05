@@ -13,6 +13,10 @@ behave alike at the same ratio). Here, four:
 2. **Counts over ETAS** (``ratios``): each fading counter divided by what ETAS's own rate
    for the cell would put in it, ``r · τ``. ETAS reaches the network only as each cell's
    share of the box. Multiply a region's rates by any factor and these inputs don't move.
+   (``anchor``, v2) The box's whole ETAS rate over its own long-run rate (its 12-year
+   counter): how deep into a sequence the box is. v1 left this out and lost Tohoku on how
+   many (D-130): the raw Field reads the box's absolute rate, which carries the same signal
+   in the region's units.
 3. **Time in Omori units** (``omori_time``): aftershock rates fall as (t + c)^-p, and c is
    the box's own clock (mostly how long the network stays blind after a big shock). The
    bank's lifetimes are re-read in units of c: a box with twice central Italy's c reads each
@@ -54,6 +58,8 @@ MIN_SIGMA_CELLS = 0.5
 KM_PER_DEG = 111.195
 #: A counter holding this share of what ETAS expects reads as empty.
 RATIO_EPS = 1e-3
+#: (anchor) A box with no long-run history reads as this share of its current rate.
+ANCHOR_EPS = 1e-3
 
 
 def rupture_km(mag: FloatArray) -> FloatArray:
@@ -143,7 +149,7 @@ class DimlessFieldNet(nn.Module):
         self.register_buffer("log_tau", torch.log(torch.tensor(lifetimes)).float())
         d = shape.d_model
         self.max_log = math.log(shape.max_nudge)
-        n_etas = 1 if dimless.ratios else 2
+        n_etas = (2 if dimless.anchor else 1) if dimless.ratios else 2
         self.inp = nn.Sequential(nn.Linear(n_memory + n_etas, d), nn.GELU(), nn.Linear(d, d))
         code = place_code(grid)
         self.register_buffer("place", code)
@@ -172,6 +178,10 @@ class DimlessFieldNet(nn.Module):
         """(days, cells, n_memory + 1 or 2): what the trunk reads."""
         mem = memory.float()
         le = log_etas.float()
+        # (anchor) the box's long-run rate: its longest counter, every quake weighing 1, before
+        # any slide; read off the raw memory so Omori time can't move it.
+        long_run = (mem[..., (self.k - 1) * 2].exp() - EPS).clamp(min=0.0).sum(-1)
+        long_run = long_run / self.tau_log()[-1].exp()
         bank = mem.reshape(*mem.shape[:-1], self.spreads, self.k, 2)
         log_tau = self.tau_log().expand(*mem.shape[:-1], self.k)
         if self.dimless.omori_time:
@@ -186,7 +196,12 @@ class DimlessFieldNet(nn.Module):
         expect = (log_rate + 0.0)[..., None] + log_tau  # (days, cells, K): log r·τ
         ratio = torch.log(RATIO_EPS + held / expect.exp()[..., None, :, None])
         share = le[..., 1] - le[..., 1].logsumexp(-1, keepdim=True)
-        return torch.cat([ratio.flatten(-3), share[..., None]], dim=-1)
+        parts = [ratio.flatten(-3), share[..., None]]
+        if self.dimless.anchor:
+            now = log_rate.logsumexp(-1)  # (days,) ETAS's rate for the whole box
+            lr = torch.log(long_run + ANCHOR_EPS * now.exp())
+            parts.append((now - lr)[:, None, None].expand(*share.shape, 1))
+        return torch.cat(parts, dim=-1)
 
     def forward(
         self, memory: torch.Tensor, log_etas: torch.Tensor, shift: torch.Tensor

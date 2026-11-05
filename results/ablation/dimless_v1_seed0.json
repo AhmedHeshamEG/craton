@@ -1,0 +1,36 @@
+{
+ "world": {
+  "value": 0.29427137787823576,
+  "cb02.gain": 0.11028554737054641,
+  "cb03.gain": 0.17954593084823856,
+  "el_mayor.gain": 0.41127124017452665,
+  "ridgecrest.gain": 0.41135644252358894,
+  "tohoku.gain": 0.41543617380961884,
+  "kumamoto.gain": 0.4560883335850985,
+  "darfield.gain": 0.14124273033717394,
+  "kaikoura.gain": 0.22894462437709429,
+  "central_italy.mean_gain": 0.14491573910939248,
+  "california.mean_gain": 0.4113138413490578,
+  "japan.mean_gain": 0.43576225369735866,
+  "new_zealand.mean_gain": 0.1850936773571341,
+  "folds_beaten": 1.0,
+  "sequences_beaten": 1.0
+ },
+ "world_dimless": {
+  "value": 0.31747529232435323,
+  "cb02.gain": 0.33499013340857875,
+  "cb03.gain": 0.7786173923435609,
+  "el_mayor.gain": 0.513406425513697,
+  "ridgecrest.gain": 0.7522648670924177,
+  "tohoku.gain": -0.3527125742937134,
+  "kumamoto.gain": 0.4280427907264954,
+  "darfield.gain": -0.06751240916024415,
+  "kaikoura.gain": 0.15270571296403368,
+  "central_italy.mean_gain": 0.5568037628760698,
+  "california.mean_gain": 0.6328356463030573,
+  "japan.mean_gain": 0.03766510821639102,
+  "new_zealand.mean_gain": 0.042596651901894766,
+  "folds_beaten": 1.0,
+  "sequences_beaten": 0.75
+ }
+}

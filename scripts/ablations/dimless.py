@@ -28,7 +28,7 @@ from craton.bench.tasks import TASKS, BenchContext
 from craton.train.method import CratonMini
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIGS = {"world": "world", "dimless": "world_dimless"}
+CONFIGS = {"world": "world", "dimless": "world_dimless2"}
 TASK_IDS = ("CB-32", "CB-22")
 
 

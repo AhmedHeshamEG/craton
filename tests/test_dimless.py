@@ -137,3 +137,27 @@ def test_the_dimless_config_keeps_every_old_hash() -> None:
     d = load_field_config("world_dimless").dimless
     assert d is not None
     assert d.pool_of == "world"
+
+
+def test_the_anchor_reads_a_sequence_and_still_no_units() -> None:
+    """v2 (D-130): the box's rate over its long-run rate moves with a sequence, not a scale."""
+    net = _net(FieldDimless(anchor=True))
+    mem, le = _inputs()
+    s = torch.zeros(2)
+    busier_mem = torch.log(EPS + 10.0 * (mem.exp() - EPS))
+    a = net.features(mem, le, s)
+    assert a.shape[-1] == mem.shape[-1] + 2
+    b = net.features(busier_mem, le + math.log(10.0), s)
+    assert torch.allclose(a, b, atol=2e-3)
+    calm = le - 8.0  # a box near its long-run rate, far from the floor term
+    a = net.features(mem, calm, s)
+    deeper = net.features(mem, calm + math.log(10.0), s)  # ETAS ten times up, same past
+    assert torch.allclose(
+        deeper[..., -1] - a[..., -1], torch.full_like(a[..., -1], math.log(10)), atol=1e-2
+    )
+    out = net(mem, le, s)
+    assert torch.count_nonzero(out) == 0
+
+
+def test_v1_keeps_its_hash() -> None:
+    assert field_hash(load_field_config("world_dimless"))[:8] == "76d2e9d3"
