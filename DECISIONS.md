@@ -2012,3 +2012,19 @@ tokens, in training or at test, and the adapter's tokens are excluded from its i
 source, checked by a test. The CB-30 Field that does read them can't be graded on CB-31. CB-31's
 floors stay quake density and the blind CB-30 Field's rate map (the P8e ablation without the
 pump), which read no pressure either.
+
+### D-118 · 2026-11-05 · P9 — The camera on CB-20, its own target: a tie
+
+D-115 stopped the camera before CB-20, the task it was built for (the enhanced catalogue the
+Field double-counts, P8c). Run afterwards, three seeds, paired against `mini` (bits per quake):
+
+| seed | gain | how many | where |
+|---|---|---|---|
+| 0 | +0.005 | +0.041 | −0.036 |
+| 1 | −0.005 | −0.004 | −0.001 |
+| 2 | −0.002 | +0.025 | −0.027 |
+
+A tie within the seed spread. The count improves on two seeds of three, which is the double
+count the camera aims at, and the same seeds give it back in where: the world-weighted
+counters spread weight onto cells whose small quakes the enhanced catalogue already shows. The
+camera stays off; D-115's decision stands. Results added to `results/ablation/camera_on_italy.json`.
