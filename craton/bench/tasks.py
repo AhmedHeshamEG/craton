@@ -1168,6 +1168,9 @@ from craton.bench import npp as _npp  # noqa: E402, F401
 # The P8 planets: CB-09.
 from craton.bench import planets as _planets  # noqa: E402, F401
 
+# P9f: CB-33, the physics planet's hidden state against the one a forecaster implies.
+from craton.bench import planted as _planted  # noqa: E402, F401
+
 # P9a: CB-23, the stress the crust is under, graded against the World Stress Map.
 from craton.bench import stress as _stress  # noqa: E402, F401
 from craton.bench import world as _world  # noqa: E402, F401

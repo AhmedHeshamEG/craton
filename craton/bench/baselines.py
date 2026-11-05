@@ -585,6 +585,11 @@ from craton.bench.distilled import ConstantLaw  # noqa: E402
 
 register_method(ConstantLaw())
 
+# CB-33's floor: recent quakes over long-run quakes, cell by cell.
+from craton.bench.planted import QuakeDensity  # noqa: E402
+
+register_method(QuakeDensity())
+
 # The Coulomb rate-and-state floor (P9b): ETAS's background, physics for how quakes make quakes.
 from craton.bench.crs import Crs  # noqa: E402
 

@@ -114,6 +114,18 @@ CATALOG: tuple[PlannedTask, ...] = (
         "bits per quake above ETAS in Groningen and Oklahoma, the forcing measured",
         "P8",
     ),
+    PlannedTask(
+        "CB-31", "Groningen pressure", "inferred stress vs the reservoir's pressure drop", "P9"
+    ),
+    PlannedTask(
+        "CB-32", "Unseen-region forecast", "CB-02's score on regions left out of training", "P9"
+    ),
+    PlannedTask(
+        "CB-33", "Planted stress", "the physics planet's hidden state vs the inferred one", "P9"
+    ),
+    PlannedTask(
+        "CB-34", "Stress from mechanisms", "CB-23 from focal mechanisms, non-quake records", "P9"
+    ),
 )
 
 BY_ID = {t.task_id: t for t in CATALOG}
