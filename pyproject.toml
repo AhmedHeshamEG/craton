@@ -59,6 +59,10 @@ dev = [
 figures = [
     "matplotlib>=3.9",
 ]
+# P9e: symbolic regression (CB-26). Julia is fetched by juliacall on first import.
+distill = [
+    "pysr>=2.7",
+]
 
 [tool.uv]
 conflicts = [[{ extra = "cpu" }, { extra = "cu126" }]]
@@ -104,7 +108,7 @@ strict = true
 packages = ["craton"]
 
 [[tool.mypy.overrides]]
-module = ["torch", "torch.*", "cutde", "cutde.*"]
+module = ["torch", "torch.*", "cutde", "cutde.*", "sympy", "sympy.*", "pysr", "pysr.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
