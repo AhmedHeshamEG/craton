@@ -147,6 +147,34 @@ class FieldAudit(_Strict):
     )
 
 
+class FieldMeter(_Strict):
+    """The stress meter (P9f, ``craton.field.meter``): one stress per cell per day is all the
+    Field outputs; rates follow from it through rate-and-state. Off, the P6 Field."""
+
+    stress: bool = Field(
+        default=False,
+        description="A Dieterich bottleneck: the cell's stress anomaly over ETAS's moves every "
+        "magnitude's rate alike, and quakes beyond ETAS's use up the cell's faults.",
+    )
+    t_a_years: float = Field(
+        default=5.0,
+        gt=0,
+        description="The aftershock duration t_a = A sigma / stressing rate "
+        "every cell starts from, years.",
+    )
+    t_a_factor: float = Field(
+        default=8.0, gt=1, description="How far each cell's learned t_a may move either way."
+    )
+    deplete: bool = Field(
+        default=True,
+        description="Quakes beyond ETAS's use up the cell's faults (off: one stress for every "
+        "magnitude, nothing else; the ablation of the two halves).",
+    )
+    max_stress: float = Field(
+        default=3.0, gt=0, description="Largest stress anomaly, in units of A sigma."
+    )
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -160,6 +188,7 @@ class FieldConfig(_Strict):
     wiring: FieldWiring | None = None
     camera: FieldCamera | None = None
     audit: FieldAudit | None = None
+    meter: FieldMeter | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -172,9 +201,12 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 def field_hash(config: FieldConfig) -> str:
     dump = config.model_dump(mode="json")
-    for later in ("world", "curriculum", "planets", "hidden", "wiring", "camera", "audit"):
+    for later in ("world", "curriculum", "planets", "hidden", "wiring", "camera", "audit", "meter"):
         if dump.get(later) is None:
-            # a config from before P8d / P8f / P9c / P9d / P9e keeps its hash and checkpoints
+            # a config from before P8d / P8f / P9c / P9d / P9e / P9f keeps its hash and checkpoints
             dump.pop(later, None)
+    meter = dump.get("meter")
+    if meter is not None and meter.get("deplete") is True:
+        meter.pop("deplete")  # added after the first meter run; on (the default) keeps its hash
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]
