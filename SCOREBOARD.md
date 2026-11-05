@@ -48,6 +48,10 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-28 | Velocity gap-fill | · | · | P10 |
 | CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
 | CB-30 | Human-made quakes | 0.7071 ± 0.045 ↑ · craton-mini | 0.4562 ± 0 ↑ · etas_forced | P8 |
+| CB-31 | Groningen pressure | · | · | P9 |
+| CB-32 | Unseen-region forecast | · | · | P9 |
+| CB-33 | Planted stress | 0.448 ± 0.093 ↑ · craton-mini | 0.395 ± 0.11 ↑ · quake_density | P9 |
+| CB-34 | Stress from mechanisms | · | · | P9 |
 
 ## The building
 
@@ -143,11 +147,24 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-30 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
 | CB-30 | etas_aniso | −0.0003537 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
 | CB-30 | poisson | −1.137 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
+| CB-33 | quake_density | 0.395 ± 0.11 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
+| CB-33 | etas | 0.3475 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
+| CB-33 | etas_incomplete | 0.3475 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
+| CB-33 | etas_aniso | 0.3475 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
+| CB-33 | crs | 0.2484 ± 0.19 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
+| CB-33 | poisson | 0.1851 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-05 08:11 | `20261105-081102-craton-mini` | craton-mini | 1 new, 19 same |
+| 2026-11-05 08:11 | `20261105-080242-crs` | crs (baseline) | 1 new, 10 same |
+| 2026-11-05 08:11 | `20261105-075505-etas-incomplete` | etas_incomplete (baseline) | 1 new, 10 same |
+| 2026-11-05 08:11 | `20261105-074049-etas-aniso` | etas_aniso (baseline) | 1 new, 12 same |
+| 2026-11-05 08:11 | `20261105-073347-poisson` | poisson (baseline) | 1 new, 12 same |
+| 2026-11-05 08:11 | `20261105-073336-etas` | etas (baseline) | 1 new, 13 same |
+| 2026-11-05 08:11 | `20261105-072638-quake-density` | quake_density (baseline) | 1 new |
 | 2026-11-05 02:57 | `20261105-025734-law-constant` | law_constant (baseline) | 1 new |
 | 2026-11-05 01:52 | `20261105-015133-craton-mini` | craton-mini | 1 new, 18 same |
 | 2026-11-01 15:43 | `20261101-154324-crs` | crs (baseline) | 10 new |
