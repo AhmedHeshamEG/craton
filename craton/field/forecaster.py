@@ -202,6 +202,17 @@ def log_band_seen(
     return np.asarray(np.log(share), dtype=np.float32)
 
 
+def shuffled_answers(days: Days, seed: int) -> Days:
+    """The same days with their answers dealt out again, whole days at a time (P9e's control):
+    each day keeps a real day's quakes, but not its own, so nothing the memory says about a day
+    can predict its answers beyond what holds on every day."""
+    assert days.counts is not None
+    perm = np.random.default_rng(seed).permutation(len(days.starts))
+    return replace(
+        days, counts=days.counts[perm], eyes=None if days.eyes is None else days.eyes[perm]
+    )
+
+
 def make_field(days: Days, grid: csep.Grid, cfg: FieldConfig) -> torch.nn.Module:
     """The net a config asks for, with whatever it needs from ``days`` built in."""
     if cfg.wiring is not None and cfg.wiring.attention:
@@ -395,7 +406,10 @@ class FieldForecaster:
         starts_from = self.starts_from(ctx, seed)
         for m in range(len(states), cfg.train.members):
             init = starts_from[m % len(starts_from)] if starts_from else None
-            st, info = train_member(days, spec.grid, cfg, seed * 100 + m, self.log, init)
+            seen = days
+            if cfg.audit is not None and cfg.audit.shuffle_answers:
+                seen = shuffled_answers(days, seed * 100 + m)
+            st, info = train_member(seen, spec.grid, cfg, seed * 100 + m, self.log, init)
             states.append(st)
             runs.append(info)
         meta = {
@@ -431,6 +445,16 @@ class FieldForecaster:
 
         return field_stage(cur.start_from, self.log).states(ctx.root, seed)
 
+    def audited(self, spec: ForecastSpec) -> ForecastSpec:
+        """The spec this Field trains on: the task's own, or (P9e's leak audit) the same test
+        window with an earlier cut, which ETAS's fit and the Field's training days both obey."""
+        audit = self.config.audit
+        if audit is None or audit.cut is None:
+            return spec
+        if to_seconds(audit.cut) >= to_seconds(spec.fit_end):
+            raise ValueError(f"an audit cut must come before {spec.fit_end}, got {audit.cut}")
+        return replace(spec, cut=audit.cut)
+
     def inputs(self, spec: ForecastSpec, ctx: BenchContext) -> Events:
         """The test-time catalogue after the guard, which watches the live edge: the test
         window and the ``guard.LIVE_EDGE_DAYS`` before it."""
@@ -445,6 +469,7 @@ class FieldForecaster:
         self, spec: ForecastSpec, ctx: BenchContext, seed: int
     ) -> tuple[FloatArray, FloatArray, etas.EtasFit, list[dict[str, torch.Tensor]]]:
         """(members, days, cells) M1.5+ rates, the magnitude shares, the ETAS fit, the states."""
+        spec = self.audited(spec)
         fit = Etas().fit(spec, ctx, seed)
         states, _ = self.states(spec, ctx, seed, fit)
         days = build_days(
@@ -467,7 +492,7 @@ class FieldForecaster:
 
     def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
         rates, shares, fit, states = self.members(spec, ctx, seed)
-        cal = self.calibration(spec, ctx, seed, fit, states)
+        cal = self.calibration(self.audited(spec), ctx, seed, fit, states)
         return Predictive(
             GriddedForecast(rates.mean(axis=0), shares),
             members=rates,

@@ -321,7 +321,8 @@ class Etas:
     long_periods: ClassVar[bool] = True
 
     def fit(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> etas.EtasFit:
-        key = f"etas-fit:{spec.task_id}:{seed}"
+        # The cut is part of the key: a spec with its cut moved back (P9e) is another fit.
+        key = f"etas-fit:{spec.task_id}:{spec.fit_end}:{seed}"
         if key not in ctx._cache:
             ev, t0, t1 = _fit_catalog(spec, ctx)
             proj = etas.Projection.for_grid(spec.grid)
