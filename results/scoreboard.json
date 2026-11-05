@@ -677,6 +677,32 @@
         "oklahoma.physics_gain": 0.875847019803432,
         "oklahoma.where_bits": -7.315512273991799
       }
+    },
+    "CB-26": {
+      "task_id": "CB-26",
+      "metric": "share of the network's held-out gain over ETAS a <=10-term formula keeps",
+      "direction": "higher",
+      "fingerprint": "21c32f5796ebed83aecb68f6ac6f82d6443af8f32f9a374560a2e67bbe09d751",
+      "mean": 0.8357917528504594,
+      "std": 0.04722589220213362,
+      "n_seeds": 3,
+      "run_id": "20261105-015133-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-11-05T01:52:21Z",
+      "extras": {
+        "CB-02.complexity": 22.333333333333332,
+        "CB-02.law_gain_bits": 0.2698308837020352,
+        "CB-02.network_gain_bits": 0.3032203034200635,
+        "CB-02.share": 0.8891603651782175,
+        "CB-02.terms": 3.3333333333333335,
+        "CB-02.validation_share": 0.3527201887859877,
+        "CB-03.complexity": 12.0,
+        "CB-03.law_gain_bits": 0.9116024300765423,
+        "CB-03.network_gain_bits": 1.164808929081305,
+        "CB-03.share": 0.7824231405227015,
+        "CB-03.terms": 1.3333333333333333,
+        "CB-03.validation_share": 0.7785482244442125
+      }
     }
   },
   "baselines": {
@@ -4047,6 +4073,13 @@
       "kind": "baseline",
       "accepted": "2026-11-01T15:43:57Z",
       "summary": "10 new"
+    },
+    {
+      "run_id": "20261105-015133-craton-mini",
+      "model": "craton-mini",
+      "kind": "model",
+      "accepted": "2026-11-05T01:52:21Z",
+      "summary": "1 new, 18 same"
     }
   ]
 }

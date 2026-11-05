@@ -43,7 +43,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-23 | Hidden-state truth | · | 16.58 ± 0 ↓ · stress_interpolation | P9 |
 | CB-24 | Migration | · | 0.09329 ± 0 ↑ · distance_only | P9 |
 | CB-25 | Mainshock days | · | · | P11 |
-| CB-26 | Distilled law | · | · | P14 |
+| CB-26 | Distilled law | 0.8358 ± 0.047 ↑ · craton-mini | · | P9 |
 | CB-27 | Predictability horizon | · | · | P15 |
 | CB-28 | Velocity gap-fill | · | · | P10 |
 | CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
@@ -147,6 +147,7 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-05 01:52 | `20261105-015133-craton-mini` | craton-mini | 1 new, 18 same |
 | 2026-11-01 15:43 | `20261101-154324-crs` | crs (baseline) | 10 new |
 | 2026-11-01 09:39 | `20261101-093943-quake-history` | quake_history (baseline) | 1 new |
 | 2026-11-01 09:39 | `20261101-093910-distance-only` | distance_only (baseline) | 1 new |
