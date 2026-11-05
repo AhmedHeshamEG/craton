@@ -169,8 +169,10 @@ class PlantedStress(Task):
     metric = "rank correlation of inferred and true state, off-steady cells of physics planets"
     direction = "higher"
 
-    def __init__(self) -> None:
-        self.cb09 = planets.TwoPlanets()
+    @property
+    def cb09(self) -> planets.TwoPlanets:
+        # built on use: CB-09's module may still be loading when this one registers
+        return planets.TwoPlanets()
 
     def definition(self) -> dict[str, Any]:
         return {

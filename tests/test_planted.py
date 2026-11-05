@@ -80,3 +80,11 @@ def test_cb33_is_registered_and_takes_forecasters_and_readers() -> None:
     assert task.supports(METHODS["etas"])
     assert task.supports(METHODS["quake_density"])
     assert not task.supports(METHODS["stress_regional"])
+
+
+def test_planets_module_imports_first() -> None:
+    import subprocess
+    import sys
+
+    code = "from craton.bench.planets import TwoPlanets; import craton.bench.tasks as t; t.TASKS['CB-33']"
+    subprocess.run([sys.executable, "-c", code], check=True)
