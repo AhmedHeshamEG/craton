@@ -35,7 +35,7 @@ TASK = GroningenPressure()
 
 def test_blind_view_refuses_the_pressure_by_source() -> None:
     spec = case_spec(TASK.case)
-    view = blind_view(ROOT, TASK.case, spec, "")
+    view = blind_view(ROOT, TASK.case, spec, TASK._snapshot(BenchContext(ROOT)))
     with pytest.raises(HiddenInstrumentError):
         view._snapshot_files(INSTRUMENT)
     with pytest.raises(HiddenInstrumentError):
