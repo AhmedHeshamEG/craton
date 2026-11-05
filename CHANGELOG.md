@@ -31,9 +31,23 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
   CB-02's and CB-03's test windows. craton-mini 0.836 ± 0.047 of the network's gain kept; the floor
   `law_constant` (one constant factor on ETAS, out of the same search) 0.615 ± 0.007. Laws in
   `results/laws/` (`scripts/laws.py`), figure `docs/assets/law-{dark,light}.png`.
+- **CB-33, planted stress (P9f, D-122, D-123).** The physics planets record each patch's
+  rate-and-state state (`StressRecord`); a forecast is graded on how it ranks the cells by it.
+  craton-mini 0.448, floor `quake_density` 0.395. The stress meter (`craton/field/meter.py`) is
+  built and off (D-124).
+- **CB-31, Groningen pressure (P9g, D-125, D-128).** A quake-only forecast map against the
+  reservoir's pressure drop over each gas year 2017-2023 (`craton/bench/pressure.py`). Graded
+  methods answer through `BlindView`, which refuses the pressure tokens; craton-mini through its
+  quake-only twin (`quake_only_forecaster`). craton-mini −0.42, floor `quake_density` −0.23; the
+  real quakes, graded the same way, −0.21 (`scripts/ablations/pressure_reference.py`).
+- **The local-alpha floor (P9g, D-126, D-127).** `etas_local_alpha`: ETAS whose K and α are refit
+  every day on the last 30 days of quakes, after Lombardi & Marzocchi (2010). CB-02 +0.297 over
+  ETAS (craton-mini +0.303), CB-03 +0.588 (+1.165). Ablation `scripts/ablations/local_alpha.py`.
+- Figures `docs/assets/local-alpha-{dark,light}.png` and `docs/assets/pressure-{dark,light}.png`.
 
 ### Changed
 - ETAS's fit is cached by its cut as well as its task and seed.
+- Benchmark cards print list values in a task's frozen summary.
 
 ## [0.9.0] — 2026-10-30 · P8 Other planets: real, human-made and fake
 

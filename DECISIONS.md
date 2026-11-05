@@ -2176,3 +2176,126 @@ directly. Not tested further.
 **Rejected.** Backpropagating through the 9,000-day walk (each step would need the forward pass of
 every earlier day, not a batch of eight). Training until the deficit stops moving (members stop on
 validation the way `mini`'s do; the deficit is refreshed each epoch up to then).
+
+### D-125 · 2026-11-05 · P9 — CB-31 grades the yearly pressure drop; the board's model answers through its quake-only twin
+
+D-116 planned CB-31 as "the bottleneck's stress map against the depletion map at years it never
+trained on". Two things changed before any method was scored, from looking at the truth alone:
+
+1. **The depletion map is static.** On CB-30's Groningen cells, the total pressure drop since 1957
+   ranks the cells almost identically in every gas year after the cut (Spearman 0.99 between
+   2017 and 2023). Grading it at "years it never trained on" would not use the held-out years: a
+   map of the quakes before 2017 already shows where the field drained. The drop over each gas
+   year does move. Production was cut from 2014 and stopped in 2023; the drained centre stopped
+   falling and began to refill while the flanks still drained, so the yearly map turns against the
+   total one (−0.02 in 2017-18, −0.66 in 2022-23, 86 cells). Rate-and-state ties a fault's quake
+   rate to its loading rate (Dieterich 1994; Candela et al. 2019 for Groningen), so the yearly drop
+   is CB-31's truth and the total drop is reported beside it as `static`.
+2. **The bottleneck was not kept** (D-124). CB-31 grades the board's model: craton-mini answers
+   through `quake_only_forecaster`, its CB-30 Field trained without the push (P8e's ablation, same
+   days, same config). D-117 listed that Field as a floor; it is the graded model instead, because
+   it is the model, minus the input the test forbids.
+
+**The task** (`craton/bench/pressure.py`, frozen). Six gas years from 1 October 2017 to 1 October
+2023 (later maps are projections). Cells: CB-30 Groningen's 0.05° grid, graded where the 500 m
+model points cover at least half the cell (86). Truth: the cell's mean pressure drop over the gas
+year, MPa. Answer: a method's expected quakes per cell over CB-30's 30-day periods starting in the
+gas year (each reading only earlier quakes), all magnitudes, or a `PressureReader`'s map. Score:
+Spearman per year, mean of the six.
+
+**The no-pressure rule, by source.** Every method answers through `BlindView`, a region view whose
+`_snapshot_files` raises `HiddenInstrumentError` for `reservoir_pressure`; a test feeds CB-31 a
+forecaster that tries to read the pressure and checks it is refused. A method that reads the push
+(`forecast_forced`) is graded only through a quake-only twin; `etas_forced` has none and is not
+graded. Floor: `quake_density` (each cell's quakes of the year before, `pressure_map`).
+
+**Rejected.** The total drop as the primary truth (static, above). Area-weighted totals per cell
+(they rank cells by how much reservoir they hold, a map of the field's outline). Grading every
+cell with a model point (edge cells measure the outline, not the pressure). Training the meter on
+Groningen (not kept, D-124).
+
+### D-126 · 2026-11-05 · P9 — `etas_local_alpha`: ETAS with its productivity refit on the last month
+
+Lombardi & Marzocchi (2010, *Annals of Geophysics* 53(3), doi:10.4401/ag-4848), INGV's daily
+ETAS for the Italian CSEP experiment, found that Italy-wide ETAS (α 1.3, p 1.16, Mc 2.5) undershoots
+the first part of the 2009 L'Aquila sequence, and attributed it to a locally larger α, 1.5 to 2.0
+(Marzocchi & Lombardi 2009). This is D-121's finding from the other side (ETAS expects too few quakes
+inside a big sequence), so it is the floor any claim about the Field's in-sequence gain must beat.
+Their model is ours (q fixed, Zhuang declustering); our fits are near theirs: α 1.22 and p 1.19 on
+CB-02's split, α 1.04 and p 1.04 on CB-03's, from M2.0 rather than 2.5.
+
+**The floor** (`craton/bench/local_alpha.py`). ETAS's own fit, and at every forecast midnight K and
+α refit by maximum likelihood on the box's M≥mc quakes of the last 30 days, every earlier quake a
+parent; fewer than 100 such quakes, ETAS's own K and α. Started from ETAS's fit, bounded as it is.
+The triggering and the cascade factor use the day's K and α; background, c, p and the spatial kernel
+are ETAS's. Each target's triggering is summed once by parent magnitude (0.05 bins) on the GPU, so a
+day's fit is two numbers on a dot product (CB-02 in 2.5 minutes). `refit_k=False` refits α alone.
+Deterministic: every seed gives the same forecast.
+
+**Rejected.** Refitting every parameter daily (the paper's claim is about productivity, and the
+background map from a month is noise). A spatial window around the sequence (the boxes are already
+the sequences' regions). α alone as the floor (it is the narrower reading of the paper; kept as
+the ablation, it gains less).
+
+### D-127 · 2026-11-05 · P9 — The local-alpha floor ties the Field on CB-02 and gets half of CB-03
+
+Bits per quake over ETAS, three seeds (`scripts/ablations/local_alpha.py`,
+`results/ablation/local_alpha.json`):
+
+| | CB-02 | CB-03 |
+|---|---|---|
+| craton-mini | +0.299 / +0.293 / +0.318 | +1.161 / +1.162 / +1.171 |
+| K and α refit daily | +0.297 | +0.588 |
+| α alone refit daily | +0.191 | +0.398 |
+| mini's lead in *how many* / *where* | +0.016 / −0.015 | +0.427 / +0.150 |
+
+On CB-02 the two gain on the same days (day-by-day correlation of the count gain 0.991-0.998) and on
+the 50 busiest days by the same amount (0.38 against 0.35-0.40 bits per quake of the window). The
+Field's whole CB-02 gain over ETAS is what a 30-day refit of two numbers gives. On CB-03 the
+correlation is 0.43 and the Field doubles the floor, 0.15 of its lead in *where*, which the floor
+cannot change. α alone settles at 1.49 (CB-02) and 1.68 (CB-03) on the busiest days, the paper's
+range, but gains less than refitting K too: inside both sequences every quake was more productive,
+not only the big ones (refit K median 0.58 against ETAS's 0.48; 1.35 against 0.83).
+
+So D-121's "ETAS expects too few quakes inside a big sequence" is, on CB-02, exactly a local
+productivity, as the paper found at L'Aquila; on CB-03 it is half of the gain. The floor joins the
+board. On the other tasks it is no general improvement. It loses to ETAS on CB-20 (−7.113
+against −6.985; a reading, not tested: the machine-learning catalogue's many small quakes pull K up
+further than the scored M3+ quakes follow) and on
+CB-22's never-seen regions (−0.231 bits per quake below ETAS; untested: a month of a small region's quakes
+may be too few to refit on). It ties ETAS on the planets (CB-09 −14.58 against −14.57, CB-33 0.348 against
+0.347) and on CB-07, CB-08 and CB-11. It has the best CB-05 on the board, 0.168 doublings off the
+day totals against ETAS's 0.222 and mini's 0.317. CB-21 +0.51 over ETAS (mini +1.14).
+
+**Rejected.** Calling the CB-02 gain "the Field's" in the README without this floor beside it.
+
+### D-128 · 2026-11-05 · P9 — CB-31: no quake-only map sees the year's pressure drop, the real quakes included
+
+Mean Spearman over the six gas years (with the year's drop / with the total drop, `static`):
+
+| | yearly drop | total drop |
+|---|---|---|
+| craton-mini (quake-only twin) | −0.423 ± 0.009 | +0.45 |
+| `quake_density` (floor) | −0.227 | +0.28 |
+| ETAS | −0.469 | +0.52 |
+| Poisson | −0.500 | +0.50 |
+| the quakes that came, M1.0+ | −0.211 | +0.26 |
+
+The last row is a reference, not a method (`scripts/ablations/pressure_reference.py`,
+`results/ablation/pressure_reference.json`): each year's real quake counts graded as CB-31 grades a
+forecast. They rank the cells against the year's drop in every year (−0.09 to −0.33). The
+quakes stayed in the drained centre while the loading moved to the flanks; the smooth maps (ETAS,
+Poisson, mini) follow the total drop more closely and so score lower on the yearly one. craton-mini
+loses to its floor; the exit test is not met.
+
+Reading: in rate-and-state a fault's rate follows a change in loading over t_a = Aσ/τ̇, years to
+decades for slowly loaded faults; fifty years of depletion set where Groningen's faults are near
+failure, and one smaller yearly drop barely shows in 25 quakes a year. The quakes carry the
+history of the loading, not its present. A pass on CB-31 needs information that is not in a
+catalogue (the pressure itself is forbidden here; InSAR compaction or production data would be a
+new task). CB-31 stays frozen and on the board.
+
+The definition was set from the truth alone, before any score (D-125), and is not changed after
+seeing these (as D-091 and D-099 say of theirs). CB-30, where the push is an input, is unchanged.
+
+**Rejected.** Switching the primary number to `static` after seeing these scores. Dropping CB-31.

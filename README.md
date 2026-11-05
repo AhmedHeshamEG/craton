@@ -526,6 +526,54 @@ mini's 0.45, even on planets built from the same law. Most of the loss is the us
 doesn't want a busy cell to go quiet on a five-to-eight-year clock. The one part that paid was the
 shared stress, which sharpened *where* by a little on every run. Not kept; mini is unchanged.
 
+## A paper from 2010 already had half of it
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/local-alpha-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/local-alpha-light.png">
+    <img alt="Gain over ETAS added up day by day. Apennines 2016-17: craton-mini +0.30 bits per quake, ETAS refit daily on the last month +0.30, the two lines on top of each other; refitting alpha alone +0.19. L'Aquila 2009: craton-mini +1.16, the daily refit +0.59, alpha alone +0.40." src="docs/assets/local-alpha-dark.png" width="100%">
+  </picture>
+</p>
+
+INGV's own daily ETAS for Italy (Lombardi & Marzocchi, 2010) undershot the start of the 2009 L'Aquila
+sequence, and the authors said why: one number of the model is local. α, how much faster a bigger
+quake's aftershock count grows, is 1.3 for Italy and 1.5 to 2.0 inside that sequence. The formulas
+above said the same thing from the other side: ETAS expects too few quakes inside a big sequence.
+
+So the obvious floor: ETAS that refits its productivity (K and α) every day on the last month's quakes,
+nothing else touched (`etas_local_alpha`). On the Apennines 2016-17 it scores **+0.30 bits per quake
+over ETAS, exactly craton-mini's +0.30**, gaining on the same days (day-by-day correlation 0.99). On
+L'Aquila it gets +0.59, and the network +1.16: as much again, 0.15 of it in *where*, which a refit of
+productivity can't touch. Refitting α alone lands at 1.5 and 1.7 on the busy days, the paper's range.
+
+So, plainly: on one of our two held-out sequences, everything the Field adds is a thirty-day refit of
+two numbers. On the other it adds something more, and that something is now the thing to explain.
+
+## The quakes know where the gas field drained, not where it drains now
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pressure-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/pressure-light.png">
+    <img alt="Three maps of Groningen's gas field in 2022-23: the total pressure drop since 1957, highest in the south and centre; the drop over that year alone, highest on the edges while the centre refills; and craton-mini's forecast map from quakes alone, highest in the centre. Rank correlation with this year's drop, mean of six years: craton-mini −0.42, last year's quakes −0.23, ETAS −0.47, Poisson −0.50, the quakes that really came −0.21. With the total drop all are positive, ETAS +0.52, craton-mini +0.45." src="docs/assets/pressure-dark.png" width="100%">
+  </picture>
+</p>
+
+Groningen has the one hidden state somebody measured: the gas pressure 3 km down, mapped every year.
+CB-31 asks a model that never reads it (it answers through a view that refuses those files) to forecast
+the quakes of 2017-2023, and grades its map against where the pressure fell that year.
+
+Every map fails, and in the same direction. craton-mini ranks the cells at **−0.42**, ETAS −0.47, last
+year's quakes −0.23. Even the quakes that really came, used as their own forecast, score −0.21. After
+production was cut, the drained centre stopped falling and began to refill while the edges kept
+draining; the quakes stayed in the centre. Against the *total* drop since 1957 every map is positive
+(ETAS +0.52, mini +0.45).
+
+That fits rate-and-state: a fault's quake rate remembers years of loading, so it follows the total,
+and a single year's change barely shows. No model can read from the quakes what the quakes don't
+carry. The test stays on the board, frozen, as the number to beat when other data comes in.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -645,6 +693,9 @@ Hero data: [USGS ComCat](https://earthquake.usgs.gov/earthquakes/search/) (publi
 [`scripts/figures/banner.py`](scripts/figures/banner.py). Central Italy: [INGV ISIDe](https://doi.org/10.13127/ISIDE)
 (CC-BY-4.0) and the [Nevada Geodetic Laboratory](https://geodesy.unr.edu/) (Blewitt et al. 2018); the tide
 follows the IERS Conventions (2010). Type: [Inter](https://rsms.me/inter/) (SIL OFL).
+Groningen: [KNMI](https://rdsa.knmi.nl/) (CC-BY-4.0) and NAM's reservoir model ([TNO 2023](https://doi.org/10.5281/zenodo.10245813)).
+The local-alpha floor follows [Lombardi & Marzocchi (2010)](https://doi.org/10.4401/ag-4848), INGV's
+daily ETAS for Italy.
 Craton stands on SeisLM, ETAS, CSEP and pyCSEP, GraphCast's lesson about reanalysis, and decades of open
 catalogues from INGV and the Nevada Geodetic Laboratory. Full sources per phase in the lessons.
 
