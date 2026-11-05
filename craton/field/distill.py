@@ -144,6 +144,19 @@ def _evaluate(expression: str, x: np.ndarray) -> FloatArray:
     return np.asarray(out.reshape(x.shape[:-1]), dtype=np.float64)
 
 
+def narrowed(law: Law, max_complexity: int) -> Law:
+    """The best formula of the same search no longer than ``max_complexity`` nodes, picked the
+    same way (validation days). CB-26's floor is one node: a constant factor on ETAS."""
+    front = [
+        r
+        for r in law.info["front"]
+        if r["complexity"] <= max_complexity and r["terms"] <= MAX_TERMS
+    ]
+    best = max(front, key=lambda r: float(r["validation_gain"]))
+    info = {**law.info, "validation_gain": best["validation_gain"]}
+    return Law(best["expression"], best["terms"], best["complexity"], law.max_log, info)
+
+
 def count_terms(expression: str) -> int:
     """Added terms at the top of the formula, as written (nothing expanded)."""
     import sympy

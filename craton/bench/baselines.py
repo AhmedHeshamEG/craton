@@ -580,6 +580,11 @@ from craton.bench.migration import DistanceOnly, QuakeHistory  # noqa: E402
 register_method(DistanceOnly())
 register_method(QuakeHistory())
 
+# CB-26's floor: a "law" of one number, out of the same search.
+from craton.bench.distilled import ConstantLaw  # noqa: E402
+
+register_method(ConstantLaw())
+
 # The Coulomb rate-and-state floor (P9b): ETAS's background, physics for how quakes make quakes.
 from craton.bench.crs import Crs  # noqa: E402
 

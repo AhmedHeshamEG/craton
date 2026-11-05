@@ -113,7 +113,8 @@ ABOUT = {
         "e^formula. The number is the share of the network's gain over ETAS the formula keeps "
         "there, mean over CB-02 and CB-03: 1 is as good as the network, 0 is ETAS. No new test "
         "data: the windows and quakes are CB-02's and CB-03's. The formulas themselves are in "
-        "`results/laws/`."
+        "`results/laws/`. Floor: `law_constant`, the same search cut to one node (a constant "
+        "factor on ETAS)."
     ),
     "CB-24": (
         "Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored "

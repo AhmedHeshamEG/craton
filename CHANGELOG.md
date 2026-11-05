@@ -22,6 +22,18 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
   background, the state bank on the GPU (`craton/bench/crs.py`, `configs/floors/crs.yaml`).
   CB-02 −7.518 bits per quake (ETAS −7.118).
 - Figure `docs/assets/migration-{dark,light}.png` (`scripts/figures/migration.py`).
+- **The leak audit (P9e, D-119).** Canary quakes at and after the cut must leave every training
+  array identical (`tests/test_audit.py`); Field configs take an `audit:` section (`cut`,
+  `shuffle_answers`) for the two controls, run by `scripts/ablations/leak_audit.py`. The earlier
+  cut keeps CB-02's gain over ETAS; answers dealt to the wrong days lose it.
+- **CB-26, the distilled law (P9e, D-120, D-121).** Symbolic regression (PySR, new `distill`
+  dependency group) on the Field's correction to ETAS; a formula of at most ten terms forecasts
+  CB-02's and CB-03's test windows. craton-mini 0.836 ± 0.047 of the network's gain kept; the floor
+  `law_constant` (one constant factor on ETAS, out of the same search) 0.615 ± 0.007. Laws in
+  `results/laws/` (`scripts/laws.py`), figure `docs/assets/law-{dark,light}.png`.
+
+### Changed
+- ETAS's fit is cached by its cut as well as its task and seed.
 
 ## [0.9.0] — 2026-10-30 · P8 Other planets: real, human-made and fake
 

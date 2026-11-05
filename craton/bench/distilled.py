@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from craton.bench.baselines import Etas
 from craton.bench.tasks import TASKS, BenchContext, Score, SequenceForecast, Task, register_task
 
 SOURCES = ("CB-02", "CB-03")
@@ -61,7 +60,8 @@ class DistilledLaw(Task):
         return bool(getattr(method, "field_config", ""))
 
     def score(self, method: Any, ctx: BenchContext, seed: int) -> Score:
-        from craton.field.distill import distill, law_forecast
+        from craton.bench.baselines import Etas
+        from craton.field.distill import distill, law_forecast, narrowed
         from craton.field.forecaster import FieldForecaster
 
         ff = FieldForecaster(method.field_config, log=getattr(method, "log", print))
@@ -71,7 +71,10 @@ class DistilledLaw(Task):
             task = TASKS[tid]
             assert isinstance(task, SequenceForecast)
             law = distill(ff, task.spec, ctx, seed)
-            tag = f"{tid}.{ff.config.name}"
+            cap = getattr(method, "law_max_complexity", None)
+            if cap is not None:
+                law = narrowed(law, cap)
+            tag = f"{tid}.{ff.config.name}.{cap or 'any'}"
             sl = task.score(
                 _Fixed(f"law:{tag}", lambda s, c, k, law=law: law_forecast(law, ff, s, c, k)),
                 ctx,
@@ -94,6 +97,17 @@ class DistilledLaw(Task):
                 }
             )
         return Score(sum(shares) / len(shares), extras)
+
+
+class ConstantLaw:
+    """CB-26's floor: the best law of one number, a constant factor on ETAS everywhere, out of
+    the same search on ``mini`` and picked the same way. What a formula keeps with no rule about
+    where or when."""
+
+    name = "law_constant"
+    kind = "baseline"
+    field_config = "mini"
+    law_max_complexity = 1
 
 
 register_task(DistilledLaw())

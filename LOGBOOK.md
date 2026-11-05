@@ -863,3 +863,55 @@ Surprises / problems:
 Decisions: D-113 … D-116.
 
 Next: P9e, the leak audit and the first formula (CB-26 on today's Field).
+
+## 2026-11-05 — P9e — The leak audit and the distilled law
+
+TLDR: the Field's gain over ETAS passes the leak audit and fits in a formula. Fake quakes after
+the cut change nothing it trains on, an earlier cut keeps nearly all of the gain, and answers
+dealt to the wrong days lose it. Symbolic regression found formulas of one to four terms that keep 0.84 of the gain
+on held-out time (CB-26, new on the board), against 0.61 for one constant factor on ETAS. The
+shortest: ETAS × exp(1.18 · N3y / N12y).
+
+Built:
+- `tests/test_audit.py`: canary quakes (a swarm and an M6.5 at and after the cut) leave memory,
+  ETAS's rates and the answers bit for bit the same; one quake before the cut does not
+- `audit:` Field config section (`cut`, `shuffle_answers`), `FieldForecaster.audited`,
+  `shuffled_answers`; `configs/field/audit_cut.yaml`, `audit_shuffled.yaml`; `mini` keeps b99e49ae
+- ETAS's fit cache keyed by the cut too
+- `scripts/ablations/leak_audit.py` → `results/ablation/leak_audit.json`
+- `craton/field/distill.py`: inputs and names, rows drawn by the network's expected count, PySR
+  2.7 (deterministic, serial), the pick on validation days, `law_forecast`
+- CB-26 `craton/bench/distilled.py`, frozen; `distill` dependency group; `results/laws/mini.json`
+  (`scripts/laws.py`); `docs/assets/law-*.png` (`scripts/figures/law.py`); README section
+- `tests/test_distill.py`
+
+Scores:
+- leak audit (CB-02, bits per quake over ETAS, seeds 0 / 1): mini +0.299 / +0.293; the cut a year
+  earlier +0.302 / +0.259; answers on the wrong days −1.428 / −1.432 (how many −1.19 / −1.17)
+- CB-26 (new): 0.836 ± 0.047 (0.78 / 0.85 / 0.88). CB-02 share 0.89 / 0.87 / 0.92 (2 / 4 / 4
+  terms), CB-03 0.68 / 0.83 / 0.84 (1 / 1 / 2 terms); validation-day shares CB-02 0.35 / 0.49 /
+  0.21, CB-03 0.80 / 0.75 / 0.79
+- floor `law_constant` (the same search cut to one node, a constant factor on ETAS): 0.615 ±
+  0.007 (×1.5 on CB-02, ×2.1 on CB-03); on CB-02's validation days it loses (−0.70 … −0.79)
+- the board: CB-26 added with its floor, everything else unchanged (ratchet pass)
+
+Surprises / problems:
+- One constant factor on ETAS keeps 0.61 of the gain on the tests: most of the Field's held-out gain
+  is that ETAS expects too few quakes inside big sequences. The formulas add 0.16-0.27 on top.
+- CB-26 had no floor at first and `craton check` caught it (every task needs a baseline).
+- The shuffled control lands far below ETAS, not at it: with time broken the network learns to
+  squash ETAS's aftershock peaks.
+- On CB-02 the laws keep far more of the gain on the test (0.87-0.92) than on the training
+  split's validation days (0.21-0.49): the rule pays inside big sequences.
+- All six laws lower ETAS where the last 12 years were busy; reading: ETAS's background soaks up
+  old sequences' tails (van der Elst 2017). Not tested yet.
+- An empty cell reads N3y / N12y = 1 through the counters' floor, so the shortest law raises ETAS
+  there. Small on tiny rates, but arithmetic, not physics.
+- No published work distills a seismicity network into a formula (searched 2026-11-05).
+- PySR's first import downloads Julia (~6 min once). Leak audit Fields ~1.5 h each with other jobs
+  running; seed 2 skipped (gaps many times the seed spread).
+- Heredocs with apostrophes broke again; text written with the Write tool.
+
+Decisions: D-119 … D-121.
+
+Next: P9f, the stress meter (a Dieterich bottleneck) and CB-33 on the physics planet.

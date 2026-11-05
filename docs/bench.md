@@ -93,70 +93,9 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Fingerprint:** `4225fb37a25e9adb`
 - **Test data:** context quakes 0 0, 7 8, 30 56, 90 148, 365 874 · test quakes 1,307 · largest test 4.5
 
-## CB-30 · Human-made quakes
-
-Quakes people set off, where the push is measured: Groningen's gas field (the reservoir's modelled pressure, a map a year) and Oklahoma's wastewater (every Arbuckle disposal well's monthly volume). From 2017-01-01, 97 forecasts of 30 days each; every method fits on the box's past and reads the forcing only as far as it was known at each period's start. The number is the gain over ETAS fitted on the box's own past, mean of the two cases; `etas_forced`, ETAS whose background follows the push, is the physics floor.
-
-- **Metric:** bits per quake above ETAS fitted on the box's own past, mean of the two cases (higher is better)
-- **Fingerprint:** `9a9ad2ad549566b4`
-
-| Case | Forcing | Box | Cells | mc | Scored from | Scored quakes | Largest | ETAS fits on |
-|---|---|---|---|---|---|---|---|---|
-| Groningen gas field | gas production; the reservoir's modelled pressure, one map a year | 53-53.6° N, 6.4-7.3° E | 0.05° | 1 | 1.5 | 98 | 3.43 | 506 |
-| Oklahoma wastewater | wastewater disposal into the Arbuckle; every such well's (class 2D) monthly volume | 34-37° N, 99.5-96° W | 0.1° | 2.5 | 3 | 594 | 5.06 | 7,265 |
-
-Snapshots: groningen `b392ac5e4c87e6dc`, oklahoma `1989705b223c5506`.
-
-## CB-23 · Hidden-state truth
-
-Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
-
-- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
-- **Fingerprint:** `fc7056d6f3c077d8`
-
-| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
-|---|---|---|---|---|---|
-| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
-| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
-| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
-| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
-| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
-| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
-| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
-
-Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
-
-## CB-24 · Migration
-
-Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored size (completeness + 1) on or after the day of the first big shock. Before every next lighting a method sees the cells lit so far and the quakes before the sequence, never the sequence's other quakes, and ranks the cells still dark. The number is how often the cell that really lit next is in its top 3, over the first 50 lightings of each of sixteen sequences (central Italy 2016 and 2009, and CB-22's fourteen), mean over sequences; a coin gets 3 in ~1,000. Floors: `distance_only` (nearest to the cell that lit last) and `quake_history` (the busiest cells before the sequence).
-
-- **Metric:** share of next lit cells in the method's top 3, mean over sequences (higher is better)
-- **Fingerprint:** `cde95aab4bcb3c14`
-
-| Sequence | Lights at | Cells lit in a year | Scored | Days to the last scored |
-|---|---|---|---|---|
-| amatrice_norcia | M3+ | 39 | 38 | 349.96 |
-| laquila | M3+ | 34 | 33 | 302.82 |
-| el_mayor | M3.5+ | 70 | 50 | 89.14 |
-| ridgecrest | M3.5+ | 32 | 31 | 355.02 |
-| tohoku | M4+ | 675 | 50 | 2.27 |
-| kumamoto | M4+ | 29 | 28 | 322.62 |
-| darfield | M4+ | 39 | 38 | 323.02 |
-| kaikoura | M4+ | 117 | 50 | 0.57 |
-| van | M4+ | 59 | 50 | 173 |
-| elazig | M4+ | 27 | 26 | 337.46 |
-| kahramanmaras | M4+ | 194 | 50 | 0.31 |
-| maule | M5.5+ | 44 | 43 | 352.15 |
-| iquique | M5.5+ | 28 | 27 | 160.2 |
-| illapel | M5.5+ | 43 | 42 | 307.22 |
-| anchorage | M4+ | 18 | 17 | 308.52 |
-| chignik | M4+ | 67 | 50 | 64.59 |
-
-Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
-
 ## CB-26 · Distilled law
 
-Does what the network learned fit in a formula? A method that forecasts CB-02 and CB-03 through a Field hands it to symbolic regression (PySR): a formula of at most ten added terms over the same counters the network reads is fitted to the network's correction to ETAS on the training years, picked on the training split's own validation days, then forecasts each test window the network's way, ETAS times e^formula. The number is the share of the network's gain over ETAS the formula keeps there, mean over CB-02 and CB-03: 1 is as good as the network, 0 is ETAS. No new test data: the windows and quakes are CB-02's and CB-03's. The formulas themselves are in `results/laws/`.
+Does what the network learned fit in a formula? A method that forecasts CB-02 and CB-03 through a Field hands it to symbolic regression (PySR): a formula of at most ten added terms over the same counters the network reads is fitted to the network's correction to ETAS on the training years, picked on the training split's own validation days, then forecasts each test window the network's way, ETAS times e^formula. The number is the share of the network's gain over ETAS the formula keeps there, mean over CB-02 and CB-03: 1 is as good as the network, 0 is ETAS. No new test data: the windows and quakes are CB-02's and CB-03's. The formulas themselves are in `results/laws/`. Floor: `law_constant`, the same search cut to one node (a constant factor on ETAS).
 
 - **Metric:** share of the network's held-out gain over ETAS a <=10-term formula keeps (higher is better)
 - **Fingerprint:** `21c32f5796ebed83`
@@ -177,6 +116,20 @@ CB-20's rule for 2009: CB-03's days and quakes, with Fonzetti et al.'s machine-l
 - **Metric:** log-likelihood per earthquake (bits), M≥3, daily 0.1° forecasts, INGV + machine-learning catalogue as input (higher is better)
 - **Fingerprint:** `ef0b759db5f55a6d`
 - **Test data:** days 365 · M>=3 315 · M>=1.5 11,070 · magnitude types ML 10,492, Md 510, Mw 68 · largest 6.1 · overlay laquila_ml_2009 · overlay snapshot 3d8cd35895da9077 · overlay quakes 190,872 · matched 17,218 · added 173,654 · added M>=2 in window 264 · magnitude map 0 0.404, 1 1.2, 2 2.1, 3 2.974, 4 3.974
+
+## CB-30 · Human-made quakes
+
+Quakes people set off, where the push is measured: Groningen's gas field (the reservoir's modelled pressure, a map a year) and Oklahoma's wastewater (every Arbuckle disposal well's monthly volume). From 2017-01-01, 97 forecasts of 30 days each; every method fits on the box's past and reads the forcing only as far as it was known at each period's start. The number is the gain over ETAS fitted on the box's own past, mean of the two cases; `etas_forced`, ETAS whose background follows the push, is the physics floor.
+
+- **Metric:** bits per quake above ETAS fitted on the box's own past, mean of the two cases (higher is better)
+- **Fingerprint:** `9a9ad2ad549566b4`
+
+| Case | Forcing | Box | Cells | mc | Scored from | Scored quakes | Largest | ETAS fits on |
+|---|---|---|---|---|---|---|---|---|
+| Groningen gas field | gas production; the reservoir's modelled pressure, one map a year | 53-53.6° N, 6.4-7.3° E | 0.05° | 1 | 1.5 | 98 | 3.43 | 506 |
+| Oklahoma wastewater | wastewater disposal into the Arbuckle; every such well's (class 2D) monthly volume | 34-37° N, 99.5-96° W | 0.1° | 2.5 | 3 | 594 | 5.06 | 7,265 |
+
+Snapshots: groningen `b392ac5e4c87e6dc`, oklahoma `1989705b223c5506`.
 
 ## CB-05 · Calibration
 
@@ -218,6 +171,34 @@ CB-20's rule for 2009: CB-03's days and quakes, with Fonzetti et al.'s machine-l
 - **Fingerprint:** `ad899191ff41ab37`
 - **Test data:** reads ['CB-02', 'CB-03']
 
+## CB-24 · Migration
+
+Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored size (completeness + 1) on or after the day of the first big shock. Before every next lighting a method sees the cells lit so far and the quakes before the sequence, never the sequence's other quakes, and ranks the cells still dark. The number is how often the cell that really lit next is in its top 3, over the first 50 lightings of each of sixteen sequences (central Italy 2016 and 2009, and CB-22's fourteen), mean over sequences; a coin gets 3 in ~1,000. Floors: `distance_only` (nearest to the cell that lit last) and `quake_history` (the busiest cells before the sequence).
+
+- **Metric:** share of next lit cells in the method's top 3, mean over sequences (higher is better)
+- **Fingerprint:** `cde95aab4bcb3c14`
+
+| Sequence | Lights at | Cells lit in a year | Scored | Days to the last scored |
+|---|---|---|---|---|
+| amatrice_norcia | M3+ | 39 | 38 | 349.96 |
+| laquila | M3+ | 34 | 33 | 302.82 |
+| el_mayor | M3.5+ | 70 | 50 | 89.14 |
+| ridgecrest | M3.5+ | 32 | 31 | 355.02 |
+| tohoku | M4+ | 675 | 50 | 2.27 |
+| kumamoto | M4+ | 29 | 28 | 322.62 |
+| darfield | M4+ | 39 | 38 | 323.02 |
+| kaikoura | M4+ | 117 | 50 | 0.57 |
+| van | M4+ | 59 | 50 | 173 |
+| elazig | M4+ | 27 | 26 | 337.46 |
+| kahramanmaras | M4+ | 194 | 50 | 0.31 |
+| maule | M5.5+ | 44 | 43 | 352.15 |
+| iquique | M5.5+ | 28 | 27 | 160.2 |
+| illapel | M5.5+ | 43 | 42 | 307.22 |
+| anchorage | M4+ | 18 | 17 | 308.52 |
+| chignik | M4+ | 67 | 50 | 64.59 |
+
+Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
+
 ## CB-29 · EarthquakeNPP
 
 EarthquakeNPP (Stockman, Lawson & Werner, TMLR 2026), untouched: their ComCat_25 California dataset, their 1981-2007 training and 2007-2020 test windows, their fitted ETAS and their metric, the point-process log-likelihood per test quake in nats. A method enters as their ETAS times a factor per 0.1° cell and day, fixed at midnight.
@@ -242,6 +223,25 @@ CB-02's calendar and scoring on six simulated planets where the truth is known. 
 | physics planet | 0 | 2.77 | 1 | 0.0971 | 0.726 | 2.98 | 0.68 | 140 |
 | physics planet | 1 | 2.47 | 0.995 | 0.0666 | 0.698 | 1.89 | 0.88 | 108 |
 | physics planet | 2 | 2.43 | 1 | 0.0548 | 0.67 | 1.15 | 1.08 | 127 |
+
+## CB-23 · Hidden-state truth
+
+Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
+
+- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
+- **Fingerprint:** `fc7056d6f3c077d8`
+
+| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
+|---|---|---|---|---|---|
+| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
+| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
+| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
+| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
+| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
+| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
+| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
+
+Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
 
 ## CB-22 · World sequences
 

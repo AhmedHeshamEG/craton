@@ -57,3 +57,20 @@ def test_cb26_is_registered_for_field_methods_only() -> None:
     assert task.supports(SimpleNamespace(field_config="mini"))
     assert not task.supports(SimpleNamespace(name="etas"))
     assert task.prepare(SimpleNamespace())["files"] == {}  # type: ignore[arg-type]
+
+
+def test_the_floor_is_a_constant_out_of_the_same_search() -> None:
+    from craton.bench.baselines import METHODS
+    from craton.field.distill import narrowed
+
+    floor = METHODS["law_constant"]
+    assert floor.kind == "baseline"
+    assert [t for t, task in TASKS.items() if task.supports(floor)] == ["CB-26"]
+    front = [
+        {"expression": "0.4", "complexity": 1, "terms": 1, "validation_gain": -0.1},
+        {"expression": "0.1*etas", "complexity": 3, "terms": 1, "validation_gain": 0.2},
+    ]
+    law = Law("0.1*etas", 1, 3, math.log(4.0), {"front": front, "validation_gain": 0.2})
+    one = narrowed(law, 1)
+    assert one.expression == "0.4"
+    assert one.info["validation_gain"] == -0.1
