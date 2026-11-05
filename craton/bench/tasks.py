@@ -1176,4 +1176,7 @@ from craton.bench import pressure as _pressure  # noqa: E402, F401
 
 # P9a: CB-23, the stress the crust is under, graded against the World Stress Map.
 from craton.bench import stress as _stress  # noqa: E402, F401
+
+# P9h: CB-32, each training region forecast by a model that never read it.
+from craton.bench import unseen as _unseen  # noqa: E402, F401
 from craton.bench import world as _world  # noqa: E402, F401

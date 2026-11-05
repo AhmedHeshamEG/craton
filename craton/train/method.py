@@ -111,6 +111,7 @@ class CratonMini:
     log: Log = _quiet
     _world: list[Any] = field(default_factory=list)
     _forced: list[Any] = field(default_factory=list)
+    _unseen: list[Any] = field(default_factory=list)
     _quake_only: list[Any] = field(default_factory=list)
     _models: dict[tuple[str, int], CratonModel] = field(default_factory=dict)
     _meta: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict)
@@ -576,6 +577,17 @@ class CratonMini:
 
             self._world.append(WorldField(self.world_config, log=self.log))
         return self._world[0]
+
+    def unseen_forecaster(self, region: str) -> Any:
+        """(P9h, CB-32) The world Field trained again without ``region``: its fold."""
+        from craton.field.world import WorldField
+
+        for wf in self._unseen:
+            if wf.holdout == region:
+                return wf
+        wf = WorldField(self.world_config, log=self.log, holdout=region)
+        self._unseen.append(wf)
+        return wf
 
     def forced_forecaster(self) -> Any:
         """The forced Field (``craton.field.forced``): CB-30, reading the forcing too."""

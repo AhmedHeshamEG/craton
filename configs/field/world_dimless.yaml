@@ -1,0 +1,44 @@
+# The dimensionless world Field (P9h): the world Field's regions, cut, network and training,
+# reading only ratios (craton/field/dimless.py): counters over what ETAS expects, ETAS as a
+# share of its box, counter lifetimes in units of the box's Omori c, and one more spread where
+# every quake counts over its own rupture length. Magnitudes are m - mc as in `world`.
+name: world_dimless
+description: The world Field reading only dimensionless inputs, so a region's units can't be learned.
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  dropout: 0.1
+  max_nudge: 4.0
+
+memory:
+  m_min: 1.5          # central Italy's; every other region counts from its own mc - 0.5
+  start: "1990-01-01T00:00:00Z"
+
+train:
+  first_day: "1995-01-01T00:00:00Z"
+  validation_every: 8
+  days_per_step: 8
+  lr: 3.0e-4
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 6
+  members: 4
+  seeds: [0, 1, 2]
+
+world:
+  cut: "2007-01-01T00:00:00Z"
+  steps_per_epoch: 500
+  regions:
+    central_italy: {mc: 2.0, fit_from: "2005-01-01T00:00:00Z"}
+    california: {}
+    japan: {}
+    new_zealand: {}
+
+dimless:
+  ratios: true
+  omori_time: true
+  c_ref_days: 0.0081   # central Italy's world tile
+  rupture: true
+  pool_of: world       # the same days as `world`: only the inputs differ

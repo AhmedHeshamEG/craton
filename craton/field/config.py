@@ -175,6 +175,38 @@ class FieldMeter(_Strict):
     )
 
 
+class FieldDimless(_Strict):
+    """Dimensionless inputs (P9h, ``craton.field.dimless``): the world Field reads only ratios,
+    so a region with ten times the quakes, a slower clock or bigger ruptures looks the same.
+    Magnitudes are already relative (m − mc) since P8d."""
+
+    ratios: bool = Field(
+        default=True,
+        description="Counters over what ETAS expects them to hold, and ETAS as a share of its "
+        "box; no absolute rate reaches the network.",
+    )
+    omori_time: bool = Field(
+        default=True,
+        description="Counter lifetimes in units of the box's ETAS c (Omori time), read off "
+        "the bank by sliding along log-time.",
+    )
+    c_ref_days: float = Field(
+        default=0.0081,
+        gt=0,
+        description="The c whose lifetimes are the bank's own: central Italy's world tile.",
+    )
+    rupture: bool = Field(
+        default=True,
+        description="One more spread: every quake counted over a Gaussian as wide as its own "
+        "rupture (Wells & Coppersmith 1994), so distance is in rupture lengths.",
+    )
+    pool_of: str | None = Field(
+        default=None,
+        description="Read another config's pool of days (the same regions and cut): the "
+        "dimensionless inputs are computed from it, so nothing is built twice.",
+    )
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -189,6 +221,7 @@ class FieldConfig(_Strict):
     camera: FieldCamera | None = None
     audit: FieldAudit | None = None
     meter: FieldMeter | None = None
+    dimless: FieldDimless | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -201,9 +234,19 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 def field_hash(config: FieldConfig) -> str:
     dump = config.model_dump(mode="json")
-    for later in ("world", "curriculum", "planets", "hidden", "wiring", "camera", "audit", "meter"):
+    for later in (
+        "world",
+        "curriculum",
+        "planets",
+        "hidden",
+        "wiring",
+        "camera",
+        "audit",
+        "meter",
+        "dimless",
+    ):
         if dump.get(later) is None:
-            # a config from before P8d / P8f / P9c / P9d / P9e / P9f keeps its hash and checkpoints
+            # a config from before P8d / P8f / P9c-P9f / P9h keeps its hash and checkpoints
             dump.pop(later, None)
     meter = dump.get("meter")
     if meter is not None and meter.get("deplete") is True:
