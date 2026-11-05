@@ -68,7 +68,7 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-29 | **EarthquakeNPP** | The outside benchmark (Stockman et al., TMLR 2026): their California data, splits, ETAS and metric, untouched; nats per quake | Their ETAS | P8 |
 | CB-31 | **Groningen pressure** | The hidden stress map inferred from quakes alone vs the NAM reservoir pressure drop (500 m cells, yearly), at years the model never trained on; rank correlation | Quake density; the blind CB-30 Field's rate map (no pressure input) | P9 |
 | CB-32 | **Unseen-region forecast** | CB-02's scoring on whole regions left out of training, one at a time, no fine-tuning | ETAS fitted on the region | P9 |
-| CB-33 | **Planted stress** | The physics planet's true stress history vs the one inferred from its quakes; rank correlation | Quake density | P9 |
+| CB-33 | **Planted stress** | The physics planet's hidden rate-and-state state per cell vs what a forecast implies; rank correlation | Quake density | P9 |
 | CB-34 | **Stress from mechanisms** | As CB-23, with focal mechanisms as input, graded only on World Stress Map records that are not from quakes (boreholes, fractures, overcoring) | Regional average; interpolation | P9 |
 
 CB-02 and CB-03 also report, from P6 on: how-many / where / how-big bits, the score without the M5+ days, and
@@ -531,8 +531,11 @@ each graded on a truth the model never sees (D-116):
   formula: symbolic regression on today's Field (CB-26, moved here from P14). Done 2026-11-05: the
   earlier cut keeps nearly all the gain (+0.28 vs +0.30), shuffled days lose it (−1.43); formulas of
   1-4 terms keep 0.84 of the gain on held-out time, one constant factor 0.61 (D-119 … D-121)
-- **P9f** the stress meter: forecasts only through Dieterich's rate-and-state law, so the hidden layer
-  is a stress history; graded on the physics planet's planted stress (CB-33)
+- **P9f** ✓ the stress meter: forecasts only through Dieterich's rate-and-state law, so the hidden layer
+  is a stress history; graded on the physics planet's planted stress (CB-33). Done 2026-11-05: CB-33 on
+  the board (mini 0.45, the quake-density floor 0.39, ETAS 0.35); the meter loses everywhere (CB-02
+  −0.29, CB-03 −0.74, CB-33 0.41) and is not kept; its shared stress alone sharpens *where* a little
+  (D-122 … D-124)
 - **P9g** the pressure truth: the same layer against Groningen's reservoir pressure (CB-31)
 - **P9h** inputs without units, trained on every region, scored on the one left out (CB-32)
 - **P9i** direction from focal mechanisms (CB-34), the figure (inferred stress and pressure next to

@@ -915,3 +915,52 @@ Surprises / problems:
 Decisions: D-119 … D-121.
 
 Next: P9f, the stress meter (a Dieterich bottleneck) and CB-33 on the physics planet.
+
+## 2026-11-05 — P9f — The planted stress and the stress meter
+
+TLDR: CB-33 joins the board. The physics planets write down each fault patch's rate-and-state
+state, and a forecast is graded on how well it ranks the cells by it on days it never saw. mini
+ranks them at 0.45, above the quake-density floor (0.39), ETAS (0.35) and Coulomb rate-and-state
+(0.25). The stress meter (a Field whose only output is a stress, rates through Dieterich's law)
+loses everywhere, even on the planets built from that law. Not kept.
+
+Built:
+- `StressRecord` in `craton/sim/rate_state.py`: the simulator snapshots each patch's stress and
+  state at chosen times; draws no random numbers, the frozen planets come out quake for quake the same
+- CB-33 `craton/bench/planted.py` (truth per 0.1° cell, graded on cells at least 10% off steady,
+  every 7th test midnight), frozen; floor `quake_density`
+- `craton/field/meter.py`: Dieterich's law per day, measured from ETAS (stress zero is ETAS
+  exactly), depletion deficit read off a full pass each epoch, carried into the test window;
+  `configs/field/meter.yaml`, `meter_no_deplete.yaml`; `mini` keeps b99e49ae
+- `scripts/ablations/planted_stress.py`; `docs/assets/planted-*.png` (`scripts/figures/planted.py`);
+  README section
+- `tests/test_meter.py` (step response matches Dieterich 1994 to 0.2%), `tests/test_planted.py`
+
+Scores:
+- CB-33 (new): craton-mini 0.448 ± 0.093 (0.47 / 0.52 / 0.34); quake_density 0.395; ETAS 0.348;
+  CRS 0.248; Poisson 0.185
+- meter vs mini, bits per quake: CB-02 −0.288 / −0.297 (seeds 0 / 1), CB-03 −0.743; all *how
+  many*; *where* +0.031 / +0.025 / −0.002
+- meter without depletion: CB-02 −0.068 (where +0.028)
+- meter on the physics planets: CB-33 0.410 (0.38 / 0.57 / 0.28; mini 0.47 / 0.52 / 0.34);
+  CB-09 physics half −0.062 / −0.091 / +0.004
+- the board: CB-33 added with its floor, everything else unchanged (ratchet pass)
+
+Surprises / problems:
+- The first CB-33 truth (Coulomb change over the test window) moved only 7-44 cells per planet;
+  switched to the rate-and-state state, which every cell carries.
+- Grading every cell gave ~0.04 for every method; only cells off steady carry signal.
+- The meter does not help even on planets whose truth is its own law. Patches each have their own
+  t_a and state; a cell's meter has one of each, and its deficit drifts over 25 years.
+- Depletion costs most of the loss (~0.22 of 0.29): the data does not want busy cells to go quiet
+  on a 5-8 year clock, the same thing CB-26 saw from the other side.
+- The learned t_a barely moved (5-8 years): with the deficit frozen per epoch it gets a weak gradient.
+- A circular import (planets → tasks → planted → planets) crashed the first planet run; fixed with a
+  lazy property and a test that imports planets first.
+- Hesham's professor sent Lombardi and Marzocchi 2010 (INGV's daily ETAS for Italian CSEP): their
+  ETAS undershoots the start of L'Aquila, blamed on a locally larger alpha. Same finding as D-121;
+  filed for a local-alpha ETAS floor.
+
+Decisions: D-122 … D-124.
+
+Next: P9g, the pressure truth (CB-31, Groningen).

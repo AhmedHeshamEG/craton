@@ -53,7 +53,7 @@ from craton.bench.tasks import (
     register_task,
 )
 from craton.sim import SIMULATORS, SimSpec
-from craton.sim.rate_state import StressRecord
+from craton.sim.rate_state import RateStatePlanet, StressRecord
 from craton.spec.timeaxis import to_seconds
 
 FloatArray = np.ndarray[Any, np.dtype[np.float64]]
@@ -210,8 +210,10 @@ class PlantedStress(Task):
                 t0,
                 low,
             )
-            rec = StressRecord(at=(planets.WINDOW.t0 - t0) / DAY + days)
-            ev = SIMULATORS[name].simulate(spec, seed, rec)
+            rec = StressRecord(at=np.asarray((planets.WINDOW.t0 - t0) / DAY + days, np.float64))
+            sim = SIMULATORS[name]
+            assert isinstance(sim, RateStatePlanet)
+            ev = sim.simulate(spec, seed, rec)
             frozen_ev = self.cb09.planet(ctx, KIND, k).events
             if not (
                 len(ev) == len(frozen_ev)

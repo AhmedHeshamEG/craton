@@ -497,6 +497,35 @@ nearly the same (+0.28 against +0.30, two seeds). Trained on the right inputs wi
 dealt to a different day, it falls to −1.43 bits per quake, far below ETAS: without time, the network
 learns the wrong lesson. The gain reads time.
 
+## A crust nobody can see
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/planted-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/planted-light.png">
+    <img alt="Three maps of physics planet 0, two days after its M5.7. Left, the planet's hidden truth: each cell's quake rate over its own normal, blue for stress shadows, orange for cells above normal. Middle, the same reading of craton-mini's forecast; right, the cell's last year of quakes. Both reach rank correlation 0.40 that day. Below, CB-33 on all three planets: craton-mini 0.45, quake density 0.39, ETAS 0.35, Coulomb rate-and-state 0.25." src="docs/assets/planted-dark.png" width="100%">
+  </picture>
+</p>
+
+Every claim so far about what the network "knows" about the crust is about a crust nobody can measure.
+The physics planets (CB-09) can: they're built from rate-and-state friction, so every fault patch has a
+state that says how far its quake rate sits from normal, and the planet writes it down. CB-33 asks a
+forecast to rank the cells by that hidden state, on days it never saw: a stress meter, graded against
+the stress.
+
+craton-mini ranks them at **0.45 ± 0.09** (rank correlation, three planets). The floor, a cell's last
+year of quakes over its long-run rate, gets 0.39; ETAS 0.35; Coulomb rate-and-state, which computes
+stress from the quakes' slip, 0.25. So the forecast does carry a picture of the crust's state, a bit
+better than the obvious one, and far from perfect.
+
+The obvious next move was to force it. Dieterich (1994) showed that seismicity *is* a stress meter: one
+stress history moves the rate of every magnitude alike, and quakes use up the faults that made them.
+A version of the Field whose only output is a stress, with rates coming through that law exactly, lost
+everywhere: −0.29 bits per quake on the Apennines, −0.74 on L'Aquila, and 0.41 on CB-33 against
+mini's 0.45, even on planets built from the same law. Most of the loss is the using-up: the data
+doesn't want a busy cell to go quiet on a five-to-eight-year clock. The one part that paid was the
+shared stress, which sharpened *where* by a little on every run. Not kept; mini is unchanged.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:

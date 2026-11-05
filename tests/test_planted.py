@@ -86,5 +86,8 @@ def test_planets_module_imports_first() -> None:
     import subprocess
     import sys
 
-    code = "from craton.bench.planets import TwoPlanets; import craton.bench.tasks as t; t.TASKS['CB-33']"
+    code = (
+        "from craton.bench.planets import TwoPlanets; "
+        "import craton.bench.tasks as t; t.TASKS['CB-33']"
+    )
     subprocess.run([sys.executable, "-c", code], check=True)

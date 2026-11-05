@@ -285,7 +285,8 @@ def train_member(
         total = torch.from_numpy(days.meter[0]).to(dev)
         dl = deltas(net, days.memory, days.log_etas[..., 1], dev)
         d, end = scan(net, dl, total, torch.zeros(grid.n_cells))
-        net.carry.copy_(end.to(net.carry.device))
+        carry = net.get_buffer("carry")
+        carry.copy_(end.to(carry.device))
         return d.cpu()
 
     def inputs(sel: IntArray) -> tuple[torch.Tensor, ...]:
@@ -394,7 +395,7 @@ def metered_rates(net: MeterFieldNet, days: Days, dev: torch.device) -> FloatArr
         raise ValueError("the stress meter needs consecutive days")
     total = torch.from_numpy(days.meter[0]).to(dev)
     dl = deltas(net, days.memory, days.log_etas[..., 1], dev)
-    carry: torch.Tensor = net.carry
+    carry = net.get_buffer("carry")
     deficit, _ = scan(net, dl, total, carry)
     with torch.no_grad():
         corr = net.correction(dl, total, deficit)

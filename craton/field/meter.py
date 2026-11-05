@@ -97,7 +97,7 @@ class MeterFieldNet(nn.Module):
         return base + f * torch.tanh(self.log_ta_shift / f)
 
     def log_u(self) -> torch.Tensor:
-        log_r: torch.Tensor = self.log_r
+        log_r = self.get_buffer("log_r")
         return log_r + self.log_t_a()
 
     def delta(self, memory: torch.Tensor, log_etas3: torch.Tensor) -> torch.Tensor:

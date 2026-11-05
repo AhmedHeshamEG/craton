@@ -2096,3 +2096,83 @@ network's gain (CB-03: 0.75-0.80): the rule pays most inside big sequences, and 
 big sequences. And a cell with no quakes at all reads N3y / N12y = 1 through the counters' floor, so
 the shortest law raises ETAS there by the full factor; on ETAS's tiny rate in an empty cell that costs
 little, but it is the formula's arithmetic, not physics. Formulas in `results/laws/mini.json`.
+
+### D-122 · 2026-11-05 · P9 — CB-33, planted stress, defined
+
+The plan said "the physics planet's true stress history vs the one inferred from its quakes". The
+first reading, the Coulomb stress change over the test window, moves too few cells to grade: by the
+window's end only 7-44 cells per planet have moved by 0.0025 MPa (a twentieth of Aσ). In 16 months a
+planet's stress shifts only around its own sequence. So the truth is the state rate-and-state keeps
+instead: per patch s = ln(1 / (γ τ̇)) = ln(R / r), Dieterich's (1994) stress meter, which folds every
+quake's step, every shadow and the fluid front since the planet began into one number in units of Aσ.
+Per 0.1° cell, ln(Σ r_i e^{s_i} / Σ r_i), the cell's rate over its own background as its quakes see it.
+
+The planet writes it down itself: `StressRecord` in `craton/sim/rate_state.py` snapshots γ and the
+summed steps at chosen midnights and draws no random numbers; `prepare` re-simulates CB-09's three
+physics planets and stops unless every quake matches the frozen catalogue (they do: 105,496,
+97,873 and 99,219). Half of all cells sit within ±0.002 of steady, which nobody can rank, so the
+graded cells are those at least 0.1 off (10% in rate): 92-97 per planet-day, 6-12 of them shadows
+(state ≤ −1). Every 7th test midnight, Spearman over the graded cells, averaged; benchmark seed k
+scores planet k, as CB-09 does, so CB-09's Fields answer without training again.
+
+A forecast is read through the same law: ln(rate / the cell's long-run rate), the long-run rate being
+its M1.5+ quakes from 1985 to the cut plus a half. M1.5+ rather than M3+ because 511-585 of 1,050
+cells have no M3+ at all in 31 years. A method may answer directly instead (`PlantedReader`); the
+floor `quake_density` does, the cell's last year of M1.5+ quakes over that same long-run rate.
+
+**Rejected.** The Coulomb change (above). Grading every cell (the steady half is noise: every method
+tried scored 0.02-0.05 that way on planet 0). Raw quake counts as the floor (they rank shadows highest, since
+a shadow sits on the rupture that made the quakes: −0.10 on planet 1). Choosing t_a for a stress
+integral by hand (the state needs none).
+
+### D-123 · 2026-11-05 · P9 — CB-33's first numbers
+
+craton-mini 0.448 ± 0.093 (planets 0 / 1 / 2: 0.47 / 0.52 / 0.34), above the floor quake_density
+0.395 ± 0.11 (0.41 / 0.50 / 0.28) on every planet. ETAS 0.348 (0.36 / 0.52 / 0.16), and the physics
+floor CRS, the one model built on rate-and-state, 0.248 (0.11 / 0.47 / 0.17). ETAS-incomplete and
+ETAS-aniso equal ETAS here (a planet's catalogue is complete; anisotropy was zero in P6). The Field
+reads the planet's hidden state better than counting its quakes does, by 0.05; CRS reads it worst of
+the four; a reading, not tested: its stress comes from its own fault model, not the planet's.
+
+### D-124 · 2026-11-05 · P9 — The stress meter: built, loses CB-02 and CB-03, not kept
+
+The Field's only output becomes one stress per cell per day; rates follow through Dieterich's law,
+counted day by day exactly (`craton/field/meter.py`, checked against eq. 12 of Dieterich 1994 to 0.2%).
+Measured from ETAS's own stress history, so stress zero is ETAS exactly, the Field's rule since P6.
+Two things it forces that `mini` never had to obey: **one stress moves every magnitude alike**, and
+**quakes beyond ETAS's use up the cell's faults** (a deficit D that lowers later rates by e^{−D/(r t_a)}
+and fades as ETAS's own quakes reload the cell). Each cell learns its t_a, from 5 years within 8x.
+D needs every earlier day's output, so it is read off a whole pass over the training days after each
+epoch and held fixed through the next (no gradient through it); a checkpoint carries the last
+training day's D into the test window.
+
+Paired with `mini`, bits per quake: CB-02 −0.288 (seed 0) and −0.297 (seed 1), CB-03 −0.743 (seed 0).
+On CB-02 the meter lands on ETAS's own score (−7.107, −7.122; ETAS −7.118). The loss is all
+*how many* (−0.32, −0.32, −0.74); *where* gains +0.031, +0.025 and −0.002. Lost on every run: not
+kept, `mini` unchanged, the board unchanged. Third seed not run (gap ~18x the seed spread).
+
+Which half costs: the meter without depletion (`meter_no_deplete`, one stress for both bands and
+nothing else) loses only −0.068 on CB-02 seed 0 (how many −0.096, where +0.028). So ~0.22 of the
+0.29 is the faults being used up, ~0.07 the shared stress. The data does not want extra quakes to
+deplete a cell on a 5-8 year clock; the same thing CB-26 found from the other side (D-121: the gain
+is ETAS expecting too few quakes inside a big sequence, kept up for months). The learned t_a moved
+little (CB-02 medians 5.9-7.8 years, none near either bound): with D frozen per epoch, t_a gets a
+weak gradient, so this run cannot say what t_a the data wants, only that 5-8 years costs.
+
+The one thing that paid: the shared stress raised *where* on both CB-02 seeds and in the
+no-depletion run (+0.025 to +0.031). Forcing M2-3 and M3+ to move together sharpens the map a little.
+Not adopted alone (it still loses on how many); noted for P9h, where the inputs change anyway.
+
+On the physics planets, whose truth *is* rate-and-state, the meter still does not help. CB-33:
+0.410 against `mini`'s 0.448 (planets 0.381 / 0.566 / 0.284 against 0.475 / 0.524 / 0.345; wins
+planet 1 only), still above the floor (0.395) and ETAS (0.348). Its shadows land below the day's
+median less often (0.71 / 1.00 / 0.85 against 0.72 / 1.00 / 0.94). CB-09's physics half, bits per
+M3+ quake: −0.062, −0.091, +0.004. So the bottleneck reads the hidden state no better even on a
+planet built from the same law. Reading: the planet's patches each have their own t_a and their own
+state, while a cell's meter has one t_a and one deficit, and the deficit (frozen per epoch, carried
+from training) drifts from the truth over 25 years; `mini`, free of the law, reads the recent quakes
+directly. Not tested further.
+
+**Rejected.** Backpropagating through the 9,000-day walk (each step would need the forward pass of
+every earlier day, not a batch of eight). Training until the deficit stops moving (members stop on
+validation the way `mini`'s do; the deficit is refreshed each epoch up to then).
