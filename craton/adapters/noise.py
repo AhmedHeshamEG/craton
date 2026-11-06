@@ -35,11 +35,11 @@ from craton.adapters.http import Fetcher
 from craton.adapters.region import Region
 from craton.adapters.waveforms import (
     SOURCE,
-    STATIONS_LABEL,
     Channel,
     fetch_waveforms,
     options,
     parse_channels,
+    stations_label,
 )
 from craton.spec.timeaxis import to_iso, to_seconds, year_of
 from craton.spec.token import Token, TokenError, validate_token
@@ -258,7 +258,7 @@ class SeismicNoisePower(Adapter):
     def tokens(self, ctx: BuildContext) -> Iterator[list[Token]]:
         opts = options(ctx.region)
         files = ctx.raw.current(SOURCE)
-        table = files.get(STATIONS_LABEL)
+        table = files.get(stations_label(opts, ctx.region))
         if table is None:
             ctx.reject("stations_not_fetched")
             return

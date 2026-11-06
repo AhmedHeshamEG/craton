@@ -29,6 +29,7 @@ from craton.adapters.waveforms import (
     month_label,
     parse_channels,
     station_url,
+    stations_label,
     wanted_months,
 )
 from craton.spec.timeaxis import to_seconds
@@ -194,7 +195,8 @@ def test_a_quake_in_two_hours_does_not_move_the_day() -> None:
 def test_tokens_one_per_day_and_component_and_short_days_refused(tmp_path: Path) -> None:
     raw = RawStore(tmp_path)
     r = region()
-    raw.put(SOURCE, "stations", "u", STATIONS.encode(), "2026-11-06", ".txt")
+    label = stations_label(r.sources[SOURCE] | {"channels": "LH?"}, r)
+    raw.put(SOURCE, label, "u", STATIONS.encode(), "2026-11-06", ".txt")
     day = white_velocity_day(1e-7)
     data = mseed("FDSN:XX_ABC__L_H_Z", day, "2020-01-01T00:00:00.000000Z")
     data += mseed("FDSN:XX_ABC__L_H_N", day[: 3 * 3_600], "2020-01-02T00:00:00.000000Z")

@@ -23,6 +23,7 @@ day is 30 times larger than an ``LH`` day, which is why the default is 1 Hz: cor
 
 from __future__ import annotations
 
+import hashlib
 import threading
 import urllib.parse
 from collections.abc import Callable
@@ -40,7 +41,6 @@ from craton.store.raw import RawFile, RawStore
 
 SOURCE = "fdsn_waveforms"
 """The raw-store folder every noise instrument reads."""
-STATIONS_LABEL = "stations"
 #: A month of 1 Hz data takes about a minute and a half to arrive from INGV.
 TIMEOUT_S = 900.0
 WORKERS = 4
@@ -177,8 +177,14 @@ def wanted_months(region: Region, channels: list[Channel]) -> list[tuple[str, st
     return out
 
 
-def stations_file(raw: RawStore) -> RawFile | None:
-    return raw.current(SOURCE).get(STATIONS_LABEL)
+def stations_label(opts: dict[str, Any], region: Region) -> str:
+    """The station table's raw label, named after its query: regions that share the waveform
+    cache each keep their own table."""
+    return "stations." + hashlib.sha256(station_url(opts, region).encode()).hexdigest()[:12]
+
+
+def stations_file(raw: RawStore, opts: dict[str, Any], region: Region) -> RawFile | None:
+    return raw.current(SOURCE).get(stations_label(opts, region))
 
 
 def fetch_waveforms(
@@ -200,14 +206,14 @@ def fetch_waveforms(
     today = datetime.now(UTC).date().isoformat()
     lock = threading.Lock()
 
-    cached = stations_file(raw)
+    cached = stations_file(raw, opts, region)
     if cached is None or refresh:
         url = station_url(opts, region)
         data = http.get(url)
-        raw.put(SOURCE, STATIONS_LABEL, url, data, today, ".txt")
+        raw.put(SOURCE, stations_label(opts, region), url, data, today, ".txt")
         report.downloaded += 1
         report.bytes += len(data)
-        cached = stations_file(raw)
+        cached = stations_file(raw, opts, region)
     assert cached is not None
     channels = parse_channels(raw.read(cached).decode("utf-8", "replace"))
     stations = sorted({c.station_id for c in channels})
