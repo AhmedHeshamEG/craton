@@ -574,6 +574,33 @@ That fits rate-and-state: a fault's quake rate remembers years of loading, so it
 and a single year's change barely shows. No model can read from the quakes what the quakes don't
 carry. The test stays on the board, frozen, as the number to beat when other data comes in.
 
+## A region it never read
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/unseen-regions-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/unseen-regions-light.png">
+    <img alt="Gain over ETAS fitted on each box's own past, bits per quake, for four regions each forecast by a world Field trained on the other three. World Field: central Italy +0.30, California +0.47, Japan +0.40, New Zealand +0.17, mean +0.34. The same with dimensionless inputs: +0.49, +0.57, +0.13, +0.03, mean +0.30. ETAS refit on the last month, the best floor: +0.44, +0.23, −0.32, −0.09, mean +0.07." src="docs/assets/unseen-regions-dark.png" width="100%">
+  </picture>
+</p>
+
+Hydrologists call it prediction in ungauged basins: train a model on hundreds of rivers, then
+forecast one it never saw ([Kratzert et al. 2019](https://doi.org/10.1029/2019WR026065)). CB-32 asks
+the same of the crust. The world Field is trained four times, each time without one of its regions
+(central Italy, California, Japan, New Zealand), and scored on that region's sequences against ETAS
+fitted on the region's own past.
+
+It wins in all four, on every sequence and every seed: **+0.34** bits per quake on average, against
++0.07 for the best simple fix (ETAS refit on the last month). Leaving a region out costs almost
+nothing in California and New Zealand and about a tenth of a bit in Japan. Central Italy is where its
+own past matters: there the refit floor does better (+0.44), on 2016-17 and on L'Aquila 2009.
+
+The obvious next step was to strip the units, so every region looks alike: counters over what ETAS
+expects, time in units of each box's Omori clock, distance in rupture lengths
+([Wells & Coppersmith 1994](https://doi.org/10.1785/BSSA0840040974)). It made central Italy and
+California better on every seed and Japan and New Zealand worse on every seed, and lost on the mean
+(+0.30). The units were carrying something the network used. The model keeps reading them (D-131).
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -627,7 +654,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
-| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (5 of 9 parts in: the stress exam CB-23, the migration exam CB-24, the physics floor, four blocks that lost, the leak audit and the distilled law CB-26) | latent variables, AlphaFold's pair representation |
+| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (8 of 9 parts in: the stress exam CB-23, the migration exam CB-24, the physics floor, four blocks that lost, the leak audit and the distilled law CB-26, the planted-stress exam CB-33, the pressure exam CB-31, and regions it never read, CB-32) | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
 | ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |
@@ -695,7 +722,8 @@ Hero data: [USGS ComCat](https://earthquake.usgs.gov/earthquakes/search/) (publi
 follows the IERS Conventions (2010). Type: [Inter](https://rsms.me/inter/) (SIL OFL).
 Groningen: [KNMI](https://rdsa.knmi.nl/) (CC-BY-4.0) and NAM's reservoir model ([TNO 2023](https://doi.org/10.5281/zenodo.10245813)).
 The local-alpha floor follows [Lombardi & Marzocchi (2010)](https://doi.org/10.4401/ag-4848), INGV's
-daily ETAS for Italy.
+daily ETAS for Italy. Rupture lengths: [Wells & Coppersmith (1994)](https://doi.org/10.1785/BSSA0840040974).
+Leave-one-region-out follows [Kratzert et al. (2019)](https://doi.org/10.1029/2019WR026065).
 Craton stands on SeisLM, ETAS, CSEP and pyCSEP, GraphCast's lesson about reanalysis, and decades of open
 catalogues from INGV and the Nevada Geodetic Laboratory. Full sources per phase in the lessons.
 

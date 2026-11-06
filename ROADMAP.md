@@ -541,7 +541,10 @@ each graded on a truth the model never sees (D-116):
   −0.42) and with the total drop since 1957 (+0.45): the quakes carry years of loading, not this year's.
   ETAS refit daily on the last month (Lombardi & Marzocchi 2010) ties mini on CB-02 (+0.30 both) and
   gets half of its CB-03 gain (+0.59 vs +1.16) (D-125 … D-128)
-- **P9h** inputs without units, trained on every region, scored on the one left out (CB-32)
+- **P9h** ✓ regions it never read (CB-32) and inputs without units. Done 2026-11-06: the world Field
+  trained without each region beats ETAS fitted there in all four, on every sequence and seed (+0.34,
+  best floor +0.07). Dimensionless inputs help central Italy and California, hurt Japan and New
+  Zealand, lose on the mean (+0.30) and are not kept (D-129 … D-131)
 - **P9i** direction from focal mechanisms (CB-34), the figure (inferred stress and pressure next to
   the truth), the referee on every public map, v0.10.0
 

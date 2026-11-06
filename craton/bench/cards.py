@@ -138,6 +138,16 @@ ABOUT = {
         "built to read the push answers through its twin trained without it. Floor: "
         "`quake_density` (each cell's quakes of the year before)."
     ),
+    "CB-32": (
+        "Does the model work where it never trained? Each of the four regions the world Field "
+        "learns from (central Italy, California, Japan, New Zealand) is left out in turn: the "
+        "model is trained again on the other three, with the same 2007 cut, and forecasts the "
+        "left-out region's sequences: central Italy's 2016-17 and 2009 windows (CB-02's grid "
+        "and splits) and CB-22's two seen sequences per region (same boxes, windows and "
+        "quakes). The number is the gain over ETAS fitted on each box's own past, in bits per "
+        "quake, mean of the four regions. Methods that don't train on regions answer as they "
+        "always do; a model must answer through the fold that never read the region."
+    ),
     "CB-33": (
         "Does a forecaster's picture of the crust match the physics planet's? CB-09's three "
         "physics planets record each fault patch's rate-and-state state; per 0.1° cell, every "
@@ -310,7 +320,7 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary and task_id not in ("CB-09", "CB-22", "CB-23", "CB-24", "CB-30"):
+        if summary and task_id not in ("CB-09", "CB-22", "CB-23", "CB-24", "CB-30", "CB-32"):
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):

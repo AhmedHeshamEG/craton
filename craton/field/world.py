@@ -134,6 +134,31 @@ def tile_spec(tile: Tile, cut: str) -> ForecastSpec:
     )
 
 
+@dataclass(frozen=True)
+class DimlessTile:
+    """(P9h) What a tile adds for the dimensionless Field: its rupture memory (pool days,
+    or None) and its slide along the bank into Omori time."""
+
+    rupture: np.ndarray | None
+    shift: float
+
+
+def pool_keep(
+    tile: Tile, events: Any, starts_all: FloatArray, quiet_share: float
+) -> tuple[np.ndarray, np.ndarray, np.random.Generator]:
+    """Which of ``starts_all`` a tile's pool keeps: every day with a quake at mc, and quiet
+    days drawn with the tile's own salted generator (returned, already advanced, for the
+    validation draw that follows)."""
+    scored = tile.mc + SCORED_ABOVE_MC
+    day_counts = _counts(events, tile.grid, starts_all, tile.mc, 1, scored).sum(axis=(1, 2))
+    rng = np.random.default_rng(
+        int(hashlib.sha256(f"{POOL_SALT}:{tile.key}".encode()).hexdigest()[:8], 16)
+    )
+    busy = day_counts > 0
+    keep = busy | (rng.random(len(starts_all)) < quiet_share)
+    return keep, busy, rng
+
+
 @dataclass
 class PoolTile:
     """One tile's training and validation days, read from disk as needed."""
@@ -165,6 +190,8 @@ class WorldField:
 
     config_name: str = "world"
     log: Log = _quiet
+    #: (P9h, CB-32) A region left out of training: its tiles stay in the pool, unread.
+    holdout: str = ""
     _states: dict[int, list[dict[str, torch.Tensor]]] = field(default_factory=dict)
 
     @property
@@ -213,7 +240,9 @@ class WorldField:
         return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:12]
 
     def pool_dir(self, root: Path) -> Path:
-        return root / "data" / "world" / f"pool-{self.config_name}-{self.pool_id()}"
+        cfg = self.config
+        name = cfg.dimless.pool_of if cfg.dimless and cfg.dimless.pool_of else self.config_name
+        return root / "data" / "world" / f"pool-{name}-{self.pool_id()}"
 
     def build_pool(self, root: Path) -> list[PoolTile]:
         """Every tile's pool of days, built once and cached (``data/world/``)."""
@@ -259,12 +288,7 @@ class WorldField:
             fit = Etas().fit(spec, view, 0)
             events = view.train_events("world")
             scored = tile.mc + SCORED_ABOVE_MC
-            day_counts = _counts(events, g, starts_all, tile.mc, 1, scored).sum(axis=(1, 2))
-            rng = np.random.default_rng(
-                int(hashlib.sha256(f"{POOL_SALT}:{tile.key}".encode()).hexdigest()[:8], 16)
-            )
-            busy = day_counts > 0
-            keep = busy | (rng.random(len(starts_all)) < w.quiet_share)
+            keep, busy, rng = pool_keep(tile, events, starts_all, w.quiet_share)
             weights = np.where(busy, 1.0, 1.0 / w.quiet_share)[keep].astype(np.float32)
             starts = starts_all[keep]
             days = build_days(
@@ -315,13 +339,70 @@ class WorldField:
             out.append(PoolTile(tile, folder, train, val))
         return out
 
+    def dimless_inputs(self, root: Path, pool: list[PoolTile]) -> list[DimlessTile] | None:
+        """(P9h) Each tile's rupture memory (built once beside its pool, ``rupture.npy``)
+        and its slide along the bank, when the config reads dimensionless inputs."""
+        from craton.bench.world import RegionView
+        from craton.field.dimless import omori_shift, rupture_memory
+
+        cfg = self.config
+        if cfg.dimless is None:
+            return None
+        assert cfg.world is not None
+        w = cfg.world
+        starts_all = np.arange(to_seconds(cfg.train.first_day), to_seconds(w.cut) - DAY + 1, DAY)
+        out = []
+        for p in pool:
+            meta = json.loads((p.folder / "meta.json").read_text("utf-8"))
+            spec = memory_spec(
+                p.tile.mc, max(cfg.memory.start, load_region(p.tile.region, root).start)
+            )
+            path = p.folder / "rupture.npy"
+            rup = None
+            if cfg.dimless.rupture:
+                if not path.is_file():
+                    t0 = time.perf_counter()
+                    g = p.tile.grid
+                    view = RegionView(
+                        root=root,
+                        region=p.tile.region,
+                        box=(g.lat_min, g.lat_max, g.lon_min, g.lon_max),
+                        cut=w.cut,
+                    )
+                    events = view.train_events("world")
+                    keep, _, _ = pool_keep(p.tile, events, starts_all, w.quiet_share)
+                    if int(keep.sum()) != meta["days"]:
+                        raise RuntimeError(f"tile {p.tile.key}: pool days do not rebuild")
+                    arr = rupture_memory(events, g, starts_all[keep], spec)
+                    tmp = path.with_suffix(".tmp.npy")
+                    np.save(tmp, arr)
+                    tmp.replace(path)
+                    self.log(f"tile {p.tile.key}: rupture memory {time.perf_counter() - t0:.0f}s")
+                rup = np.load(path, mmap_mode="r")
+            shift = omori_shift(float(meta["etas"]["c"]), cfg.dimless, spec.lifetimes)
+            out.append(DimlessTile(rup, shift))
+        return out
+
     # ------------------------------------------------------------------ training
 
     def folder(self, root: Path, seed: int) -> Path:
         cfg = self.config
+        without = f"-without-{self.holdout}" if self.holdout else ""
         return checkpoints_dir(root) / (
-            f"world-{cfg.name}-{WORLD_VERSION}-{self.pool_id()}-{field_hash(cfg)[:8]}-s{seed}"
+            f"world-{cfg.name}-{WORLD_VERSION}-{self.pool_id()}-{field_hash(cfg)[:8]}"
+            f"{without}-s{seed}"
         )
+
+    def training_pool(self, root: Path) -> list[PoolTile]:
+        """The pool this Field learns from: every tile but the held-out region's."""
+        pool = self.build_pool(root)
+        if not self.holdout:
+            return pool
+        cfg = self.config
+        assert cfg.world is not None
+        if self.holdout not in cfg.world.regions:
+            raise ValueError(f"{self.holdout!r} is not one of {self.config_name}'s regions")
+        return [p for p in pool if p.tile.region != self.holdout]
 
     def states(self, root: Path, seed: int) -> list[dict[str, torch.Tensor]]:
         if seed in self._states:
@@ -331,7 +412,7 @@ class WorldField:
             body = torch.load(path, map_location="cpu", weights_only=True)
             self._states[seed] = list(body["members"])
             return self._states[seed]
-        pool = self.build_pool(root)
+        pool = self.training_pool(root)
         cfg = self.config
         t0 = time.perf_counter()
         starts_from = (
@@ -339,10 +420,11 @@ class WorldField:
             if cfg.curriculum
             else []
         )
+        extras = self.dimless_inputs(root, pool)
         states, runs = [], []
         for m in range(cfg.train.members):
             init = starts_from[m % len(starts_from)] if starts_from else None
-            st, info = train_world_member(pool, cfg, seed * 100 + m, self.log, init)
+            st, info = train_world_member(pool, cfg, seed * 100 + m, self.log, init, extras)
             states.append(st)
             runs.append(info)
         folder = self.folder(root, seed)
@@ -353,6 +435,7 @@ class WorldField:
             "config_hash": field_hash(cfg),
             "world_version": WORLD_VERSION,
             "pool": self.pool_id(),
+            "holdout": self.holdout or None,
             "starts_from": cfg.curriculum.start_from if cfg.curriculum else None,
             "craton_version": __version__,
             "tiles": [p.tile.key for p in pool],
@@ -397,7 +480,20 @@ class WorldField:
             spec.scored,
             memory_spec(spec.mc, start),
         )
-        m3 = predict_world(states, days.memory, days.log_etas[..., 1], spec.grid, cfg)
+        if cfg.dimless is None:
+            m3 = predict_world(states, days.memory, days.log_etas[..., 1], spec.grid, cfg)
+        else:
+            from craton.field.dimless import omori_shift, rupture_memory
+
+            mspec = memory_spec(spec.mc, start)
+            mem = days.memory
+            if cfg.dimless.rupture:
+                rup = rupture_memory(ctx.events, spec.grid, spec.day_starts, mspec)
+                mem = np.concatenate([mem, rup], axis=-1)
+            shift = omori_shift(fit.params.c, cfg.dimless, mspec.lifetimes)
+            m3 = predict_world(
+                states, mem, days.log_etas[..., 1], spec.grid, cfg, both=days.log_etas, shift=shift
+            )
         shares = magnitude_shares(fit, spec.grid, spec.max_magnitude)
         first = int(spec.grid.mag_bin_of(np.array([spec.scored]))[0])
         return GriddedForecast(m3.mean(axis=0) / shares[first:].sum(), shares)
@@ -413,7 +509,12 @@ def field_stage(config_name: str, log: Log = _quiet) -> WorldField:
     return WorldField(config_name, log=log)
 
 
-def _net(n_memory: int, grid: csep.Grid, cfg: FieldConfig, dev: torch.device) -> FieldNet:
+def _net(n_memory: int, grid: csep.Grid, cfg: FieldConfig, dev: torch.device) -> torch.nn.Module:
+    if cfg.dimless is not None:
+        from craton.field.dimless import DimlessFieldNet
+        from craton.field.memory import LIFETIMES_DAYS
+
+        return DimlessFieldNet(n_memory, grid, cfg.model, cfg.dimless, LIFETIMES_DAYS).to(dev)
     return FieldNet(n_memory, grid, cfg.model).to(dev)
 
 
@@ -428,9 +529,11 @@ def train_world_member(
     member_seed: int,
     log: Log = _quiet,
     init: dict[str, torch.Tensor] | None = None,
+    extras: list[DimlessTile] | None = None,
 ) -> tuple[dict[str, torch.Tensor], dict[str, float]]:
     """One world Field trained on every tile's pool; weighted Poisson loss, early stopping on
-    every tile's validation days. ``init`` starts from trained weights (fine-tuning)."""
+    every tile's validation days. ``init`` starts from trained weights (fine-tuning);
+    ``extras`` are the dimensionless Field's rupture memory and slides (P9h), one per tile."""
     from craton.field.model import place_code
 
     assert cfg.world is not None
@@ -440,6 +543,8 @@ def train_world_member(
     rng = np.random.default_rng(member_seed)
     data = [p.arrays() for p in pool]
     n_feat = data[0][0].shape[-1]
+    if extras is not None and extras[0].rupture is not None:
+        n_feat += extras[0].rupture.shape[-1]
     places = [place_code(p.tile.grid).to(dev) for p in pool]
     net = _net(n_feat, pool[0].tile.grid, cfg, dev)
     if init is not None:
@@ -455,8 +560,16 @@ def train_world_member(
         net.place = places[k]
         lb = torch.from_numpy(np.asarray(log_e[sel])).to(dev)
         li = lb if log_in is log_e else torch.from_numpy(np.asarray(log_in[sel])).to(dev)
+        m = np.asarray(mem[sel])
         with torch.autocast(dev.type, torch.float16, enabled=dev.type == "cuda"):
-            corr = net(torch.from_numpy(np.asarray(mem[sel])).to(dev).float(), li[..., 1])
+            if extras is None:
+                corr = net(torch.from_numpy(m).to(dev).float(), li[..., 1])
+            else:
+                ex = extras[k]
+                if ex.rupture is not None:
+                    m = np.concatenate([m, np.asarray(ex.rupture[sel])], axis=-1)
+                s = torch.full((len(sel),), ex.shift, device=dev)
+                corr = net(torch.from_numpy(m).to(dev).float(), li, s)
         lam = lb + corr
         yy = torch.from_numpy(np.asarray(y[sel])).to(dev)
         ww = torch.from_numpy(np.asarray(w[sel])).to(dev)[:, None, None]
@@ -515,14 +628,20 @@ def predict_world(
     grid: csep.Grid,
     cfg: FieldConfig,
     corrections: bool = False,
+    both: np.ndarray | None = None,
+    shift: float = 0.0,
 ) -> FloatArray:
     """(members, days, cells) each member's rate of scored quakes on ``grid``; or, with
-    ``corrections``, (members, days, cells, 2) its log corrections of both bins."""
+    ``corrections``, (members, days, cells, 2) its log corrections of both bins. The
+    dimensionless Field (P9h) also reads ``both`` bins of ETAS and the box's ``shift``."""
+    if cfg.dimless is not None and both is None:
+        raise ValueError("the dimensionless Field reads both of ETAS's bins")
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     shape = (len(states), memory.shape[0], grid.n_cells) + ((2,) if corrections else ())
     out = np.zeros(shape)
     mem = torch.from_numpy(np.asarray(memory))
     log_e = torch.from_numpy(np.asarray(log_etas_scored))
+    log_b = None if both is None else torch.from_numpy(np.asarray(both, dtype=np.float32))
     for k, st in enumerate(states):
         net = _net(memory.shape[-1], grid, cfg, dev)
         net.load_state_dict({**st, "place": net.place})
@@ -530,7 +649,13 @@ def predict_world(
         with torch.no_grad():
             for i in range(0, memory.shape[0], INFER_DAYS):
                 lb = log_e[i : i + INFER_DAYS].to(dev)
-                corr = net(mem[i : i + INFER_DAYS].to(dev).float(), lb)
+                x = mem[i : i + INFER_DAYS].to(dev).float()
+                if cfg.dimless is None:
+                    corr = net(x, lb)
+                else:
+                    assert log_b is not None
+                    s = torch.full((x.shape[0],), shift, device=dev)
+                    corr = net(x, log_b[i : i + INFER_DAYS].to(dev), s)
                 if corrections:
                     out[k, i : i + INFER_DAYS] = corr.double().cpu().numpy()
                 else:
@@ -549,7 +674,12 @@ def card(meta: dict[str, Any]) -> str:
         "- **What it does:** daily forecasts of any 0.1° box on Earth, starting from ETAS "
         "fitted there and correcting it cell by cell, at most "
         f"{meta['config']['model']['max_nudge']:g}x either way.\n"
-        f"- **Learned from:** {len(meta['tiles'])} tiles of {', '.join(regions)}, "
+        + (
+            f"- **Left out:** {meta['holdout']}, never read (CB-32's fold).\n"
+            if meta.get("holdout")
+            else ""
+        )
+        + f"- **Learned from:** {len(meta['tiles'])} tiles of {', '.join(regions)}, "
         f"{meta['training_days']:,} tile-days from {meta['config']['train']['first_day'][:10]} "
         f"to {w['cut'][:10]}; quiet days sampled at {w['quiet_share']:g} and weighted back.\n"
         f"- **Magnitudes:** each region's own completeness mc; memory from mc − "
