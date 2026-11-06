@@ -202,7 +202,7 @@ def test_tokens_one_per_day_and_component_and_short_days_refused(tmp_path: Path)
     data += mseed("FDSN:XX_ABC__L_H_N", day[: 3 * 3_600], "2020-01-02T00:00:00.000000Z")
     raw.put(SOURCE, "XX.ABC.2020-01", "u", data, "2026-11-06", ".mseed")
     raw.put(SOURCE, "XX.ABC.2020-02", "u", b"", "2026-11-06", ".mseed")
-    assert len(decode(data)) == 2
+    assert len(decode(data)[0]) == 2
 
     ctx = BuildContext(region=r, raw=raw)
     years = list(get_adapter("seismic_noise_power").tokens(ctx))
@@ -216,3 +216,21 @@ def test_tokens_one_per_day_and_component_and_short_days_refused(tmp_path: Path)
     assert tok.time == to_seconds("2020-01-01T00:00:00Z")
     assert -140 < tok.value[1] < -100
     assert ctx.rejects["too_few_hours"] >= 1
+
+
+@pytest.mark.parametrize("version", [2, 3])
+def test_one_damaged_record_costs_one_record(version: int) -> None:
+    import pymseed
+
+    from craton.adapters.noise import record_lengths
+
+    x = white_velocity_day(1e-7)[:20_000]
+    traces = pymseed.MS3TraceList()
+    traces.add_data("FDSN:XX_ABC__L_H_Z", x, "i", 1.0, starttime_str="2020-01-01T00:00:00Z")
+    data = bytearray(b"".join(traces.generate(max_record_length=512, format_version=version)))
+    lengths = record_lengths(bytes(data))
+    assert sum(lengths) == len(data)
+    data[sum(lengths[:3]) + (22 if version == 2 else 8)] = 99  # record 4 says hour 99
+    segments, bad = decode(bytes(data))
+    assert bad == 1
+    assert len(x) - 512 < sum(len(s.samples) for s in segments) < len(x)

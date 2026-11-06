@@ -21,6 +21,7 @@ file names the data centre, networks and channel.
 from __future__ import annotations
 
 import math
+import struct
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -69,10 +70,43 @@ class Segment:
     samples: FloatArray
 
 
-def decode(data: bytes) -> list[Segment]:
-    """Every segment in a miniSEED buffer. Empty bytes (a month with no data) is no segments."""
-    if not data:
-        return []
+def record_lengths(data: bytes) -> list[int]:
+    """Byte length of each miniSEED 2 record, read from its blockette 1000.
+
+    A record whose header can't be read is taken to be as long as the one before it (512 for
+    the first), so one damaged header costs one record, not the rest of the month."""
+    out = []
+    pos, last = 0, 512
+    while pos + 40 <= len(data):
+        if data[pos : pos + 3] == b"MS\x03":  # miniSEED 3: lengths sit in the fixed header
+            sid, extra, payload = struct.unpack("<BHI", data[pos + 33 : pos + 40])
+            length = 40 + sid + extra + payload
+            out.append(min(length, len(data) - pos))
+            pos += length
+            continue
+        if pos + 48 > len(data):
+            break
+        length = last
+        year_be = struct.unpack(">H", data[pos + 20 : pos + 22])[0]
+        order = ">" if 1900 <= year_be <= 2200 else "<"
+        off = struct.unpack(order + "H", data[pos + 46 : pos + 48])[0]
+        for _ in range(8):  # walk the blockette chain
+            if off < 48 or pos + off + 8 > len(data):
+                break
+            kind, nxt = struct.unpack(order + "HH", data[pos + off : pos + off + 4])
+            if kind == 1000:
+                exp = data[pos + off + 6]
+                if 7 <= exp <= 20:
+                    length = 1 << exp
+                break
+            off = nxt
+        out.append(min(length, len(data) - pos))
+        pos += length
+        last = length
+    return out
+
+
+def _segments(data: bytes) -> list[Segment]:
     import pymseed
 
     out = []
@@ -93,6 +127,39 @@ def decode(data: bytes) -> list[Segment]:
                 )
             )
     return out
+
+
+def decode(data: bytes, group: int = 64) -> tuple[list[Segment], int]:
+    """Every segment in a miniSEED buffer, and how many records were unreadable.
+
+    The whole buffer is decoded at once; if libmseed refuses it (one bad timestamp is enough),
+    it is decoded in groups of records, and a group that fails record by record, dropping
+    only the records that fail. Empty bytes (a month with no data) is no segments."""
+    if not data:
+        return [], 0
+    from pymseed import MiniSEEDError
+
+    try:
+        return _segments(data), 0
+    except MiniSEEDError:
+        pass
+    lengths = record_lengths(data)
+    starts = np.concatenate([[0], np.cumsum(lengths)]).astype(int)
+    out: list[Segment] = []
+    bad = 0
+    for g in range(0, len(lengths), group):
+        a, b = starts[g], starts[min(g + group, len(lengths))]
+        try:
+            out.extend(_segments(data[a:b]))
+            continue
+        except MiniSEEDError:
+            pass
+        for i in range(g, min(g + group, len(lengths))):
+            try:
+                out.extend(_segments(data[starts[i] : starts[i + 1]]))
+            except MiniSEEDError:
+                bad += 1
+    return out, bad
 
 
 def day_grid(segments: list[Segment], day0: float, rate: float = 1.0) -> FloatArray:
@@ -244,6 +311,8 @@ class SeismicNoisePower(Adapter):
                 "swap date is the sensor, not the Earth.",
                 "The primary and secondary bands are mostly the ocean: storms in the "
                 "Mediterranean and the Atlantic move them by 10-20 dB in winter.",
+                "A record libmseed cannot read (one INGV month holds a timestamp of 10^9 ns) "
+                "is dropped and counted; the hours it held then count as incomplete.",
                 "Hours with any missing sample are dropped; a day with fewer than 8 hours is "
                 "left out.",
             ),
@@ -287,7 +356,10 @@ class SeismicNoisePower(Adapter):
         network, station = f.label.split(".")[:2]
         mine = [c for c in channels if c.network == network and c.station == station]
         by_channel: dict[tuple[str, str], list[Segment]] = {}
-        for seg in decode(ctx.use(f)):
+        segments, bad = decode(ctx.use(f))
+        if bad:
+            ctx.reject("unreadable_record", bad)
+        for seg in segments:
             by_channel.setdefault((seg.location, seg.channel), []).append(seg)
         for (loc, cha), segs in sorted(by_channel.items()):
             comp = component_of(cha)

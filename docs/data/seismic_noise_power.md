@@ -47,4 +47,5 @@ Derived from how much the day's hours disagree. It says how well the day's level
 - One gain per channel epoch (the station service's overall sensitivity at its reference frequency): exact for flat broadband sensors in these bands; Trillium 40 s sensors read ~1 dB low at 0.05 Hz.
 - A sensor swap starts a new epoch with a new gain; a level step across the swap date is the sensor, not the Earth.
 - The primary and secondary bands are mostly the ocean: storms in the Mediterranean and the Atlantic move them by 10-20 dB in winter.
+- A record libmseed cannot read (one INGV month holds a timestamp of 10^9 ns) is dropped and counted; the hours it held then count as incomplete.
 - Hours with any missing sample are dropped; a day with fewer than 8 hours is left out.
