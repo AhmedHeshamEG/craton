@@ -2028,3 +2028,71 @@ A tie within the seed spread. The count improves on two seeds of three, which is
 count the camera aims at, and the same seeds give it back in where: the world-weighted
 counters spread weight onto cells whose small quakes the enhanced catalogue already shows. The
 camera stays off; D-115's decision stands. Results added to `results/ablation/camera_on_italy.json`.
+
+### D-119 · 2026-11-05 · P9 — The leak audit: canaries, an earlier cut, answers on the wrong days
+
+Before reading anything into what the Field learned (CB-26), three checks that it learned it honestly:
+
+1. **Canaries** (`tests/test_audit.py`, every `craton check`): a swarm and an M6.5 placed at and
+   after the cut must leave every array a Field trains on (memory, ETAS's rates, the answers)
+   identical, bit for bit; a single quake two days before the cut must change the last day.
+2. **The cut moved back a year** (`configs/field/audit_cut.yaml`): ETAS and the Field both fitted as
+   if CB-02's split ended on 2015-08-24, scored on the same test window against that earlier ETAS.
+3. **Answers dealt to the wrong days** (`configs/field/audit_shuffled.yaml`): every training day keeps
+   its memory and gets another day's quakes, one fixed permutation per member.
+
+Both controls are an optional `audit:` config section, so `mini` keeps hash b99e49ae. ETAS's fit
+cache is now keyed by the cut as well (a moved cut is another fit). Results on CB-02, bits per quake
+over ETAS (`scripts/ablations/leak_audit.py`, `results/ablation/leak_audit.json`):
+
+| CB-02, bits per quake over ETAS | seed 0 | seed 1 | how many | where |
+|---|---|---|---|---|
+| `mini`, as trained | +0.299 | +0.293 | +0.312 / +0.319 | −0.013 / −0.026 |
+| the cut a year earlier (its own ETAS) | +0.302 | +0.259 | +0.319 / +0.304 | −0.017 / −0.045 |
+| answers dealt to the wrong days | −1.428 | −1.432 | −1.190 / −1.173 | −0.238 / −0.260 |
+
+The earlier cut keeps nearly all of the gain (a year less to learn from costs 0.03 on seed 1); the
+shuffled control loses all of it and falls far below ETAS (with time broken, the busiest memories meet ordinary days, so the network learns to cut ETAS's
+aftershock peaks). Run on two seeds, not three: the gaps are many times the seed spread.
+
+### D-120 · 2026-11-05 · P9 — CB-26, the distilled law, defined
+
+A formula fitted to the network, never to the data (Cranmer et al. 2020), so it measures what the
+network learned. Inputs: the Field's 54 counters plus ETAS's log rate in the cell and the box.
+Rows: every other training day, drawn in proportion to the network's expected M3+ count (for a
+Poisson count the cost of answering f where the network says c is about ½λ(f − c)², so this is
+squared error where the bits are). PySR 2.7 (`distill` dependency group; Julia via juliacall),
+binary + − × ÷ and exp, at most 30 nodes, 40 iterations, ten inputs by its random-forest screen,
+deterministic and serial with the seed. From PySR's best formula at each size, the one kept has
+at most ten top-level added terms and the best gain on the training split's validation days. The
+test windows are never read to pick. The number: (formula − ETAS) / (network − ETAS) on CB-02's
+and CB-03's test windows, mean of the two; the validation-days share is reported beside it.
+No new test data, so the fingerprint covers the definition only. Moved from P14 (D-116).
+The floor, `law_constant`, is the same search on `mini` cut to one node: a constant factor on ETAS,
+picked the same way (every task needs a baseline).
+
+**Rejected.** Fitting the formula to the quakes directly (that is a new model, not a reading of
+this one). Picking the formula on the test window. Counting terms after expanding (a product of two
+sums would count as four).
+
+### D-121 · 2026-11-05 · P9 — What the six laws say
+
+CB-26 = 0.836 ± 0.047 (seeds 0 / 1 / 2: 0.78 / 0.85 / 0.88). CB-02 keeps 0.87-0.92 with 2-4 terms,
+CB-03 0.68-0.84 with 1-2. The floor keeps 0.615 ± 0.007: a constant factor of ×1.5 (CB-02) or ×2.1
+(CB-03) on ETAS. Most of the Field's held-out gain is that ETAS expects too few quakes inside a big
+sequence; the formulas add 0.16-0.27 over the constant, seed by seed, and on the training split's quiet
+validation days the constant loses (CB-02 −0.70 to −0.79 of the network's gain) where the formulas
+keep 0.21-0.49. The shortest, CB-03 seed 0: rate = ETAS · exp(1.18 · N3y / N12y), the
+cell's quakes fading over 3 and 12 years. All six lower ETAS where a cell's last 12 years were busy;
+five raise it after recent quakes within ~10 km (the last 1 to 16 days, three of them weighted by
+productivity).
+
+A reading, not yet a test: ETAS's background is a smoothed map of past quakes, and it absorbs the
+long tails of old sequences ("orphaned aftershocks", van der Elst 2017), so it overpredicts where
+old activity is fading and underpredicts where new activity is building. The laws take that back.
+
+Two cautions. On the training split's own validation days the CB-02 laws keep only 0.21-0.49 of the
+network's gain (CB-03: 0.75-0.80): the rule pays most inside big sequences, and the test windows are
+big sequences. And a cell with no quakes at all reads N3y / N12y = 1 through the counters' floor, so
+the shortest law raises ETAS there by the full factor; on ETAS's tiny rate in an empty cell that costs
+little, but it is the formula's arithmetic, not physics. Formulas in `results/laws/mini.json`.

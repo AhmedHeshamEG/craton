@@ -104,6 +104,18 @@ ABOUT = {
         "`stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes "
         "only, as Craton does."
     ),
+    "CB-26": (
+        "Does what the network learned fit in a formula? A method that forecasts CB-02 and "
+        "CB-03 through a Field hands it to symbolic regression (PySR): a formula of at most "
+        "ten added terms over the same counters the network reads is fitted to the network's "
+        "correction to ETAS on the training years, picked on the training split's own "
+        "validation days, then forecasts each test window the network's way, ETAS times "
+        "e^formula. The number is the share of the network's gain over ETAS the formula keeps "
+        "there, mean over CB-02 and CB-03: 1 is as good as the network, 0 is ETAS. No new test "
+        "data: the windows and quakes are CB-02's and CB-03's. The formulas themselves are in "
+        "`results/laws/`. Floor: `law_constant`, the same search cut to one node (a constant "
+        "factor on ETAS)."
+    ),
     "CB-24": (
         "Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored "
         "size (completeness + 1) on or after the day of the first big shock. Before every "

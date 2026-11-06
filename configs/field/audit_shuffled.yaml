@@ -1,0 +1,28 @@
+# P9e leak audit: a copy of mini (configs/field/mini.yaml) with one control switched on.
+name: audit_shuffled
+description: "P9e leak audit: mini trained on answers dealt to the wrong days (whole days permuted)."
+
+model:
+  d_model: 64          # features per cell
+  n_layers: 2          # attention layers between cells
+  n_heads: 4
+  dropout: 0.1
+  max_nudge: 4.0       # the Field may move ETAS's rate in a cell at most 4x either way
+
+memory:
+  m_min: 1.5           # every quake down to the catalogue's completeness enters the memory
+  start: "1990-01-01T00:00:00Z"
+
+train:
+  first_day: "1991-01-01T00:00:00Z"   # Colfiorito 1997 too; ETAS (fitted from 2005) is the start everywhere
+  validation_every: 8                 # one 30-day block in eight is validation
+  days_per_step: 8
+  lr: 1.0e-3
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 5
+  members: 6                          # a forecast is the average of this many Fields (P7: 5+ for the spread)
+  seeds: [0, 1, 2]
+
+audit:
+  shuffle_answers: true        # every training day gets another day's quakes

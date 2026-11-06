@@ -99,7 +99,7 @@ CATALOG: tuple[PlannedTask, ...] = (
         "P11",
     ),
     PlannedTask(
-        "CB-26", "Distilled law", "a formula's held-out gain over ETAS vs the network's", "P14"
+        "CB-26", "Distilled law", "a formula's held-out gain over ETAS vs the network's", "P9"
     ),
     PlannedTask(
         "CB-27", "Predictability horizon", "lead time where skill over ETAS reaches zero", "P15"

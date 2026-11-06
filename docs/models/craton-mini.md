@@ -442,6 +442,15 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 - **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
 - **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
 
+## Field · CB-19 · seed 0
+
+- **What it does:** daily forecasts for CB-19, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,338 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,810 parameters per member, 6 members averaged.
+- **Training:** epochs per member 18, 20, 19, 15, 40, 40; validation gain over ETAS (nats per quake) 0.2775, 0.2803, 0.3640, 0.2891, 0.3537, 0.3584; 80.0 min.
+- **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
 ## Field · CB-19 · seed 1
 
 - **What it does:** daily forecasts for CB-19, starting from ETAS and correcting it cell by cell, at most 4x either way.
@@ -460,6 +469,15 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 - **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
 - **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
 
+## Field · CB-19 · seed 1
+
+- **What it does:** daily forecasts for CB-19, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,338 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,810 parameters per member, 6 members averaged.
+- **Training:** epochs per member 21, 16, 16, 16, 22, 16; validation gain over ETAS (nats per quake) 0.2978, 0.2765, 0.3207, 0.2826, 0.3063, 0.3567; 47.0 min.
+- **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
 ## Field · CB-19 · seed 2
 
 - **What it does:** daily forecasts for CB-19, starting from ETAS and correcting it cell by cell, at most 4x either way.
@@ -475,6 +493,15 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 - **Learned from:** split `cb02_fit`, 9,338 days from 1991-01-01; every midnight reads only the quakes before it.
 - **Size:** 143,810 parameters per member, 6 members averaged.
 - **Training:** epochs per member 20, 16, 16, 17, 17, 32; validation gain over ETAS (nats per quake) 0.2948, 0.2793, 0.2689, 0.2825, 0.2834, 0.3095; 86.6 min.
+- **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
+- **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
+
+## Field · CB-19 · seed 2
+
+- **What it does:** daily forecasts for CB-19, starting from ETAS and correcting it cell by cell, at most 4x either way.
+- **Learned from:** split `cb02_fit`, 9,338 days from 1991-01-01; every midnight reads only the quakes before it.
+- **Size:** 143,810 parameters per member, 6 members averaged.
+- **Training:** epochs per member 24, 17, 24, 18, 24, 30; validation gain over ETAS (nats per quake) 0.3341, 0.3480, 0.2815, 0.3131, 0.3037, 0.3161; 58.7 min.
 - **Starting line:** ETAS with mu 0.5746, k 0.4767, a 1.225, c 0.01796, p 1.186, d 0.5407, gamma 0.6945, q 2.035, b 1.163, mc 2.
 - **Code:** Craton 0.8.0, Field f0.1, config hash `b99e49ae90f8c7f6`.
 

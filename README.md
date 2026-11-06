@@ -466,6 +466,37 @@ catalogue alone. On the Apennines it scores −7.52 bits per quake, ETAS −7.12
 guessed fault geometry loses to plain statistics, the same thing Mancini et al. found in 2019 before they
 fed it measured slip. Craton's turn on CB-24 is P9d, the wiring it learns from decades of quakes.
 
+## The rule inside the network
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/law-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/law-light.png">
+    <img alt="The formula rate = ETAS × exp(1.18 · N(3 y) / N(12 y)), drawn as the factor it puts on ETAS: 1 where a cell's activity is all old, 1.3 where it has been steady for 12 years, 2.6 where all of it is recent. Right: formulas keep 84 percent of the network's gain over ETAS on two held-out sequences, one constant factor 61 percent. The leak check: +0.30 bits per quake as trained, +0.28 trained as if the data ended a year earlier, −1.43 trained on answers dealt to the wrong days." src="docs/assets/law-dark.png" width="100%">
+  </picture>
+</p>
+
+A network that beats ETAS could have learned something about quakes, or memorised central Italy. One way
+to tell: squeeze it into a formula. If what it adds to ETAS is a rule, ten terms should hold most of it on
+years neither ever saw. If it's memory, nothing short will.
+
+Symbolic regression (PySR) searched formulas over the same fading quake counters the Field reads, fitted
+to the Field's own corrections on the training years. The answers are short: two to four terms keep 89%
+of its gain on the Apennines 2016-17, one or two keep 78% on L'Aquila 2009. That's CB-26, **0.84 ± 0.05**.
+
+The floor is humbling, though. One constant, ETAS times 1.5 everywhere (2.1 for L'Aquila), keeps 61%:
+most of what the Field adds on these two tests is that ETAS expects too few quakes inside a big
+sequence. The formulas are the rest, and they're what holds on the quiet training years, where the
+constant loses.
+The shortest says: compare a cell's last 3 years with its last 12, and raise ETAS where the recent part
+is bigger. All six formulas lower ETAS where the last 12 years were busy, which fits a known flaw: ETAS
+takes the long tails of old sequences for background (van der Elst, 2017).
+
+Before trusting any of it, the leak check. Trained as if the data ended a year earlier, the gain is
+nearly the same (+0.28 against +0.30, two seeds). Trained on the right inputs with every day's answers
+dealt to a different day, it falls to −1.43 bits per quake, far below ETAS: without time, the network
+learns the wrong lesson. The gain reads time.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -519,7 +550,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
-| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (2 of 5 parts in: the stress exam CB-23, the migration exam CB-24, the physics floor) | latent variables, AlphaFold's pair representation |
+| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (5 of 9 parts in: the stress exam CB-23, the migration exam CB-24, the physics floor, four blocks that lost, the leak audit and the distilled law CB-26) | latent variables, AlphaFold's pair representation |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
 | ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |

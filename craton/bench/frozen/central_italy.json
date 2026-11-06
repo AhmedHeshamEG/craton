@@ -1074,6 +1074,19 @@
           "days_to_last_scored": 64.59
         }
       }
+    },
+    "CB-26": {
+      "name": "Distilled law",
+      "metric": "share of the network's held-out gain over ETAS a <=10-term formula keeps",
+      "direction": "higher",
+      "fingerprint": "21c32f5796ebed83aecb68f6ac6f82d6443af8f32f9a374560a2e67bbe09d751",
+      "files": {},
+      "summary": {
+        "sources": [
+          "CB-02",
+          "CB-03"
+        ]
+      }
     }
   }
 }

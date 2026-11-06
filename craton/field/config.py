@@ -131,6 +131,22 @@ class FieldCamera(_Strict):
     )
 
 
+class FieldAudit(_Strict):
+    """The leak audit (P9e): controls that must behave a known way if nothing leaks. Never a
+    forecaster for the board; only the ablation scripts read these configs."""
+
+    cut: str | None = Field(
+        default=None,
+        description="Train (ETAS's fit too) as if the split ended here, earlier than its own "
+        "cut; the test window stays the task's.",
+    )
+    shuffle_answers: bool = Field(
+        default=False,
+        description="Hand every training day another day's answers (whole days, one fixed "
+        "permutation per member seed): a Field that still gains learned no rule in time.",
+    )
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -143,6 +159,7 @@ class FieldConfig(_Strict):
     hidden: FieldHidden | None = None
     wiring: FieldWiring | None = None
     camera: FieldCamera | None = None
+    audit: FieldAudit | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -155,9 +172,9 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 def field_hash(config: FieldConfig) -> str:
     dump = config.model_dump(mode="json")
-    for later in ("world", "curriculum", "planets", "hidden", "wiring", "camera"):
+    for later in ("world", "curriculum", "planets", "hidden", "wiring", "camera", "audit"):
         if dump.get(later) is None:
-            # a config from before P8d / P8f / P9c / P9d keeps its hash and checkpoints
+            # a config from before P8d / P8f / P9c / P9d / P9e keeps its hash and checkpoints
             dump.pop(later, None)
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

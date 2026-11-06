@@ -527,8 +527,10 @@ Built in parts (D-106), the tests first: **P9a** CB-23 and its floors · **P9b**
 **P9c** the hidden-state layer · **P9d** the wiring and the camera. Four blocks on the catalogue alone lost,
 and the Field's CB-24 gain stops at Italy's border, so the rest of P9 aims at three tests of understanding,
 each graded on a truth the model never sees (D-116):
-- **P9e** the leak audit (cut moved back; a time-shuffled control must lose its gain) and the first
-  formula: symbolic regression on today's Field (CB-26, moved here from P14)
+- **P9e** ✓ the leak audit (cut moved back; a time-shuffled control must lose its gain) and the first
+  formula: symbolic regression on today's Field (CB-26, moved here from P14). Done 2026-11-05: the
+  earlier cut keeps nearly all the gain (+0.28 vs +0.30), shuffled days lose it (−1.43); formulas of
+  1-4 terms keep 0.84 of the gain on held-out time, one constant factor 0.61 (D-119 … D-121)
 - **P9f** the stress meter: forecasts only through Dieterich's rate-and-state law, so the hidden layer
   is a stress history; graded on the physics planet's planted stress (CB-33)
 - **P9g** the pressure truth: the same layer against Groningen's reservoir pressure (CB-31)

@@ -93,6 +93,14 @@ What the model's pretraining run cost on the RTX 2060: model FLOPs utilisation, 
 - **Fingerprint:** `4225fb37a25e9adb`
 - **Test data:** context quakes 0 0, 7 8, 30 56, 90 148, 365 874 · test quakes 1,307 · largest test 4.5
 
+## CB-26 · Distilled law
+
+Does what the network learned fit in a formula? A method that forecasts CB-02 and CB-03 through a Field hands it to symbolic regression (PySR): a formula of at most ten added terms over the same counters the network reads is fitted to the network's correction to ETAS on the training years, picked on the training split's own validation days, then forecasts each test window the network's way, ETAS times e^formula. The number is the share of the network's gain over ETAS the formula keeps there, mean over CB-02 and CB-03: 1 is as good as the network, 0 is ETAS. No new test data: the windows and quakes are CB-02's and CB-03's. The formulas themselves are in `results/laws/`. Floor: `law_constant`, the same search cut to one node (a constant factor on ETAS).
+
+- **Metric:** share of the network's held-out gain over ETAS a <=10-term formula keeps (higher is better)
+- **Fingerprint:** `21c32f5796ebed83`
+- **Test data:** sources ['CB-02', 'CB-03']
+
 ## CB-20 · Apennines, enhanced inputs
 
 CB-02 again, the same days and the same scored quakes, but every forecast reads its history from INGV's catalogue plus every quake of Tan et al.'s machine-learning catalogue (2016-17) that INGV doesn't have, moved onto INGV's magnitude scale by a quantile map fitted on matched quakes below M3. The machine-learning catalogue was relocated with hindsight, so it gets its own task. CB-20 minus CB-02 is what the better catalogue is worth to a method.
