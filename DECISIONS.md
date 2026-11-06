@@ -2616,3 +2616,20 @@ regression fitted before the test, and the stack length chosen on the reference 
 
 **Rejected.** Single-station dv/v as the instrument. Calling the Z-Z dip a detection, or the
 nine-component drop one before the seasonal term is fitted.
+
+### D-139 · 2026-11-06 · P10a — A day quieter than the quietest Earth is a dead channel
+
+Central Italy's first build held about 800 station-day-components 30-60 dB below Peterson's (1993)
+New Low Noise Model in some band: NRCA from 18 January 2017 (its raw counts go flat), long stretches
+at TERO, some ASSB days. Both are Trillium 40 s sensors, so the gain isn't the cause. A real sensor
+can't record less than the ground does, and a model would read these as the calmest days on record.
+
+The adapter now rejects a day whose median power is more than 10 dB below the NLNM's minimum in any
+band (`below_low_noise_model`; floors −183.2, −173.5, −160.4 dB). Central Italy: 551 days rejected,
+33,572 tokens left. L'Aquila: none, unchanged. The 1st percentile of what's kept is −155 dB in the
+two faster bands, so the margin leaves real quiet days alone.
+
+**Rejected.** A fixed floor per station (needs a model of every site). Keeping the days and flagging
+them (the token would still say "quiet"). Also checked: the quiet Amatrice median and the loud 22-23
+August 2016 aren't a time bug. The raw hours show the shock as spikes on the 24th, and the catalogue
+has no quake above M2 on the 22nd or 23rd.

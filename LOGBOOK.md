@@ -1108,3 +1108,45 @@ Surprises / problems:
 Decisions: D-132 … D-136.
 
 Next: P10, listening: seismic noise power and dv/v as instruments.
+
+## 2026-11-06 — P10a — The ear
+
+TLDR: Craton can listen now. Any FDSN data centre's continuous 1 Hz recordings become one token per
+station, day and component: how loudly the ground hummed in three bands, as the median of the day's
+hours. L'Aquila (7 stations, 2008-10) is 11,906 tokens, central Italy (14 stations, 2015-18) 33,572.
+The fast band rises ~20 dB on L'Aquila's shock day and after Visso and Norcia, and is back within
+a week. The loudest days are
+weather (14 Jan 2009, Storm Vaia on 30 Oct 2018), not quakes. dv/v at 1 Hz was spiked: all nine
+component pairs give 0.06% honest scatter and a 2-3σ drop at L'Aquila, with a seasonal wander P10b
+must fit out.
+
+Built:
+- Token Spec 1.4.0 (`seismic_noise_power`, unit `dB[(m/s2)2/Hz]`); frozen
+- `craton/adapters/waveforms.py` (FDSN station + dataselect, one station-month per request, four in
+  flight, empty months remembered), `craton/adapters/noise.py` (pymseed decode with per-record
+  fallback for v2 and v3, 1 Hz day grid, GPU hourly PSD, median of hours, dead-channel reject)
+- regions `laquila_noise` (snapshot `da37464db905627a`), `central_italy_noise` (`57e2d2b502ed3e74`)
+- `NoiseCollector` in the health report and the scoreboard's data line; data card; lesson P10a;
+  `tests/test_noise.py` (15)
+
+Scores:
+- L'Aquila: 152 station-months, 2.1 GB; rejects too_few_hours 1,579, no_channel_epoch 145,
+  mixed_sample_rates 3, unreadable records 3,149 (Jun-Sep 2008, three stations)
+- central Italy: 443 station-months with data of 650, 6.1 GB; rejects too_few_hours 6,162,
+  below_low_noise_model 551, value_range 26, no_channel_epoch 3
+- secondary band median −131.8 dB (L'Aquila), −132.4 dB (central Italy)
+- 0.3-0.45 Hz on 6 Apr 2009: FAGN −137 → −118, AQU −139 → −115; Visso/Norcia +15-20 dB for a week;
+  Amatrice: the median barely moves
+- dv/v spike (D-138), nine components, 10-day stack: 0.062% out of sample, drop +0.07% → −0.11%
+
+Surprises / problems:
+- Both noise regions saved their station table as "stations", so central Italy fetched L'Aquila's.
+  The label now carries a hash of the station URL.
+- One INGV record says 10^9 ns; libmseed refused the whole month. Now one record is lost, not 30 days.
+- ~800 days quieter than the quietest Earth: dead channels (NRCA from Jan 2017, TERO). Rejected (D-139).
+- The 22-23 Aug 2016 loudness looked like a two-day time shift around Amatrice. It's weather: raw
+  hours show the shock on the 24th and the catalogue has nothing above M2 on those days.
+
+Decisions: D-137, D-138, D-139.
+
+Next: P10b, dv/v as an instrument (nine components, seasonal regression) and CB-28.
