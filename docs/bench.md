@@ -285,6 +285,13 @@ Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cel
 
 Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
 
+## CB-32 · Unseen-region forecast
+
+Does the model work where it never trained? Each of the four regions the world Field learns from (central Italy, California, Japan, New Zealand) is left out in turn: the model is trained again on the other three, with the same 2007 cut, and forecasts the left-out region's sequences: central Italy's 2016-17 and 2009 windows (CB-02's grid and splits) and CB-22's two seen sequences per region (same boxes, windows and quakes). The number is the gain over ETAS fitted on each box's own past, in bits per quake, mean of the four regions. Methods that don't train on regions answer as they always do; a model must answer through the fold that never read the region.
+
+- **Metric:** bits per quake above ETAS fitted there, by a model that never read the region (higher is better)
+- **Fingerprint:** `41e6c7b3688246e6`
+
 ## Add a method
 
 Implement the task's protocol (`MaskedPredictor`, `Forecaster`, `GapFiller` or `EfficiencyReport` in `craton/bench/tasks.py`), register it with `register_method`, and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet --accept` puts it on the scoreboard if nothing got worse.

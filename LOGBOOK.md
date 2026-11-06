@@ -1009,3 +1009,47 @@ Surprises / problems:
 Decisions: D-125 … D-128.
 
 Next: P9h, dimensionless inputs trained on every region, CB-32 leave-one-region-out.
+
+## 2026-11-06 — P9h — A region it never read
+
+TLDR: CB-32 joins the board. The world Field, trained four times without one of its regions, beats
+ETAS fitted on the left-out region in all four, on every sequence and every seed: +0.336 bits per
+quake on average, against +0.065 for the best floor. Inputs with no units (ratios to ETAS, Omori
+time, rupture lengths) help central Italy and California, hurt Japan and New Zealand on every seed,
+and lose on the mean (+0.304). Not kept.
+
+Built:
+- CB-32 `craton/bench/unseen.py` (four folds, CB-02/CB-03 windows for central Italy, CB-22's
+  sequences for the rest), frozen; `unseen_forecaster` on craton-mini; bench card
+- `WorldField.holdout` (a fold's pool leaves the region's tiles out)
+- `craton/field/dimless.py`: `DimlessFieldNet`, `rupture_memory`, `omori_shift`; `dimless:` config
+  section; `configs/field/world_dimless.yaml` (v1), `world_dimless2.yaml` (v2, the anchor);
+  `tests/test_dimless.py`
+- `scripts/ablations/unseen_regions.py`, `scripts/ablations/dimless.py` →
+  `results/ablation/dimless.json`, `dimless_v1_seed0.json`
+- `docs/assets/unseen-regions-*.png` (`scripts/figures/unseen.py`); README section and credits;
+  lesson P9h
+
+Scores:
+- CB-32 (new): craton-mini +0.336 ± 0.041 (seeds +0.294 / +0.337 / +0.375); central Italy +0.30,
+  California +0.47, Japan +0.40, New Zealand +0.17; floors `etas_local_alpha` +0.065,
+  `etas_incomplete` +0.057, `etas_aniso` +0.045, CRS −1.199, Poisson −7.395
+- dimless v2, 3 seeds: CB-32 +0.304 ± 0.013 (central Italy +0.19 over the world Field, California
+  +0.11, Japan −0.28, New Zealand −0.14, each sign on every seed); CB-22 +0.339 against +0.361
+- v1, seed 0 only: CB-32 +0.317 against +0.294; Tohoku −0.35 against +0.42
+- the board: CB-32 added with its floors, everything else unchanged (ratchet pass)
+
+Surprises / problems:
+- Leaving a region out costs almost nothing: California and New Zealand score about what they score
+  when seen (CB-22), Japan a tenth of a bit less. Central Italy is the exception; there the refit
+  floor (+0.44) beats the fold (+0.30).
+- v1 lost Tohoku on *how many*. The fix (v2's anchor) was found by reading a test sequence, said in
+  D-130; it did not fix Tohoku, and nothing more was tuned.
+- Training was bound by the disk: the 8 GB pool of days sat on a spinning drive. Moved to an SSD
+  (about five times faster an epoch).
+- A pool directory named after the config would have rebuilt the pool for every variant;
+  `dimless.pool_of` reads `world`'s.
+
+Decisions: D-129 … D-131.
+
+Next: P9i, direction from focal mechanisms (CB-34), the figure, the referee, v0.10.0.

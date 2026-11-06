@@ -44,8 +44,19 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
   every day on the last 30 days of quakes, after Lombardi & Marzocchi (2010). CB-02 +0.297 over
   ETAS (craton-mini +0.303), CB-03 +0.588 (+1.165). Ablation `scripts/ablations/local_alpha.py`.
 - Figures `docs/assets/local-alpha-{dark,light}.png` and `docs/assets/pressure-{dark,light}.png`.
+- **CB-32, regions it never read (P9h, D-129).** The world Field trained four times, each without
+  one of central Italy, California, Japan and New Zealand, scored on that region's sequences
+  against ETAS fitted there (`craton/bench/unseen.py`, `scripts/ablations/unseen_regions.py`).
+  craton-mini +0.336 ± 0.041 bits per quake, best floor `etas_local_alpha` +0.065.
+- **Dimensionless inputs (P9h, D-130, D-131).** `dimless:` in Field configs
+  (`craton/field/dimless.py`): counters over ETAS's expectation, Omori-time lifetimes, a
+  rupture-length spread (Wells & Coppersmith 1994) and, in v2, the box's rate over its long-run
+  rate. `world_dimless` and `world_dimless2` are ablations, not adopted (CB-32 +0.304, CB-22
+  +0.339 against +0.336 and +0.361; `scripts/ablations/dimless.py`).
+- Figure `docs/assets/unseen-regions-{dark,light}.png` (`scripts/figures/unseen.py`).
 
 ### Changed
+- World Field configs can read another config's pool of days (`dimless.pool_of`).
 - ETAS's fit is cached by its cut as well as its task and seed.
 - Benchmark cards print list values in a task's frozen summary.
 

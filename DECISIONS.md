@@ -2361,3 +2361,27 @@ further change is made from test sequences; v2 is scored on three seeds as it is
 
 **Rejected.** Dropping v1's result. Tuning further on Tohoku. Rebuilding the pool (the inputs are
 computed from it; rupture memory is a 2-minute sidecar, `rupture.npy`).
+
+### D-131 · 2026-11-06 · P9 — Dimensionless inputs: not adopted
+
+v2 (`world_dimless2`) against the world Field, same pool, members and seeds, paired by seed
+(`scripts/ablations/dimless.py`, `results/ablation/dimless.json`):
+
+| | world | dimless v2 | dimless − world, per seed |
+|---|---|---|---|
+| CB-32 (leave one region out) | +0.336 ± 0.033 | +0.304 ± 0.013 | −0.001, −0.039, −0.053 |
+| CB-22 (seen and zero-shot) | +0.361 ± 0.068 | +0.339 ± 0.015 | −0.025, +0.080, −0.121 |
+
+It loses on both primaries. The split is the finding: it gains in central Italy (+0.19 mean over
+seeds, on every seed) and California (+0.11, every seed), and in Chile on CB-22 (+0.13); it loses
+in Japan (−0.28, every seed) and New Zealand (−0.14, every seed), and on CB-22's Turkey and Alaska.
+The reference clock (`c_ref_days`) is central Italy's; what the ratios remove helps the regions
+that look like it and hurts the ones that don't, so the units were carrying information the network
+used. The seed spread is a third of the world Field's. Maule (not in CB-22's means, D-091): world
+−9 to −20 bits per quake, dimless +9.3 to +9.7.
+
+**Decided.** craton-mini keeps `world` as its world config; `world_dimless2` stays in the repo as
+an ablation. CB-29 (`craton/bench/npp.py`) would have needed it too and is left as it is.
+
+**Rejected.** A v3 tuned on these numbers (they are test numbers). Keeping only the ratios that
+helped Italy and California, for the same reason. Adopting v2 for its smaller seed spread.
