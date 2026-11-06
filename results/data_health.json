@@ -755,6 +755,55 @@
         "2017-08-16T00:00:00Z"
       ]
     },
+    "central_italy_noise": {
+      "adapters": {
+        "seismic_noise_power": {
+          "files": 4,
+          "health": {
+            "seismic_noise_power": {
+              "first": "2015-06-01",
+              "last": "2018-12-31",
+              "loudest_short_band": {
+                "day": "2018-10-30",
+                "short_db": -86.3,
+                "station": "IV.OFFI"
+              },
+              "median_days_per_station": 1074,
+              "median_secondary_db": -132.4,
+              "per_year": {
+                "2015": 6209,
+                "2016": 9263,
+                "2017": 9898,
+                "2018": 8202
+              },
+              "stations": 14,
+              "tokens": 33572
+            }
+          },
+          "raw_bytes": 6070570156,
+          "raw_files": 443,
+          "rejects": {
+            "below_low_noise_model": 551,
+            "invalid:value_range": 26,
+            "no_channel_epoch": 3,
+            "too_few_hours": 6162
+          },
+          "tokens": 33572,
+          "version": "1.0.0"
+        }
+      },
+      "box": {
+        "lat_max": 43.4,
+        "lat_min": 42.2,
+        "lon_max": 14.0,
+        "lon_min": 12.5
+      },
+      "snapshot": "57e2d2b502ed3e74",
+      "window": [
+        "2015-06-01T00:00:00Z",
+        "2019-01-01T00:00:00Z"
+      ]
+    },
     "chile": {
       "adapters": {
         "fdsn_catalog": {

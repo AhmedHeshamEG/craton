@@ -12,6 +12,8 @@ one token per station, day and component:
        three bands
     4. the day's value = the median over its hours, in dB, so a quake that shook a few hours
        does not move it; the uncertainty = the spread of the hours over sqrt(hours)
+    5. a day quieter than the quietest Earth (Peterson's NLNM, minus 10 dB) is a dead channel
+       and is rejected
 
 It is McNamara & Buland's (2004) recipe at one window per hour and three bands instead of the
 full spectrum, which is what a forecaster can read. Nothing here knows a place: the region
@@ -55,6 +57,25 @@ MIN_HOURS = 8
 """A day needs a third of its hours complete, or it says nothing (shock days lose many)."""
 MIN_SIGMA_DB = 0.1
 COMPONENTS = ("Z", "N", "E")
+NLNM: tuple[tuple[float, float, float], ...] = (
+    (0.1, -162.36, 5.64),
+    (0.17, -166.7, 0.0),
+    (0.4, -170.0, -8.3),
+    (0.8, -166.4, 28.9),
+    (1.24, -168.6, 52.48),
+    (2.4, -159.98, 29.81),
+    (4.3, -141.1, 0.0),
+    (5.0, -71.36, -99.77),
+    (6.0, -97.26, -66.49),
+    (10.0, -132.18, -31.57),
+    (12.0, -205.27, 36.16),
+    (15.6, -37.65, -104.33),
+    (21.9, -114.37, -47.1),
+    (31.6, -160.58, -16.28),
+)
+"""Peterson's (1993) New Low Noise Model: from period P (s) on, A + B·log10(P) dB."""
+BELOW_NLNM_DB = 10.0
+"""A day this far under the quietest Earth in any band is a dead channel, not a quiet one."""
 
 FloatArray = np.ndarray[Any, np.dtype[np.float64]]
 
@@ -229,6 +250,23 @@ def summarise(hourly_db: FloatArray) -> tuple[FloatArray, FloatArray]:
     return med, sigma
 
 
+def nlnm_db(period_s: float) -> float:
+    """Peterson's New Low Noise Model, acceleration dB re 1 (m/s^2)^2/Hz, 0.1-100 s."""
+    if not NLNM[0][0] <= period_s <= 100.0:
+        raise ValueError(f"NLNM is defined for 0.1-100 s, not {period_s}")
+    a, b = next((a, b) for p0, a, b in reversed(NLNM) if period_s >= p0)
+    return a + b * math.log10(period_s)
+
+
+def band_floors_db(bands: tuple[tuple[float, float], ...] = BANDS) -> FloatArray:
+    """Per band, the lowest power a working sensor can report: NLNM's minimum minus 10 dB."""
+    out = []
+    for lo, hi in bands:
+        periods = 1.0 / np.linspace(lo, hi, 201)[1:]
+        out.append(min(nlnm_db(float(p)) for p in periods) - BELOW_NLNM_DB)
+    return np.array(out)
+
+
 def component_of(channel: str) -> str | None:
     c = channel[-1:].upper()
     return c if c in COMPONENTS else None
@@ -315,6 +353,8 @@ class SeismicNoisePower(Adapter):
                 "is dropped and counted; the hours it held then count as incomplete.",
                 "Hours with any missing sample are dropped; a day with fewer than 8 hours is "
                 "left out.",
+                "A day more than 10 dB below Peterson's New Low Noise Model in any band is a "
+                "dead or flat channel (it happens for weeks at a time) and is left out.",
             ),
             adapter_version=self.version,
         )
@@ -356,6 +396,7 @@ class SeismicNoisePower(Adapter):
         network, station = f.label.split(".")[:2]
         mine = [c for c in channels if c.network == network and c.station == station]
         by_channel: dict[tuple[str, str], list[Segment]] = {}
+        floors = band_floors_db()
         segments, bad = decode(ctx.use(f))
         if bad:
             ctx.reject("unreadable_record", bad)
@@ -386,6 +427,9 @@ class SeismicNoisePower(Adapter):
                     ctx.reject("too_few_hours")
                     continue
                 value, sigma = summarise(band_power_db(hours, epoch.scale, rate))
+                if (value < floors).any():
+                    ctx.reject("below_low_noise_model")
+                    continue
                 try:
                     yield validate_token(
                         self._token(epoch, comp, day0, value, sigma, hours.shape[0], f, opts)

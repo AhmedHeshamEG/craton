@@ -15,10 +15,12 @@ from craton.adapters.http import HttpError
 from craton.adapters.noise import (
     BANDS,
     Segment,
+    band_floors_db,
     band_power_db,
     complete_hours,
     day_grid,
     decode,
+    nlnm_db,
     summarise,
 )
 from craton.adapters.region import Region
@@ -216,6 +218,31 @@ def test_tokens_one_per_day_and_component_and_short_days_refused(tmp_path: Path)
     assert tok.time == to_seconds("2020-01-01T00:00:00Z")
     assert -140 < tok.value[1] < -100
     assert ctx.rejects["too_few_hours"] >= 1
+
+
+def test_the_quietest_earth_is_peterson_s() -> None:
+    assert nlnm_db(10.0) == pytest.approx(-163.75, abs=0.01)
+    assert nlnm_db(1.0) == pytest.approx(-166.4, abs=0.01)
+    assert nlnm_db(4.5) == pytest.approx(-141.1, abs=0.01)
+    with pytest.raises(ValueError, match="NLNM"):
+        nlnm_db(0.05)
+    floors = band_floors_db()
+    assert floors.tolist() == pytest.approx([-183.2, -173.5, -160.4], abs=0.1)
+
+
+def test_a_dead_channel_is_not_a_quiet_day(tmp_path: Path) -> None:
+    raw = RawStore(tmp_path)
+    r = region()
+    label = stations_label(r.sources[SOURCE] | {"channels": "LH?"}, r)
+    raw.put(SOURCE, label, "u", STATIONS.encode(), "2026-11-06", ".txt")
+    flat = np.zeros(86_400, dtype=np.int32)
+    flat[::600] = 1  # a digitiser ticking over, no ground in it
+    data = mseed("FDSN:XX_ABC__L_H_Z", flat, "2020-01-01T00:00:00.000000Z")
+    raw.put(SOURCE, "XX.ABC.2020-01", "u", data, "2026-11-06", ".mseed")
+    ctx = BuildContext(region=r, raw=raw)
+    toks = [t for y in get_adapter("seismic_noise_power").tokens(ctx) for t in y]
+    assert toks == []
+    assert ctx.rejects["below_low_noise_model"] == 1
 
 
 @pytest.mark.parametrize("version", [2, 3])

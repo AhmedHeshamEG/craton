@@ -297,6 +297,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `zenodo_catalog` | 866,295 | 2016-08-15 → 2017-08-15 | 33,755 (not_kept 20,943, invalid:not_finite 7,197) | largest ML 6.03 on 2016-08-24; ML 866,295; completeness ML 0.3 in 2016; longest quiet spell 0.14 days |
 
+### central_italy_noise · snapshot `57e2d2b502ed3e74` · 2015-06-01 → 2019-01-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `seismic_noise_power` | 33,572 | 2015-06-01 → 2018-12-31 | 6,742 (too_few_hours 6,162, below_low_noise_model 551) | 14 stations, median 1,074 days each; ocean hum (0.1-0.3 Hz, vertical) median -132.4 dB; loudest day 2018-10-30 at IV.OFFI, -86.3 dB |
+
 ### chile · snapshot `16c9638835d229d7` · 1985-01-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |

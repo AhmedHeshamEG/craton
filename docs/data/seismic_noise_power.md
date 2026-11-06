@@ -49,3 +49,4 @@ Derived from how much the day's hours disagree. It says how well the day's level
 - The primary and secondary bands are mostly the ocean: storms in the Mediterranean and the Atlantic move them by 10-20 dB in winter.
 - A record libmseed cannot read (one INGV month holds a timestamp of 10^9 ns) is dropped and counted; the hours it held then count as incomplete.
 - Hours with any missing sample are dropped; a day with fewer than 8 hours is left out.
+- A day more than 10 dB below Peterson's New Low Noise Model in any band is a dead or flat channel (it happens for weeks at a time) and is left out.
