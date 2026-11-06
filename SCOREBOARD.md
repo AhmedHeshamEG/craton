@@ -51,7 +51,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-31 | Groningen pressure | −0.4235 ± 0.0089 ↑ · craton-mini | −0.2271 ± 0 ↑ · quake_density | P9 |
 | CB-32 | Unseen-region forecast | 0.3357 ± 0.041 ↑ · craton-mini | 0.06522 ± 7.4e−06 ↑ · etas_local_alpha | P9 |
 | CB-33 | Planted stress | 0.448 ± 0.093 ↑ · craton-mini | 0.395 ± 0.11 ↑ · quake_density | P9 |
-| CB-34 | Stress from mechanisms | · | · | P9 |
+| CB-34 | Stress from mechanisms | 31.32 ± 0.95 ↓ · craton-mini | 27.86 ± 0 ↓ · stress_interpolation | P9 |
 
 ## The building
 
@@ -175,11 +175,20 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-33 | etas_aniso | 0.3475 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
 | CB-33 | crs | 0.2484 ± 0.19 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
 | CB-33 | poisson | 0.1851 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
+| CB-34 | stress_interpolation | 27.86 ± 0 ↓ | degrees between inferred SHmax and non-quake World Stress Map records, mean over cells, then over regions |  |
+| CB-34 | stress_regional | 29.81 ± 0 ↓ | degrees between inferred SHmax and non-quake World Stress Map records, mean over cells, then over regions |  |
+| CB-34 | mechanism_kostrov | 33.36 ± 0 ↓ | degrees between inferred SHmax and non-quake World Stress Map records, mean over cells, then over regions |  |
+| CB-34 | quake_lineation | 47.9 ± 0 ↓ | degrees between inferred SHmax and non-quake World Stress Map records, mean over cells, then over regions |  |
 
 ## History
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-06 09:32 | `20261106-093225-craton-mini` | craton-mini | 1 new, 22 same |
+| 2026-11-06 09:32 | `20261106-093126-mechanism-kostrov` | mechanism_kostrov (baseline) | 1 new |
+| 2026-11-06 09:32 | `20261106-092924-quake-lineation` | quake_lineation (baseline) | 1 new, 1 same |
+| 2026-11-06 09:32 | `20261106-092906-stress-interpolation` | stress_interpolation (baseline) | 1 new, 1 same |
+| 2026-11-06 09:32 | `20261106-092848-stress-regional` | stress_regional (baseline) | 1 new, 1 same |
 | 2026-11-06 04:11 | `20261106-041034-craton-mini` | craton-mini | 1 new, 21 same |
 | 2026-11-06 04:11 | `20261105-233201-crs` | crs (baseline) | 1 new, 11 same |
 | 2026-11-06 04:11 | `20261105-225630-etas-local-alpha` | etas_local_alpha (baseline) | 1 new, 11 same |
