@@ -2299,3 +2299,65 @@ The definition was set from the truth alone, before any score (D-125), and is no
 seeing these (as D-091 and D-099 say of theirs). CB-30, where the push is an input, is unchanged.
 
 **Rejected.** Switching the primary number to `static` after seeing these scores. Dropping CB-31.
+
+### D-129 · 2026-11-06 · P9 — CB-32, unseen regions, defined; the world Field barely needs the region it forecasts
+
+CB-22's zero-shot half is three regions on the global network's terms, with nothing to compare
+against: the world Field never had the chance to fail on a region it knows. CB-32
+(`craton/bench/unseen.py`) turns each of the four regions the world Field learns from into a test,
+one at a time: the Field is trained again on the other three (same cut, 2007-01-01; same pool of days,
+the left-out region's tiles unread) and forecasts the left-out region's sequences. Central Italy's are
+CB-02's and CB-03's windows on CB-02's grid and splits; the others are CB-22's two seen sequences per
+region, copied into the task so it stands alone. The number is the gain over ETAS fitted on each box's
+own past (bits per quake from completeness + 1), mean of the four regions. Methods that don't train on
+regions answer as always; a model answers only through the fold that never read the region
+(`unseen_forecaster`), or it is not scored. The design is hydrology's prediction in ungauged basins
+(Kratzert et al. 2019: one network, whole basins held out, k-fold), here with regions for basins.
+
+First numbers, three seeds (`craton bench run craton-mini --tasks CB-32`; folds
+`scripts/ablations/unseen_regions.py world 0 1 2`, ~50 min each):
+
+| | CB-32 | central Italy | California | Japan | New Zealand |
+|---|---|---|---|---|---|
+| craton-mini (fold) | **+0.336 ± 0.041** | +0.299 | +0.466 | +0.405 | +0.173 |
+| craton-mini, region seen (CB-22, CB-02/03 by the Italy Field) | | +0.30 / +1.16 | +0.408 | +0.502 | +0.153 |
+| `etas_local_alpha` (best floor) | +0.065 | | | | |
+| `etas_incomplete` | +0.057 | | | | |
+| `etas_aniso` | +0.045 | | | | |
+| CRS | −1.199 | | | | |
+| Poisson | −7.395 | | | | |
+
+Every sequence is above ETAS on every seed (8 of 8, 3 of 3). Leaving a region out costs almost
+nothing in California and New Zealand (slightly better than seen, within the seed spread) and ~0.1 in
+Japan. Central Italy is one tile of 37 in the pool; without it the world Field gets CB-02 +0.19 and
+CB-03 +0.41, against the Italy Field's +0.30 and +1.16: Italy's own past is worth something there,
+mostly on the 2009 sequence.
+
+**Rejected.** Folds over CB-22's zero-shot regions (they are never trained on: CB-22 already is that
+test). Fewer seeds or members per fold (the board's model is four members, three seeds).
+
+### D-130 · 2026-11-06 · P9 — Dimensionless inputs, v1 and v2
+
+The world Field reads quantities in its regions' units: counters of quakes per cell, ETAS's rate per
+cell and for the box, lifetimes in days, neighbourhoods in km. `world_dimless`
+(`craton/field/dimless.py`) reads only ratios: every counter over what ETAS's rate would put in it,
+ETAS as each cell's share of its box, lifetimes in units of the box's Omori c (a fixed slide along the
+log-spaced bank, P9c's `shift_bank`), and one more spread where each quake counts over a Gaussian half
+its rupture length wide (Wells & Coppersmith 1994, Table 2A, subsurface length, all slip types,
+log10 L = −2.44 + 0.59 M, fitted on M 4.8-8.1: Tohoku's M9 is beyond it).
+Magnitudes were already m − mc (P8d). Multiply a region's rates by any factor and the inputs don't move
+(`tests/test_dimless.py`). Same pool of days, network and training as `world` (`pool_of: world`).
+
+v1, seed 0, CB-32 +0.317 against the world Field's +0.294: central Italy +0.557 (world +0.145),
+California +0.633 (+0.411), but Japan +0.038 (+0.436) and New Zealand +0.043 (+0.185); Tohoku −0.353
+against +0.415 (`results/ablation/dimless_v1_seed0.json`). Split by part, Tohoku's loss is in *how
+many* (−0.19 against +0.73); *where* is slightly better (−0.16 against −0.31). v1 left out a
+dimensionless form of the box's total rate, the input that tells the network how deep into a
+sequence the box is (the signal of D-121's law). **This was found by reading a test sequence.**
+v2 (`world_dimless2`, `anchor: true`) adds that one input, the box's ETAS rate over its own long-run
+rate (its 12-year counter), and nothing else; v1's checkpoints, hash and seed-0 numbers stay. v1's
+seeds 1-2 were not trained. v2's seed 0: CB-32 +0.293, Tohoku −0.302: the anchor did not fix it. No
+further change is made from test sequences; v2 is scored on three seeds as it is (D-131).
+
+**Rejected.** Dropping v1's result. Tuning further on Tohoku. Rebuilding the pool (the inputs are
+computed from it; rupture memory is a 2-minute sidecar, `rupture.npy`).
