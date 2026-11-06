@@ -820,3 +820,46 @@ Surprises / problems:
 Decisions: D-111, D-112.
 
 Next: P9d, the pair representation as Omori attention, and the camera.
+
+## 2026-11-05 — P9d — The wiring and the camera: built, both lose, P9 re-aimed
+
+TLDR: a negative result and a new plan. The wiring (Omori attention that moves ETAS's
+offspring between cells without creating any) and the camera (eyes read off the catalogue,
+the world counted by Horvitz-Thompson) both lose CB-02 on every seed run, so neither is kept
+and the board doesn't move. CB-24 scored through the Field for the first time: it ranks
+tomorrow's next cell better than ETAS (0.155 vs 0.145), but only in Italy; zero-shot it ties
+ETAS exactly. An open pressure truth was found for Groningen. The rest of P9 now aims at
+three tests of understanding (D-116).
+
+Built:
+- `craton/field/wiring.py`: band shares of ETAS's triggered rate (`sources`, `band_kernels`),
+  `WiredFieldNet` (offspring-conserving attention, zero-init query, `pair_matrix`)
+- `craton/field/camera.py`: `completeness_before` (maximum curvature of the last 200 quakes on
+  the GPU), `world_weights`, `band_seen`
+- `craton/field/migrate.py`: `FieldRanker` (any Field or ETAS as a CB-24 ranker, zero-shot
+  outside Italy), `wiring_graph`
+- `KernelCache` in `craton/field/base.py`: ETAS kernel rows cached per quake, CB-24 queries
+  from 26 s to 2 s
+- `FieldNet.encode` / `head` split (behaviour unchanged); optional `wiring:` and `camera:`
+  config sections; `configs/field/wiring.yaml`, `camera.yaml`; `scripts/ablations/wiring_cb24.py`
+- `tests/test_wiring.py`, `tests/test_camera.py`
+
+Scores (paired gain over `mini` on CB-02, bits per quake, seeds 0 / 1):
+- wiring −0.009 / −0.005 (how many −0.004 / −0.004, where −0.005 / −0.000)
+- camera −0.093 / −0.034 (how many −0.038 / −0.030, where −0.054 / −0.004)
+- CB-24 (top 3): ETAS 0.1449; Field 0.1550 / 0.1550 / 0.1531; seen half 0.174 vs 0.194;
+  zero-shot half 0.1156 for both; floors distance 0.0933, history 0.0145
+- the board: unchanged
+
+Surprises / problems:
+- The first wiring cancelled itself: an unnormalised bias plus a learned sink let the Field's
+  correction and the attention saturate in opposite directions. Conserving offspring fixed it.
+- The first camera only weighted quakes below mc, so a blinded catalogue still counted a
+  fifth of the world. Horvitz-Thompson (the quakes above mc stand for the missed ones) passes.
+- The CB-24 ranker hit the timeout silently at 26 s a query; the kernel cache fixed it.
+- ETAS alone, used as a ranker, beats the distance floor by half again.
+- Runs stopped after two seeds: both blocks had already lost on every seed run.
+
+Decisions: D-113 … D-116.
+
+Next: P9e, the leak audit and the first formula (CB-26 on today's Field).

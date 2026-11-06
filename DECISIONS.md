@@ -1874,3 +1874,157 @@ can only say what the inputs already say is a regulariser at best.
 (that is fitting the ablation to the test). Combining the two (each lost alone on the same
 task). These stay open for P9d, where the wiring (Omori attention) gives the angle and the
 clock something the round memory can't already express.
+
+### D-113 · 2026-11-05 · P9 — The wiring is Omori attention that conserves offspring
+
+Step 2 of P9 asks which cells excite which. ETAS already answers with one round kernel per
+quake. The wiring (`craton/field/wiring.py`, optional `wiring:` config section, `configs/field/wiring.yaml`)
+keeps ETAS's count of offspring per source and learns only where they go:
+
+- ETAS's triggered rate is split by source cell and by magnitude band (five bands, 0.5 to 4.5
+  above mc), each band's kernel taken from a parent at the cell centre. A test holds that the
+  shares add back up to `etas_daily` (catalogue moved to cell centres, 10⁻⁴) and that
+  off-grid parents are carried exactly.
+- A learned bias G = q·k/√d between source and target cell, bounded to ±log 4, multiplies the
+  band kernel. Each source's row is renormalised so it still sends exactly ETAS's offspring:
+  the attention moves quakes between targets and never creates them.
+- The output is the log ratio of the rewired rate to ETAS's rate (background and off-grid
+  parents included), added to the Field's correction. The query starts at zero, so the
+  untrained block is the P6 Field bit for bit (tested). Softmax-like sums run in fp32 with
+  autocast off: fp16 underflows the shares.
+- `pair_matrix` gives the learned declustering per day, rows summing to one with the background
+  as the last column (Zhuang 2002). `craton/field/migrate.py` reads it for CB-24.
+
+**First version, rejected by its own training curve.** An unnormalised bias plus a learned
+sink (StreamingLLM's attention sink as the background μ) let the Field's correction and the
+attention push to opposite limits and cancel: the pair collapsed back to ETAS with large
+weights inside. Conserving offspring removes that freedom; the sink became ETAS's own
+background, not a learned token.
+
+**Rejected.** Attention over individual past quakes (one token per quake: memory grows with the
+catalogue, and the 1,050 cells already pool them). A learned productivity (ETAS's α already
+fits it, and P9c showed freedom the Field can already express adds noise).
+
+### D-114 · 2026-11-05 · P9 — The camera: eyes read off the catalogue, the world counted by Horvitz-Thompson
+
+The plan's camera split the head into the world and the eyes, trained with P8f's blind twins.
+Built without the twins (`craton/field/camera.py`, optional `camera:` section,
+`configs/field/camera.yaml`):
+
+- **Eyes.** Completeness at each moment is the maximum-curvature magnitude of the 200 quakes
+  strictly before it, plus 0.2 (Woessner & Wiemer 2005), computed on the GPU from cumulative
+  histograms. Nothing is fitted and nothing after the moment is read (tested). On real data it
+  tracks what is known: INGV 2.5 in 2000, 1.1 in 2012, 2.1 three days after Norcia against
+  1.3 for the enhanced union catalogue.
+- **World.** Each quake at or above max(mc, floor) counts 10^(b·min(mc − floor, 1)); quakes
+  between the floor and mc count zero, because the ones above already stand for them. This is
+  Horvitz-Thompson counting with the eyes as the inclusion probability. Only the memory's count
+  counters use it; the productivity counters ride on big quakes every network sees. A test
+  holds that a blinded and a sharp copy of one catalogue count the same world (25%).
+- **Answers through the eyes.** Training targets are still one network's, so the M2–3 rate the
+  Field is graded on is multiplied by the share of that band the eyes saw that day.
+
+**Why no blind twins.** They need the planets curriculum (four to seven hours per seed) and P8f
+showed the curriculum doesn't pay on CB-02/03. The eyes read off the catalogue need no twin.
+
+**Rejected.** Learning the eyes (a learned detection curve is free to absorb real rate changes,
+the double count CB-20 already showed). A window in days (sparse years would get no estimate).
+
+### D-115 · 2026-11-05 · P9 — Neither the wiring nor the camera is kept
+
+Paired against `mini` on CB-02 (bits per quake, higher is better), seeds 0 / 1:
+
+| block | gain | how many | where |
+|---|---|---|---|
+| wiring | −0.009 / −0.005 | −0.004 / −0.004 | −0.005 / −0.000 |
+| camera | −0.093 / −0.034 | −0.038 / −0.030 | −0.054 / −0.004 |
+
+Both lose on every seed run, and a block is kept only if it pays on every seed, so the runs
+were stopped before seed 2 and the other tasks; neither result can turn into a keep. The code
+stays, off by default; `mini` keeps hash b99e49ae. Results:
+`results/ablation/wiring_on_italy.json`, `camera_on_italy.json`. The wiring also trains 2.7×
+slower (7,221 s against 2,655 s for seed 0).
+
+**Why, as far as the numbers allow.** The wiring can only move offspring between cells that the
+Field's memory already compares, the same lesson as P9c's steer. The camera loses mostly on how
+many: CB-02 is scored by INGV's own eyes, so a forecast of the world has to be pushed back
+through an estimate of those eyes, and on the morning of the Norcia mainshock the 200-quake
+window still lagged the network's real blindness by hours. The old Field learned INGV's blindness
+directly, and on a test graded by the same blindness that is the better bet. The camera's
+target, CB-20's double count, needs a test graded on the world, which none of the Italian
+tasks is.
+
+**CB-24 through the Field** (`scripts/ablations/wiring_cb24.py`, `results/ablation/wiring_on_cb24.json`).
+Tomorrow's M3+ rate as a ranker, from the moment of the last lighting, no CB-24 training:
+ETAS 0.1449 on every seed; the P6 Field 0.1550 / 0.1550 / 0.1531. Seen half (Amatrice,
+L'Aquila): ETAS 0.174, Field 0.194 / 0.194 / 0.191. Zero-shot half: both 0.1156, identical.
+Floors: distance only 0.0933, quake history 0.0145. So the Field knows where better than ETAS
+only in the region it trained on; elsewhere it adds nothing. The wired ranker was not scored
+(no kept checkpoint).
+
+**Pressure truth.** Searched again for Italy: no open Vp/Vs grid (Carannante et al. 2013,
+Scafidi & Solarino 2012) and no open CO₂ grid (Chiodini et al. 2004); D-108 stands for Italy.
+One open pressure field does exist, see D-116.
+
+### D-116 · 2026-11-05 · P9 — Three tests of understanding, and P9 rebuilt around them
+
+Four P9 blocks (clock, steer, wiring, camera) and P8f's curriculum all reshaped the same
+catalogue and all lost; the one input that paid on every seed was new data (GPS, P8b). And
+CB-24 shows the Field's gain over ETAS stops at Italy's border. So the rest of P9 aims at three
+tests a forecaster that understands quakes must pass, each with a truth it is never shown:
+
+1. **It works where it never trained.** Inputs made dimensionless (counts over ETAS's
+   expectation, magnitudes above the local mc, distance in rupture lengths, time in Omori
+   units), trained on all regions, scored leaving one region out. **CB-32 Unseen-region
+   forecast**, new. Searched 2026-11-05: no neural forecaster in print is tested zero-shot on a
+   region; the field fine-tunes per region (SafeNet 2025) or trains per catalogue (Xiong et
+   al. 2026).
+2. **Its inside is physical.** A Dieterich bottleneck: the network outputs a stress history per
+   cell and the rate comes only through Dieterich's rate-and-state law, so the hidden layer is
+   stress or the forecast fails. Dieterich, Cayol & Okubo (2000) inverted rates for stress at
+   Kilauea by hand and matched independent estimates; the information is in the catalogue.
+   Graded on a planted truth first (**CB-33 Planted stress**: the physics planet of P8a, whose
+   stress is known exactly), then on a real one: **CB-31 Groningen pressure**, the NAM
+   reservoir pressure on 6,871 cells of 500 m, yearly 1957–2054, open on Zenodo (TNO model
+   chain data, doi:10.5281/zenodo.10245813; years after 2023 are projections and are not
+   used). The bottleneck's stress map against the depletion map at years it never trained on,
+   rank correlation. The file states no licence, so it is downloaded by the adapter and never
+   committed. Direction needs a new input: focal mechanisms (GCMT) feed a second head, graded
+   only on World Stress Map records that are not from quakes (boreholes, fractures,
+   overcoring), **CB-34**, so the answer never reads its own input. CB-23 stays unchanged.
+3. **What it learned fits in a formula.** Symbolic regression on the Field's correction over
+   ETAS (Cranmer et al. 2020: the formula generalised better than the network). CB-26 moves
+   from P14 to P9 and runs first, on today's `mini`: a short formula that keeps most of the
+   gain on held-out time is also evidence that the gain is a rule, not memory. Before it, a
+   leak audit: the cut moved back, and a control trained on time-shuffled days that must lose
+   its gain.
+
+**Rejected.** More blocks on the catalogue alone (five tries, five losses). Grading the
+pressure head on Oklahoma (open injection volumes are yearly per well, too coarse for a map).
+Feeding focal mechanisms into CB-23 (the World Stress Map is partly built from them: a leak).
+
+### D-117 · 2026-11-05 · P9 — Correction to D-116: Groningen's pressure grid is already an input
+
+D-116 presents the NAM reservoir pressure grid as newly found. It is not: P8e already reads
+it (`craton/adapters/gridded.py`, record 10245813) as the pump that forces CB-30's Groningen
+Field. The plan stands with one rule added: a model graded on CB-31 never reads the pressure
+tokens, in training or at test, and the adapter's tokens are excluded from its inputs by
+source, checked by a test. The CB-30 Field that does read them can't be graded on CB-31. CB-31's
+floors stay quake density and the blind CB-30 Field's rate map (the P8e ablation without the
+pump), which read no pressure either.
+
+### D-118 · 2026-11-05 · P9 — The camera on CB-20, its own target: a tie
+
+D-115 stopped the camera before CB-20, the task it was built for (the enhanced catalogue the
+Field double-counts, P8c). Run afterwards, three seeds, paired against `mini` (bits per quake):
+
+| seed | gain | how many | where |
+|---|---|---|---|
+| 0 | +0.005 | +0.041 | −0.036 |
+| 1 | −0.005 | −0.004 | −0.001 |
+| 2 | −0.002 | +0.025 | −0.027 |
+
+A tie within the seed spread. The count improves on two seeds of three, which is the double
+count the camera aims at, and the same seeds give it back in where: the world-weighted
+counters spread weight onto cells whose small quakes the enhanced catalogue already shows. The
+camera stays off; D-115's decision stands. Results added to `results/ablation/camera_on_italy.json`.

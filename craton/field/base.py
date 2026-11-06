@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+import scipy.sparse as sp
 import torch
 
 from craton.bench import etas
@@ -22,6 +23,30 @@ PARENT_BLOCK = 16_384
 DAY_BLOCK = 256
 
 
+class KernelCache:
+    """ETAS's spatial kernel rows, computed once per quake for one fit and grid: a caller
+    that asks again and again about the same history plus a few new quakes (CB-24's
+    rankers) pays for the new ones only."""
+
+    def __init__(self, fit: etas.EtasFit, grid: Grid, proj: etas.Projection) -> None:
+        self.fit, self.grid, self.proj = fit, grid, proj
+        self.index: dict[tuple[float, float, float], int] = {}
+        self.mat = sp.csr_matrix((0, grid.n_cells))
+        self.bands: Any = None
+
+    def rows(self, cat: etas.Catalog) -> sp.csr_matrix:
+        keys = list(zip(cat.x.tolist(), cat.y.tolist(), cat.m.tolist(), strict=True))
+        new = [i for i, k in enumerate(keys) if k not in self.index]
+        if new:
+            more = etas.spatial_matrix(
+                self.fit.params, cat.select(np.asarray(new)), self.fit.mc, self.grid, self.proj
+            )
+            for j, i in enumerate(new):
+                self.index.setdefault(keys[i], self.mat.shape[0] + j)
+            self.mat = sp.vstack([self.mat, more], format="csr")
+        return self.mat[np.asarray([self.index[k] for k in keys], dtype=np.int64)]
+
+
 def etas_daily(
     fit: etas.EtasFit,
     history: etas.Catalog,
@@ -30,6 +55,7 @@ def etas_daily(
     proj: etas.Projection,
     device: torch.device | None = None,
     span: float = 1.0,
+    cache: KernelCache | None = None,
 ) -> FloatArray:
     """(days, cells) ETAS's expected quakes at or above ``fit.mc`` in the ``span`` days from
     each start (one day unless asked), reading only quakes before it. ``day_starts`` in days
@@ -37,7 +63,7 @@ def etas_daily(
     dev = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     pr = fit.params
     parents = history.select(history.m >= fit.mc - 1e-9)
-    smat = etas.spatial_matrix(pr, parents, fit.mc, grid, proj)
+    smat = cache.rows(parents) if cache else etas.spatial_matrix(pr, parents, fit.mc, grid, proj)
     prod = pr.k * np.exp(pr.a * (parents.m - fit.mc))
     out = torch.zeros((len(day_starts), grid.n_cells), dtype=torch.float64, device=dev)
     starts = torch.tensor(day_starts, dtype=torch.float64, device=dev)

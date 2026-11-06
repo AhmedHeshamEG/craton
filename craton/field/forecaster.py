@@ -30,7 +30,7 @@ import json
 import math
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -42,11 +42,13 @@ from craton.bench import csep, etas
 from craton.bench.baselines import Etas
 from craton.bench.data import DAY, Events
 from craton.bench.tasks import BenchContext, ForecastSpec, GriddedForecast
-from craton.field.base import etas_daily
+from craton.field.base import KernelCache, etas_daily
 from craton.field.config import FieldConfig, field_hash, load_field_config
 from craton.field.hidden import make_net
 from craton.field.memory import MemorySpec, memory
 from craton.field.steer import quadrupole
+from craton.field.wiring import WiredFieldNet, band_kernels
+from craton.field.wiring import sources as wiring_sources
 from craton.spec.timeaxis import to_seconds
 from craton.train.checkpoint import checkpoints_dir
 from craton.trust import calibration, guard
@@ -84,6 +86,11 @@ class Days:
     span_days: int = 1
     #: (days, cells, counters, 2) float16 quadrupole moments, when the kernel steers (P9c).
     quad: np.ndarray | None = None
+    #: (P9d) ETAS's sum split by source: (days, cells, bands), (days, cells), (cells,), and
+    #: the band kernels (bands, cells, cells), when the Field has Omori attention.
+    wiring: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None = None
+    #: (P9d, the camera) (days,) log share of the M2-3 band the network saw each day.
+    eyes: np.ndarray | None = None
 
 
 def _counts(
@@ -137,17 +144,23 @@ def build_days(
     span_days: int = 1,
     scored: float = M_SCORED,
     memory_spec: MemorySpec | None = None,
+    kernel_cache: KernelCache | None = None,
 ) -> Days:
     """Memory, ETAS rates and (optionally) answers for ``starts``, reading only ``events``
     before each midnight; each start's rates and answers cover ``span_days`` days. Answers
     split at ``scored`` (central Italy: M3); the memory follows ``cfg`` unless given."""
     proj = etas.Projection.for_grid(grid)
+    camera = cfg.camera is not None and cfg.camera.world
     spec = memory_spec or MemorySpec(m_min=cfg.memory.m_min, start=to_seconds(cfg.memory.start))
+    if camera:
+        spec = replace(spec, world_b=fit.b)
     mem = memory(events, grid, starts, spec)
     # ETAS reads every quake since the memory starts, also before its own fit window.
     hist = events.window(min(fit.t_ref, spec.start), float(starts[-1])).above(fit.mc)
     cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, fit.t_ref)
-    rates = etas_daily(fit, cat, (starts - fit.t_ref) / DAY, grid, proj, span=span_days)
+    rates = etas_daily(
+        fit, cat, (starts - fit.t_ref) / DAY, grid, proj, span=span_days, cache=kernel_cache
+    )
     big = 10.0 ** (-fit.b * (scored - fit.mc))  # GR share of the scored among M ≥ mc
     log_r = np.log(np.maximum(rates, 1e-30))
     log_etas = np.stack([log_r + math.log(1 - big), log_r + math.log(big)], axis=-1)
@@ -155,7 +168,56 @@ def build_days(
     quad = None
     if cfg.hidden is not None and cfg.hidden.steer:
         quad = quadrupole(events, grid, starts, spec, cfg.hidden.steer_sigma_km)
-    return Days(starts, mem, log_etas.astype(np.float32), counts, span_days, quad)
+    wiring = None
+    if cfg.wiring is not None and cfg.wiring.attention:
+        days_rel = (starts - fit.t_ref) / DAY
+        src, out, bg = wiring_sources(
+            fit, cat, days_rel, grid, proj, span=span_days, cache=kernel_cache
+        )
+        if kernel_cache is None:
+            bands = band_kernels(fit, grid, proj)
+        else:
+            if kernel_cache.bands is None:
+                kernel_cache.bands = band_kernels(fit, grid, proj)
+            bands = kernel_cache.bands
+        wiring = (src, out, bg, bands)
+    eyes = None
+    if camera and with_counts:
+        eyes = log_band_seen(events, starts, span_days, fit.b, fit.mc, scored)
+    return Days(starts, mem, log_etas.astype(np.float32), counts, span_days, quad, wiring, eyes)
+
+
+def log_band_seen(
+    events: Events, starts: FloatArray, span_days: int, b: float, lo: float, hi: float
+) -> np.ndarray:
+    """(days,) log of the share of the [lo, hi) band the catalogue saw over each span: its
+    completeness hourly through the span, averaged (the training answers only)."""
+    from craton.field.camera import band_seen, completeness_before
+
+    hours = (np.arange(24 * span_days) + 0.5) * 3600.0
+    at = (starts[:, None] + hours[None]).ravel()
+    ev = events.select(events.time < float(at.max()))
+    mc = completeness_before(ev.mag, ev.time, at).reshape(len(starts), -1)
+    share = band_seen(mc.ravel(), b, lo, hi).reshape(mc.shape).mean(axis=1)
+    return np.asarray(np.log(share), dtype=np.float32)
+
+
+def make_field(days: Days, grid: csep.Grid, cfg: FieldConfig) -> torch.nn.Module:
+    """The net a config asks for, with whatever it needs from ``days`` built in."""
+    if cfg.wiring is not None and cfg.wiring.attention:
+        assert days.wiring is not None
+        return WiredFieldNet(days.memory.shape[-1], grid, cfg.model, cfg.wiring, days.wiring[3])
+    return make_net(days.memory.shape[-1], grid, cfg.model, cfg.hidden)
+
+
+def extra_inputs(days: Days, sel: Any, dev: torch.device) -> tuple[torch.Tensor, ...]:
+    """What the net reads besides the memory and ETAS, for the days ``sel``."""
+    if days.quad is not None:
+        return (torch.from_numpy(days.quad[sel]).to(dev),)
+    if days.wiring is not None:
+        src, out, bg, _ = days.wiring
+        return tuple(torch.from_numpy(a).to(dev) for a in (src[sel], out[sel], bg))
+    return ()
 
 
 def train_member(
@@ -179,7 +241,7 @@ def train_member(
     train_d, val_d = idx[~sees_val], idx[val_mask]
     torch.manual_seed(member_seed)
     rng = np.random.default_rng(member_seed)
-    net = make_net(days.memory.shape[-1], grid, cfg.model, cfg.hidden).to(dev)
+    net = make_field(days, grid, cfg).to(dev)
     if init is not None:
         net.load_state_dict({**init, "place": net.place})
     opt = torch.optim.AdamW(net.parameters(), lr=tc.lr, weight_decay=tc.weight_decay)
@@ -187,14 +249,15 @@ def train_member(
     mem = torch.from_numpy(days.memory)
     log_e = torch.from_numpy(days.log_etas)
     y = torch.from_numpy(days.counts)
-    quad = None if days.quad is None else torch.from_numpy(days.quad)
 
     def nll(sel: IntArray) -> tuple[torch.Tensor, torch.Tensor]:
         lb = log_e[sel].to(dev)
         with torch.autocast(dev.type, torch.float16, enabled=dev.type == "cuda"):
-            q = None if quad is None else quad[sel].to(dev)
-            corr = net(mem[sel].to(dev).float(), lb[..., 1], *(() if q is None else (q,)))
+            corr = net(mem[sel].to(dev).float(), lb[..., 1], *extra_inputs(days, sel, dev))
         lam = lb + corr
+        if days.eyes is not None:  # the answers are one network's: M2-3 through its eyes
+            seen = torch.from_numpy(days.eyes[sel]).to(dev)
+            lam = torch.stack([lam[..., 0] + seen[:, None], lam[..., 1]], dim=-1)
         yy = y[sel].to(dev)
         return -(yy * lam - lam.exp()).sum(), yy.sum()
 
@@ -253,15 +316,14 @@ def predict_members(
     out = np.zeros((len(states), len(days.starts), grid.n_cells))
     mem = torch.from_numpy(days.memory)
     log_e = torch.from_numpy(days.log_etas[..., 1])
-    quad = None if days.quad is None else torch.from_numpy(days.quad)
     for k, state in enumerate(states):
-        net = make_net(days.memory.shape[-1], grid, cfg.model, cfg.hidden)
+        net = make_field(days, grid, cfg)
         net.load_state_dict(state)
         net.to(dev).eval()
         with torch.no_grad():
             for i in range(0, len(days.starts), INFER_DAYS):
                 lb = log_e[i : i + INFER_DAYS].to(dev)
-                more = () if quad is None else (quad[i : i + INFER_DAYS].to(dev),)
+                more = extra_inputs(days, slice(i, i + INFER_DAYS), dev)
                 corr = net(mem[i : i + INFER_DAYS].to(dev).float(), lb, *more)
                 rate = (lb + corr[..., 1]).exp().double().cpu().numpy()
                 out[k, i : i + INFER_DAYS] = rate

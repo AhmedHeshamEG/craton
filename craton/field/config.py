@@ -106,6 +106,31 @@ class FieldHidden(_Strict):
     steer_sigma_km: float = Field(default=15.0, gt=0, description="The moments' Gaussian width.")
 
 
+class FieldWiring(_Strict):
+    """The wiring (P9d): Omori attention over ETAS's own sum of parents. Its learned scores
+    start at zero, so the untrained block is ETAS exactly."""
+
+    attention: bool = Field(
+        default=False,
+        description="Omori attention: each source cell sends the aftershocks ETAS gives it "
+        "(no more, no fewer) to the target cells a learned query-key score picks.",
+    )
+    d_key: int = Field(default=16, gt=0, description="Size of the queries and keys.")
+    max_bias: float = Field(
+        default=4.0, gt=1, description="Largest factor one key's weight may move by."
+    )
+
+
+class FieldCamera(_Strict):
+    """The camera (P9d): the world apart from one network's eyes (``craton.field.camera``)."""
+
+    world: bool = Field(
+        default=False,
+        description="Count the world: every quake below its catalogue's completeness at the "
+        "time stands for the ones missed, and the M2-3 answers go back through the eyes.",
+    )
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -116,6 +141,8 @@ class FieldConfig(_Strict):
     curriculum: FieldCurriculum | None = None
     planets: FieldPlanets | None = None
     hidden: FieldHidden | None = None
+    wiring: FieldWiring | None = None
+    camera: FieldCamera | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -128,9 +155,9 @@ def load_field_config(name_or_path: str | Path, root: Path | None = None) -> Fie
 
 def field_hash(config: FieldConfig) -> str:
     dump = config.model_dump(mode="json")
-    for later in ("world", "curriculum", "planets", "hidden"):
+    for later in ("world", "curriculum", "planets", "hidden", "wiring", "camera"):
         if dump.get(later) is None:
-            # a config from before P8d / P8f / P9c keeps its hash and checkpoints
+            # a config from before P8d / P8f / P9c / P9d keeps its hash and checkpoints
             dump.pop(later, None)
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

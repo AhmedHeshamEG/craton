@@ -66,13 +66,22 @@ class FieldNet(nn.Module):
         nn.init.zeros_(self.out.weight)  # the untrained Field is ETAS exactly
         nn.init.zeros_(self.out.bias)
 
-    def forward(self, memory: torch.Tensor, log_etas: torch.Tensor) -> torch.Tensor:
-        """memory (days, cells, F), log_etas (days, cells) ETAS's log M3+ rate →
-        (days, cells, 2) bounded log corrections for M2-3 and M3+."""
+    def encode(self, memory: torch.Tensor, log_etas: torch.Tensor) -> torch.Tensor:
+        """(days, cells, d_model): every cell's features after attention between cells."""
         total = log_etas.logsumexp(-1, keepdim=True).expand_as(log_etas)
         x = torch.cat([memory, log_etas[..., None], total[..., None]], dim=-1)
         h = self.inp(x) + self.place_proj(self.place)[None]
         if self.cells is not None:
             h = self.cells(h)
+        out: torch.Tensor = h
+        return out
+
+    def head(self, h: torch.Tensor) -> torch.Tensor:
+        """(days, cells, 2) bounded log corrections for M2-3 and M3+ from the features."""
         c = self.out(h).float()
         return self.max_log * torch.tanh(c / self.max_log)
+
+    def forward(self, memory: torch.Tensor, log_etas: torch.Tensor) -> torch.Tensor:
+        """memory (days, cells, F), log_etas (days, cells) ETAS's log M3+ rate →
+        (days, cells, 2) bounded log corrections for M2-3 and M3+."""
+        return self.head(self.encode(memory, log_etas))

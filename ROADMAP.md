@@ -62,10 +62,14 @@ scoreboard number is mean ± std over 3 seeds.
 | CB-23 | **Hidden-state truth** | SHmax inferred from quakes alone vs the World Stress Map 2025, 0.5° cells in seven regions (degrees; pressure gets its own ID when open data exists, D-108) | Regional-average stress; interpolation of the other cells | P9 |
 | CB-24 | **Migration** | Where a sequence lights up next: the true next 0.1° cell in the method's top 3, given only the cells lit so far and the past; sixteen sequences (D-109) | Distance only; the busiest cells | P9 |
 | CB-25 | **Mainshock days** | Skill on held-out world M6+ days: Molchan curve, false alarms per hit | ETAS | P11 |
-| CB-26 | **Distilled law** | A symbolic formula's held-out gain over ETAS vs the network's | the network itself | P14 |
+| CB-26 | **Distilled law** | A symbolic formula's held-out gain over ETAS vs the network's | the network itself | P9 |
 | CB-27 | **Predictability horizon** | Skill over ETAS vs lead time (1 day → 1 year): where it reaches zero, with error bars | — | P15 |
 | CB-28 | **Velocity gap-fill** | Hide one station's dv/v series, rebuild it | Neighbour average | P10 |
 | CB-29 | **EarthquakeNPP** | The outside benchmark (Stockman et al., TMLR 2026): their California data, splits, ETAS and metric, untouched; nats per quake | Their ETAS | P8 |
+| CB-31 | **Groningen pressure** | The hidden stress map inferred from quakes alone vs the NAM reservoir pressure drop (500 m cells, yearly), at years the model never trained on; rank correlation | Quake density; the blind CB-30 Field's rate map (no pressure input) | P9 |
+| CB-32 | **Unseen-region forecast** | CB-02's scoring on whole regions left out of training, one at a time, no fine-tuning | ETAS fitted on the region | P9 |
+| CB-33 | **Planted stress** | The physics planet's true stress history vs the one inferred from its quakes; rank correlation | Quake density | P9 |
+| CB-34 | **Stress from mechanisms** | As CB-23, with focal mechanisms as input, graded only on World Stress Map records that are not from quakes (boreholes, fractures, overcoring) | Regional average; interpolation | P9 |
 
 CB-02 and CB-03 also report, from P6 on: how-many / where / how-big bits, the score without the M5+ days, and
 the oracle ceilings (the building).
@@ -505,10 +509,11 @@ which places talk to each other, and the inference is graded against data it nev
 5. A Coulomb rate-and-state (CRS) baseline on CB-02 (Mancini et al. 2019 beat ETAS after Visso).
 6. Figure: the inferred stress (and pressure, if graded) next to the truth it was never shown.
 
-**Benchmarks:** **CB-23 (hidden-state truth), CB-24 (migration), new**; CRS joins the floors.
+**Benchmarks:** **CB-23 (hidden-state truth), CB-24 (migration), CB-31 (Groningen pressure), CB-32 (unseen region), CB-33 (planted stress), CB-34 (stress from mechanisms), new**; CB-26 starts here; CRS joins the floors.
 
 **Done when**
 - CB-23 beats a regional-average-stress baseline; CB-24 beats distance-only
+- CB-31, CB-32, CB-33, CB-34 and CB-26 each reported against their floors, or the negative result
 - CB-02 / CB-03 improve on P8 or the negative result is documented
 - the referee passes every map shown in public
 - `lessons/P9.md` written
@@ -518,8 +523,18 @@ CB-02 ≈ +0.9 · CB-03 ≈ +1.6.
 
 **Learn:** stress, pore pressure, Coulomb failure, rate-and-state as a stress meter, inverse problems.
 
-Built in five parts (D-106), the tests first: **P9a** CB-23 and its floors · **P9b** CB-24 and a CRS floor ·
-**P9c** the hidden-state layer · **P9d** the wiring · **P9e** the figure, the referee, v0.10.0.
+Built in parts (D-106), the tests first: **P9a** CB-23 and its floors · **P9b** CB-24 and a CRS floor ·
+**P9c** the hidden-state layer · **P9d** the wiring and the camera. Four blocks on the catalogue alone lost,
+and the Field's CB-24 gain stops at Italy's border, so the rest of P9 aims at three tests of understanding,
+each graded on a truth the model never sees (D-116):
+- **P9e** the leak audit (cut moved back; a time-shuffled control must lose its gain) and the first
+  formula: symbolic regression on today's Field (CB-26, moved here from P14)
+- **P9f** the stress meter: forecasts only through Dieterich's rate-and-state law, so the hidden layer
+  is a stress history; graded on the physics planet's planted stress (CB-33)
+- **P9g** the pressure truth: the same layer against Groningen's reservoir pressure (CB-31)
+- **P9h** inputs without units, trained on every region, scored on the one left out (CB-32)
+- **P9i** direction from focal mechanisms (CB-34), the figure (inferred stress and pressure next to
+  the truth), the referee on every public map, v0.10.0
 
 ## P10 · Listening: continuous noise as instruments → v0.11.0
 **Goal:** two instruments that report every day, quake or no quake: seismic noise power and seismic velocity
