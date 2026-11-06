@@ -1,0 +1,19 @@
+# The hum before and after L'Aquila (2009-04-06, Mw 6.3): a year either side.
+name: laquila_noise
+description: Seismic noise and velocity change around L'Aquila, June 2008 to June 2010.
+box:
+  lat_min: 41.9
+  lat_max: 42.8
+  lon_min: 12.9
+  lon_max: 13.9
+start: "2008-06-01T00:00:00Z"
+end: "2010-06-01T00:00:00Z"
+adapters: [seismic_noise_power]
+sources:
+  fdsn_waveforms:
+    station_service: https://webservices.ingv.it/fdsnws/station/1/query
+    dataselect_service: https://webservices.ingv.it/fdsnws/dataselect/1/query
+    networks: [IV, MN]
+    channels: LH?
+    provider: INGV (EIDA Italia)
+    license: CC-BY-4.0
