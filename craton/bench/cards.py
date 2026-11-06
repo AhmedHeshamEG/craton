@@ -126,6 +126,25 @@ ABOUT = {
         "over sequences; a coin gets 3 in ~1,000. Floors: `distance_only` (nearest to the "
         "cell that lit last) and `quake_history` (the busiest cells before the sequence)."
     ),
+    "CB-31": (
+        "Can a forecast that reads only quakes see a gas reservoir drain? Groningen, CB-30's "
+        "box and cells. For six held-out gas years (October 2017 to October 2023) the truth is "
+        "the drop of NAM's modelled reservoir pressure over the year, in each 0.05° cell at "
+        "least half over the reservoir (86 cells). A method's answer is its expected quakes per "
+        "cell over CB-30's 30-day periods that start in the year. The number is the rank "
+        "correlation of the two, mean over the years; `static` beside it is the same against "
+        "the total drop since 1957, a map that barely changes after 2017. A graded method never "
+        "reads the pressure: it answers through a view that refuses those tokens, and a model "
+        "built to read the push answers through its twin trained without it. Floor: "
+        "`quake_density` (each cell's quakes of the year before)."
+    ),
+    "CB-33": (
+        "Does a forecaster's picture of the crust match the physics planet's? CB-09's three "
+        "physics planets record each fault patch's rate-and-state state; per 0.1° cell, every "
+        "7th test midnight, the cells at least 10% off steady are graded by rank correlation "
+        "with the state a forecast implies, ln(rate / the cell's long-run rate). Floor: "
+        "`quake_density` (the cell's last year of quakes over its long-run rate)."
+    ),
 }
 
 
@@ -295,7 +314,10 @@ def render() -> str:
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
-                    v = ", ".join(f"{a} {b:,}" for a, b in v.items())
+                    v = ", ".join(
+                        f"{a} {'/'.join(f'{x:g}' for x in b) if isinstance(b, list) else f'{b:,}'}"
+                        for a, b in v.items()
+                    )
                 elif isinstance(v, int | float):
                     v = f"{v:,}"
                 parts.append(f"{k.replace('_', ' ')} {v}")

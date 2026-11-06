@@ -111,6 +111,7 @@ class CratonMini:
     log: Log = _quiet
     _world: list[Any] = field(default_factory=list)
     _forced: list[Any] = field(default_factory=list)
+    _quake_only: list[Any] = field(default_factory=list)
     _models: dict[tuple[str, int], CratonModel] = field(default_factory=dict)
     _meta: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict)
     _lines: dict[str, Lines] = field(default_factory=dict)
@@ -583,6 +584,17 @@ class CratonMini:
 
             self._forced.append(ForcedField(self.forced_config, log=self.log))
         return self._forced[0]
+
+    def quake_only_forecaster(self) -> Any:
+        """The forced Field's twin trained without the forcing (P8e's ablation): CB-31 grades
+        it, because a model graded on the pressure must never read it (D-117)."""
+        if not self._quake_only:
+            from craton.field.forced import ForcedField
+
+            self._quake_only.append(
+                ForcedField(self.forced_config, log=self.log, with_forcing=False)
+            )
+        return self._quake_only[0]
 
     def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
         """CB-05 and the other trust tasks: the Field's members and fitted dispersion."""

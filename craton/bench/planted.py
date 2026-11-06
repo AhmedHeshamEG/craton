@@ -122,7 +122,8 @@ class PlantedReader(Protocol):
 
 
 class QuakeDensity:
-    """CB-33's floor: the cell's last year of M1.5+ quakes over its long-run rate."""
+    """CB-33's floor: the cell's last year of M1.5+ quakes over its long-run rate (and CB-31's:
+    the cell's last year of quakes, ``pressure_map``)."""
 
     name = "quake_density"
     kind = "baseline"
@@ -138,6 +139,12 @@ class QuakeDensity:
             n = np.bincount(cell[m], minlength=g.n_cells)
             out[i] = np.log((n + 0.5) / DENSITY_DAYS / base)
         return out
+
+    def pressure_map(self, query: Any, seed: int) -> FloatArray:
+        """CB-31's floor too: each cell's quakes of the year before each gas year."""
+        from craton.bench.pressure import recent_quakes
+
+        return recent_quakes(query)
 
 
 def grade(truth: FloatArray, answer: FloatArray) -> dict[str, float]:

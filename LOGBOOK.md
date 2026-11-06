@@ -964,3 +964,48 @@ Surprises / problems:
 Decisions: D-122 … D-124.
 
 Next: P9g, the pressure truth (CB-31, Groningen).
+
+## 2026-11-05 — P9g — A paper from 2010, and a reservoir the quakes can't see
+
+TLDR: two checks against the world outside the model. ETAS that refits its productivity every day
+on the last month (Lombardi & Marzocchi 2010's fix for L'Aquila) ties craton-mini on CB-02 (+0.30
+over ETAS both, same days) and gets half its CB-03 gain (+0.59 against +1.16). CB-31 joins the
+board: no quake-only map, not even the real quakes, ranks Groningen's cells by the year's pressure
+drop (mini −0.42, the real quakes −0.21); they follow the total drop since 1957 instead (+0.45).
+
+Built:
+- `craton/bench/local_alpha.py`: `etas_local_alpha` (K and α refit daily on 30 days, GPU sums by
+  parent magnitude, α-only switch); `tests/test_local_alpha.py`
+- `scripts/ablations/local_alpha.py` → `results/ablation/local_alpha.json`
+- CB-31 `craton/bench/pressure.py` (yearly drop per covered 0.05° cell, `BlindView` refusing the
+  pressure tokens, `quake_only_forecaster` on craton-mini, `quake_density.pressure_map` floor),
+  frozen; `tests/test_pressure.py`
+- `scripts/ablations/pressure_reference.py` → `results/ablation/pressure_reference.json`
+- `docs/assets/local-alpha-*.png`, `docs/assets/pressure-*.png` (`scripts/figures/`); README
+  sections and credits; bench cards for CB-31 and CB-33; lesson P9g
+
+Scores:
+- local alpha, bits per quake over ETAS (3 seeds): CB-02 +0.297 (mini +0.299 / +0.293 / +0.318),
+  CB-03 +0.588 (mini +1.161 / +1.162 / +1.171); α alone +0.191 / +0.398; day-by-day correlation
+  with mini's count gain 0.99 (CB-02), 0.43 (CB-03)
+- local alpha on the board: CB-20 −7.113 (ETAS −6.985), CB-21 −8.846 (ETAS −9.360), CB-22 −0.231
+  below ETAS, CB-09 −14.58 (ETAS −14.57), CB-33 0.348, CB-05 0.168 (best on the board; ETAS 0.222)
+- CB-31 (new): craton-mini −0.423 ± 0.009; quake_density −0.227; ETAS −0.469; Poisson −0.500;
+  the real quakes −0.211 (reference); with the total drop: mini +0.45, ETAS +0.52
+- the board: CB-31 added with its floor, everything else unchanged (ratchet pass)
+
+Surprises / problems:
+- The total-drop map is the same every year after 2017 (0.99): grading it would not use the held-out
+  years. Switched to the yearly drop before any score, from the truth alone.
+- Even the real quakes fail CB-31. The quakes stay where the field drained, the loading moved to
+  the flanks; rate-and-state's long memory (t_a of years) fits.
+- Refitting α alone lands on the paper's α (1.49, 1.68 on busy days) but gains less than refitting
+  K too: every quake in a sequence is more productive, not just the big ones.
+- Two circular imports (local_alpha ↔ baselines, pressure ↔ induced): composition and lazy imports;
+  the tests import in the order that used to break.
+- The benchmark-card renderer could not print list values in a frozen summary; fixed the renderer.
+- P9f had left no lesson section and no changelog entry; both added here.
+
+Decisions: D-125 … D-128.
+
+Next: P9h, dimensionless inputs trained on every region, CB-32 leave-one-region-out.

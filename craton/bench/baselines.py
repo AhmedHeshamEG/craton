@@ -594,3 +594,8 @@ register_method(QuakeDensity())
 from craton.bench.crs import Crs  # noqa: E402
 
 register_method(Crs())
+
+# The local-alpha floor (P9g): ETAS whose productivity is refit on the running sequence.
+from craton.bench.local_alpha import EtasLocalAlpha  # noqa: E402
+
+register_method(EtasLocalAlpha())

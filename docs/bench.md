@@ -226,30 +226,11 @@ CB-02's calendar and scoring on six simulated planets where the truth is known. 
 
 ## CB-33 · Planted stress
 
-
+Does a forecaster's picture of the crust match the physics planet's? CB-09's three physics planets record each fault patch's rate-and-state state; per 0.1° cell, every 7th test midnight, the cells at least 10% off steady are graded by rank correlation with the state a forecast implies, ln(rate / the cell's long-run rate). Floor: `quake_density` (the cell's last year of quakes over its long-run rate).
 
 - **Metric:** rank correlation of inferred and true state, off-steady cells of physics planets (higher is better)
 - **Fingerprint:** `c09dbf6f28af0f5d`
 - **Test data:** seeds [0, 1, 2] · planets [{'seed': 0, 'cells_per_day': 97.32857142857142, 'shadow_cells_per_day': 12.457142857142857, 'largest_state': 4.844794938996132, 'deepest_shadow': -68.3670467206085}, {'seed': 1, 'cells_per_day': 91.77142857142857, 'shadow_cells_per_day': 8.0, 'largest_state': 2.211828532414869, 'deepest_shadow': -12.223842509323728}, {'seed': 2, 'cells_per_day': 91.84285714285714, 'shadow_cells_per_day': 6.5285714285714285, 'largest_state': 1.4122414915652537, 'deepest_shadow': -1.5209337783857524}]
-
-## CB-23 · Hidden-state truth
-
-Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
-
-- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
-- **Fingerprint:** `fc7056d6f3c077d8`
-
-| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
-|---|---|---|---|---|---|
-| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
-| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
-| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
-| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
-| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
-| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
-| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
-
-Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
 
 ## CB-22 · World sequences
 
@@ -276,6 +257,33 @@ CB-02's question anywhere on Earth: the year after the first big shock of fourte
 | Chignik 2021 | alaska | zero-shot | 3 | 49 | 6.9 | 1,080 |
 
 Snapshots: california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
+
+## CB-31 · Groningen pressure
+
+Can a forecast that reads only quakes see a gas reservoir drain? Groningen, CB-30's box and cells. For six held-out gas years (October 2017 to October 2023) the truth is the drop of NAM's modelled reservoir pressure over the year, in each 0.05° cell at least half over the reservoir (86 cells). A method's answer is its expected quakes per cell over CB-30's 30-day periods that start in the year. The number is the rank correlation of the two, mean over the years; `static` beside it is the same against the total drop since 1957, a map that barely changes after 2017. A graded method never reads the pressure: it answers through a view that refuses those tokens, and a model built to read the push answers through its twin trained without it. Floor: `quake_density` (each cell's quakes of the year before).
+
+- **Metric:** rank correlation of a quake-only forecast map and the yearly reservoir pressure drop (higher is better)
+- **Fingerprint:** `1670759a6305caf9`
+- **Test data:** snapshot b392ac5e4c87e6dc · graded cells 86 · loading mpa 2017 0.098/0.24/0.387, 2018 0.069/0.228/0.377, 2019 -0.035/0.192/0.322, 2020 0/0.175/0.305, 2021 -0.05/0.151/0.284, 2022 -0.095/0.136/0.254 · loading vs static 2017 -0.02, 2018 0.04, 2019 -0.402, 2020 -0.485, 2021 -0.625, 2022 -0.662
+
+## CB-23 · Hidden-state truth
+
+Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
+
+- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
+- **Fingerprint:** `fc7056d6f3c077d8`
+
+| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
+|---|---|---|---|---|---|
+| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
+| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
+| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
+| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
+| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
+| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
+| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
+
+Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
 
 ## Add a method
 
