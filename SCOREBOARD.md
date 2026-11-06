@@ -49,7 +49,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
 | CB-30 | Human-made quakes | 0.7071 ± 0.045 ↑ · craton-mini | 0.4562 ± 0 ↑ · etas_forced | P8 |
 | CB-31 | Groningen pressure | −0.4235 ± 0.0089 ↑ · craton-mini | −0.2271 ± 0 ↑ · quake_density | P9 |
-| CB-32 | Unseen-region forecast | · | · | P9 |
+| CB-32 | Unseen-region forecast | 0.3357 ± 0.041 ↑ · craton-mini | 0.06522 ± 7.4e−06 ↑ · etas_local_alpha | P9 |
 | CB-33 | Planted stress | 0.448 ± 0.093 ↑ · craton-mini | 0.395 ± 0.11 ↑ · quake_density | P9 |
 | CB-34 | Stress from mechanisms | · | · | P9 |
 
@@ -162,6 +162,12 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-31 | etas | −0.4686 ± 0 ↑ | rank correlation of a quake-only forecast map and the yearly reservoir pressure drop |  |
 | CB-31 | etas_aniso | −0.4686 ± 0 ↑ | rank correlation of a quake-only forecast map and the yearly reservoir pressure drop |  |
 | CB-31 | poisson | −0.4995 ± 0 ↑ | rank correlation of a quake-only forecast map and the yearly reservoir pressure drop |  |
+| CB-32 | etas_local_alpha | 0.06522 ± 7.4e−06 ↑ | bits per quake above ETAS fitted there, by a model that never read the region |  |
+| CB-32 | etas_incomplete | 0.05669 ± 0 ↑ | bits per quake above ETAS fitted there, by a model that never read the region |  |
+| CB-32 | etas_aniso | 0.04516 ± 0 ↑ | bits per quake above ETAS fitted there, by a model that never read the region |  |
+| CB-32 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted there, by a model that never read the region |  |
+| CB-32 | crs | −1.199 ± 0 ↑ | bits per quake above ETAS fitted there, by a model that never read the region |  |
+| CB-32 | poisson | −7.395 ± 0 ↑ | bits per quake above ETAS fitted there, by a model that never read the region |  |
 | CB-33 | quake_density | 0.395 ± 0.11 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
 | CB-33 | etas_local_alpha | 0.3481 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
 | CB-33 | etas | 0.3475 ± 0.18 ↑ | rank correlation of inferred and true state, off-steady cells of physics planets |  |
@@ -174,6 +180,13 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-06 04:11 | `20261106-041034-craton-mini` | craton-mini | 1 new, 21 same |
+| 2026-11-06 04:11 | `20261105-233201-crs` | crs (baseline) | 1 new, 11 same |
+| 2026-11-06 04:11 | `20261105-225630-etas-local-alpha` | etas_local_alpha (baseline) | 1 new, 11 same |
+| 2026-11-06 04:11 | `20261105-222154-etas-incomplete` | etas_incomplete (baseline) | 1 new, 11 same |
+| 2026-11-06 04:11 | `20261105-200044-etas-aniso` | etas_aniso (baseline) | 1 new, 14 same |
+| 2026-11-06 04:11 | `20261105-192720-poisson` | poisson (baseline) | 1 new, 14 same |
+| 2026-11-06 04:11 | `20261105-185810-etas` | etas (baseline) | 1 new, 15 same |
 | 2026-11-05 17:07 | `20261105-170725-etas-local-alpha` | etas_local_alpha (baseline) | 11 new |
 | 2026-11-05 16:06 | `20261105-160534-craton-mini` | craton-mini | 1 new, 20 same |
 | 2026-11-05 16:06 | `20261105-160509-etas-aniso` | etas_aniso (baseline) | 1 new, 13 same |
