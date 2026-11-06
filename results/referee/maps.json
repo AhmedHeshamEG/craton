@@ -1,0 +1,251 @@
+{
+ "verdicts": [
+  {
+   "name": "CB-23 stress_interpolation over stress_regional (seed 0)",
+   "statement": "copying the neighbouring cells' squeeze knows more than one direction per region",
+   "kind": "axial",
+   "skill": -16.578069473895646,
+   "floor_skill": -26.748177106188813,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "6a81f2e3bdd998cfbf281bb2f8876eeb6c507d03127c175131bdb570a9fe3b3a",
+   "locked_lead": 10.240012723552613,
+   "held_out_lead": 10.120973337221908,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": true
+  },
+  {
+   "name": "CB-31 craton-mini over quake_density (seed 0)",
+   "statement": "craton-mini's quake-only map ranks Groningen's cells by the year's pressure drop (the README says it does not)",
+   "kind": "rank",
+   "skill": -0.41492523232227935,
+   "floor_skill": -0.2270942263879053,
+   "coin_skill": 0.0,
+   "shifted_quantile": 0.0,
+   "lock_hash": "d33e06b0d1f3b53849ffa258af2e39e71acc93b7d0e9a7753b6a380a3aa2e101",
+   "locked_lead": -0.16076429063692443,
+   "held_out_lead": -0.20518993440784347,
+   "tests": {
+    "beats_coin": false,
+    "beats_floor": false,
+    "beats_shifted_maps": false,
+    "locked_half_holds": true
+   },
+   "passed": false
+  },
+  {
+   "name": "CB-31 craton-mini over quake_density (seed 1)",
+   "statement": "craton-mini's quake-only map ranks Groningen's cells by the year's pressure drop (the README says it does not)",
+   "kind": "rank",
+   "skill": -0.43267135242228405,
+   "floor_skill": -0.2270942263879053,
+   "coin_skill": 0.0,
+   "shifted_quantile": 0.0,
+   "lock_hash": "c70bcb37f6a670d94e0b6473285f239887daabe520be62814964f61ac4495556",
+   "locked_lead": -0.16804641419811778,
+   "held_out_lead": -0.2360086146876695,
+   "tests": {
+    "beats_coin": false,
+    "beats_floor": false,
+    "beats_shifted_maps": false,
+    "locked_half_holds": true
+   },
+   "passed": false
+  },
+  {
+   "name": "CB-31 craton-mini over quake_density (seed 2)",
+   "statement": "craton-mini's quake-only map ranks Groningen's cells by the year's pressure drop (the README says it does not)",
+   "kind": "rank",
+   "skill": -0.4229035960815761,
+   "floor_skill": -0.2270942263879053,
+   "coin_skill": 0.0,
+   "shifted_quantile": 0.0,
+   "lock_hash": "0f56d923eca3c8d7e3367f86990a237833ed91542314b29c3de781d44815b1ce",
+   "locked_lead": -0.1657678142450993,
+   "held_out_lead": -0.21564289608031742,
+   "tests": {
+    "beats_coin": false,
+    "beats_floor": false,
+    "beats_shifted_maps": false,
+    "locked_half_holds": true
+   },
+   "passed": false
+  },
+  {
+   "name": "CB-33 craton-mini over quake_density (planet 0)",
+   "statement": "craton-mini's forecast, read as a stress, ranks the physics planet's hidden state better than the last year of quakes does",
+   "kind": "rank",
+   "skill": 0.4747215304720642,
+   "floor_skill": 0.40621949691977,
+   "coin_skill": 0.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "471dee317d1bab480372827322764d00cb0630b53c0d2de70f26657d33469845",
+   "locked_lead": 0.037800366381114,
+   "held_out_lead": 0.08620617471798314,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": true
+  },
+  {
+   "name": "CB-33 craton-mini over quake_density (planet 1)",
+   "statement": "craton-mini's forecast, read as a stress, ranks the physics planet's hidden state better than the last year of quakes does",
+   "kind": "rank",
+   "skill": 0.5242700239852538,
+   "floor_skill": 0.49875232853734264,
+   "coin_skill": 0.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "ffedabd712f373eedc161faa7684d5de41a61c2aba810988d6b6c205d9b2b60c",
+   "locked_lead": -0.019618117703681104,
+   "held_out_lead": 0.05447934546888822,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": false
+   },
+   "passed": false
+  },
+  {
+   "name": "CB-33 craton-mini over quake_density (planet 2)",
+   "statement": "craton-mini's forecast, read as a stress, ranks the physics planet's hidden state better than the last year of quakes does",
+   "kind": "rank",
+   "skill": 0.3449627005454911,
+   "floor_skill": 0.2799685221442298,
+   "coin_skill": 0.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "d87fb04728c93ae6e1f60a2780f2351e102477f68d3fd6eef83a86126150e943",
+   "locked_lead": 0.050297575388704996,
+   "held_out_lead": 0.0854822502267637,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": true
+  },
+  {
+   "name": "CB-34 craton-mini over mechanism_kostrov (seed 0)",
+   "statement": "the tensor field's squeeze matches stress no quake measured better than mechanism_kostrov",
+   "kind": "axial",
+   "skill": -32.192528562467615,
+   "floor_skill": -33.35813100057102,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "e4ece6bdd06d53405f6a6b6e52294586fe934990db1829b42905270b773f63eb",
+   "locked_lead": 2.2985003521463945,
+   "held_out_lead": 0.08822074592761453,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": true
+  },
+  {
+   "name": "CB-34 craton-mini over mechanism_kostrov (seed 1)",
+   "statement": "the tensor field's squeeze matches stress no quake measured better than mechanism_kostrov",
+   "kind": "axial",
+   "skill": -31.463726954736362,
+   "floor_skill": -33.35813100057102,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "8491f073424b639fe23696bc379a70cf8267e066385c9feb3c5370038f9d46d0",
+   "locked_lead": 2.8308399345514665,
+   "held_out_lead": 0.8129038092195131,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": true
+  },
+  {
+   "name": "CB-34 craton-mini over mechanism_kostrov (seed 2)",
+   "statement": "the tensor field's squeeze matches stress no quake measured better than mechanism_kostrov",
+   "kind": "axial",
+   "skill": -30.30772936465969,
+   "floor_skill": -33.35813100057102,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "3561ab36fdb5bb71eed901c88250f4e3c1287ddbf4c8c41d9e36730666ec374a",
+   "locked_lead": 3.572292142689367,
+   "held_out_lead": 2.621806432662865,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": true,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": true
+  },
+  {
+   "name": "CB-34 craton-mini over stress_interpolation (seed 0)",
+   "statement": "the tensor field's squeeze matches stress no quake measured better than stress_interpolation",
+   "kind": "axial",
+   "skill": -32.192528562467615,
+   "floor_skill": -27.859177428993714,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "764b6742ff3a03440e2b6aa3e91c45b2052c8285d6d97e242a3f37badde90aab",
+   "locked_lead": -3.3550222453296605,
+   "held_out_lead": -5.350033087681876,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": false,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": false
+  },
+  {
+   "name": "CB-34 craton-mini over stress_interpolation (seed 1)",
+   "statement": "the tensor field's squeeze matches stress no quake measured better than stress_interpolation",
+   "kind": "axial",
+   "skill": -31.463726954736362,
+   "floor_skill": -27.859177428993714,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "2312157a9ec28d3e35defd2f6b3549ac5d7a26ce03242d291464dcc8cb1a59b9",
+   "locked_lead": -2.8226826629245885,
+   "held_out_lead": -4.625350024389977,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": false,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": false
+  },
+  {
+   "name": "CB-34 craton-mini over stress_interpolation (seed 2)",
+   "statement": "the tensor field's squeeze matches stress no quake measured better than stress_interpolation",
+   "kind": "axial",
+   "skill": -30.30772936465969,
+   "floor_skill": -27.859177428993714,
+   "coin_skill": -45.0,
+   "shifted_quantile": 1.0,
+   "lock_hash": "bba77a105566d6fecf9474655f82238565c7ca274051f664ebe84e848b03eb86",
+   "locked_lead": -2.081230454786688,
+   "held_out_lead": -2.8164474009466254,
+   "tests": {
+    "beats_coin": true,
+    "beats_floor": false,
+    "beats_shifted_maps": true,
+    "locked_half_holds": true
+   },
+   "passed": false
+  }
+ ]
+}
