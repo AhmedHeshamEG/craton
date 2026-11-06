@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P7%20of%20P16-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P10%20of%20P16-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -516,7 +516,8 @@ the stress.
 craton-mini ranks them at **0.45 ± 0.09** (rank correlation, three planets). The floor, a cell's last
 year of quakes over its long-run rate, gets 0.39; ETAS 0.35; Coulomb rate-and-state, which computes
 stress from the quakes' slip, 0.25. So the forecast does carry a picture of the crust's state, a bit
-better than the obvious one, and far from perfect.
+better than the obvious one, and far from perfect. Through the map referee (below), the lead over the
+floor holds on two planets of three: on planet 1 it flips sign between two halves of the cells.
 
 The obvious next move was to force it. Dieterich (1994) showed that seismicity *is* a stress meter: one
 stress history moves the rate of every magnitude alike, and quakes use up the faults that made them.
@@ -601,6 +602,62 @@ expects, time in units of each box's Omori clock, distance in rupture lengths
 California better on every seed and Japan and New Zealand worse on every seed, and lost on the mean
 (+0.30). The units were carrying something the network used. The model keeps reading them (D-131).
 
+## The squeeze, from how quakes slipped
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mechanisms-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/mechanisms-light.png">
+    <img alt="Seven panels: central Italy, California, Japan, New Zealand, Turkey, Chile and Alaska. Thick orange bars show the direction of largest horizontal squeeze measured in boreholes, drilling and fault-slip data, never from a quake; thin ink bars on top show Craton's answer at the same cells, from the Global CMT mechanisms it read before the cut. Right, degrees off over seven regions: the neighbouring cells' own answers 27.9, one direction per region 29.8, Craton's tensor field 31.3, mechanisms summed nearby 33.4, a coin 45, the long axis of the quake cloud 47.9." src="docs/assets/mechanisms-dark.png" width="100%">
+  </picture>
+</p>
+
+Where quakes happen can't tell you which way the crust is squeezed: a line of quakes runs along the
+squeeze on a normal fault and across it on a thrust (CB-23 sat at a coin's 45°). *How* they slipped can.
+Every big quake since 1976 has a moment tensor in the [Global CMT](https://www.globalcmt.org) catalogue,
+56,832 of them, and its pressure axis points roughly along the squeeze. They're Craton tokens now
+(Token Spec 1.3.0, one more instrument, nothing changed).
+
+The exam can't grade a mechanism reader on mechanisms, and most of the World Stress Map is mechanisms.
+So CB-34 keeps only stress that nobody read from a quake: boreholes that went oval, fractures from
+drilling and from pumping water in, fault scratches.
+
+Craton answers with a **tensor field**, BERT's game for slip: hide one mechanism, predict it from its
+48 neighbours, with each training example spun about the vertical so no region's direction can be
+memorised. It never sees a stress record, or Turkey, Chile and Alaska. **31.3°** off, against 33.4° for
+the textbook sum of the same tensors (Kostrov 1974, with
+[Lund & Townend 2007](https://doi.org/10.1111/j.1365-246X.2007.03468.x)), and 26° in Chile against
+the textbook's 38°. Copying the neighbouring boreholes' own answers still wins (27.9°). That reads the
+answers, and a borehole is a long drive from most quakes.
+
+## Every map, refereed
+
+In 2026-10 a tidal "discovery" died when a plain 24-hour clock matched it just as well (`craton
+referee`). Maps fool you the same way. Any smooth map agrees a bit with any other, and a map that only
+knows the regional average looks right wherever the average is. So every map shown here goes through
+four tests (`craton/trust/maps.py`): beat a coin, beat the floor, beat 95% of 200 copies of itself slid
+around the region (same texture, alignment broken), and keep its lead on half the cells after the
+other half's lead is written down and hashed.
+
+| Map | Claim | Verdict |
+|---|---|---|
+| CB-23, the squeeze | copying neighbours knows more than one direction per region | passes |
+| CB-34, the squeeze from mechanisms | the tensor field beats the Kostrov sum | passes, three seeds |
+| CB-33, a crust nobody can see | craton-mini ranks the planet's state better than quake density | two planets of three |
+| CB-31, Groningen | craton-mini's map follows the year's pressure drop | fails everything (as stated above) |
+
+## One day each
+
+Score the Italian forecasts day by day and the gains have an address. Drop 30 October 2016, the Norcia
+day with a quarter of the sequence's quakes, and craton-mini falls to **−0.02** bits per quake against
+ETAS: the whole Apennine gain is one day. Drop 6 April 2009 and it keeps +0.89 on L'Aquila, but its
+lead over ETAS refit daily shrinks from +0.58 to +0.09. On that night every one of the Field's six
+members sat at its ×4 limit in the epicentral cell, while INGV's published gains were 5 to 25×.
+
+So we let it go to ×16. It won the L'Aquila night (+0.18 bits per quake for the whole task) and lost
+more than that on every other day (−0.29), overshooting the calmer days after. The limit is a brake,
+and it stays (D-136). Telling the big night from the rest is the next phase's job: the storm detector.
+
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -639,7 +696,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 
 ```
 CORE       ██████████████████████████████   8/8    foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    other planets, hidden state, listening, storm detector, ghost, translator, microscope
+DISCOVERY  █████████░░░░░░░░░░░░░░░░░░░░░   2/7    other planets, hidden state, listening, storm detector, ghost, translator, microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon + how far ahead the crust is predictable, then mini → planet
 ```
 
@@ -654,7 +711,7 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P6** Beat ETAS: the Field | state-space memory, residual learning, ensembles |
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
-| ◻️ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (8 of 9 parts in: the stress exam CB-23, the migration exam CB-24, the physics floor, four blocks that lost, the leak audit and the distilled law CB-26, the planted-stress exam CB-33, the pressure exam CB-31, and regions it never read, CB-32) | latent variables, AlphaFold's pair representation |
+| ✅ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (stress from quakes CB-23 and from mechanisms CB-34, migration CB-24, the distilled law CB-26, planted stress CB-33, Groningen pressure CB-31, regions it never read CB-32; five blocks built and not kept; a referee for maps) | latent variables, probing, masked modelling |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
 | ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
 | ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |
@@ -724,6 +781,8 @@ Groningen: [KNMI](https://rdsa.knmi.nl/) (CC-BY-4.0) and NAM's reservoir model (
 The local-alpha floor follows [Lombardi & Marzocchi (2010)](https://doi.org/10.4401/ag-4848), INGV's
 daily ETAS for Italy. Rupture lengths: [Wells & Coppersmith (1994)](https://doi.org/10.1785/BSSA0840040974).
 Leave-one-region-out follows [Kratzert et al. (2019)](https://doi.org/10.1029/2019WR026065).
+Moment tensors: the [Global CMT Project](https://www.globalcmt.org) (Dziewonski et al. 1981; Ekström
+et al. 2012); stress records: the [World Stress Map 2025](https://doi.org/10.5880/WSM.2025.001) (CC BY 4.0).
 Craton stands on SeisLM, ETAS, CSEP and pyCSEP, GraphCast's lesson about reanalysis, and decades of open
 catalogues from INGV and the Nevada Geodetic Laboratory. Full sources per phase in the lessons.
 

@@ -2385,3 +2385,143 @@ an ablation. CB-29 (`craton/bench/npp.py`) would have needed it too and is left 
 
 **Rejected.** A v3 tuned on these numbers (they are test numbers). Keeping only the ratios that
 helped Italy and California, for the same reason. Adopting v2 for its smaller seed spread.
+
+### D-132 · 2026-11-06 · P9 — CB-34: the squeeze from mechanisms, graded on stress no quake measured
+
+D-116 planned direction from a new input: focal mechanisms, graded only on World Stress Map
+records not read from quakes, so the answer never reads its own input. Built as planned, with
+three choices made before any score:
+
+- **Input.** The Global CMT catalogue (Dziewonski et al. 1981; Ekström et al. 2012), one ndk release
+  (`jan76_dec20.ndk`, 1976-2020, 56,832 solutions, sha256 `baed5ad2…`), adapter `gcmt`, Token Spec
+  1.3.0 (`moment_tensor`: six elements and M0 in N·m, at the centroid). The whole Earth is one region
+  file, `configs/regions/gcmt_world.yaml`, which any region reads by cutting its box and window. Adding
+  it to the seven region files would have changed every frozen snapshot.
+- **Truth.** CB-23's seven regions, cuts and 0.5° cells, from records whose type is not FMS, FMA or FMF:
+  borehole breakouts, drilling-induced fractures, hydraulic fracturing, overcoring, fault-slip
+  inversions, volcanic alignments (3,212 + 771 + 350 + 86 + 518 + 138 worldwide). They are rare: 190 cells
+  at one record each, 47 at three. **One record makes a cell**; WSM's quality grade already says how far
+  it can be trusted, and three would leave Japan one cell and Alaska none. Cells per region: central
+  Italy 24, California 77, Japan 14, New Zealand 20, Turkey 13, Chile 37, Alaska 5.
+- **Floors.** CB-23's three, and `mechanism_kostrov`: unit tensors summed with a 50 km Gaussian
+  within 150 km, crust above 40 km, SHmax of the sum by Lund & Townend (2007) on minus the tensor. Its
+  width was set before scoring and not changed after.
+
+A method reads mechanisms through its own protocol (`mechanism_stress_azimuths`); CB-23 never calls
+it, so nothing that reads mechanisms can score on CB-23 (tested).
+
+**Rejected.** Grading on all WSM records (85% are single focal mechanisms, GCMT's among them: the
+input graded against itself). INGV's moment tensors as the input (Italy only; GCMT works anywhere).
+Three records per cell, as CB-23 (one Japanese cell, no Alaska).
+
+### D-133 · 2026-11-06 · P9 — The tensor field: masked modelling of mechanisms answers CB-34
+
+Craton's answer to CB-34 is a field, not a smoother: `craton/field/tensors.py`
+(`configs/tensors/mini.yaml`). Hide one Global CMT mechanism, give a network its 48 nearest
+neighbours within 300 km (where, how deep, how big, how long before or after, and how they slipped),
+and train it to predict the hidden one's shape (its unit trace-free tensor; loss 1 − the Frobenius
+alignment). Asked at a stress cell's centre, averaged over 5-25 km depth, its tensor's SHmax is the
+answer. Three rules, fixed before any score:
+
+1. **No copying.** A mechanism's own sequence (within 20 km and 30 days) is hidden with it. A
+   borehole has no aftershock twin to copy, so training must not reward copying one.
+2. **Geometry, not memory.** Each example is rotated about the vertical by a random angle
+   (positions and tensors together, tested), so "Japan squeezes east-west" can't be memorised.
+3. **Never the answers, never the zero-shot regions.** Training reads crustal mechanisms before 2007,
+   outside Turkey, Chile and Alaska; epochs are chosen on the mechanisms of 2003-06. No stress record
+   is read anywhere.
+
+On those held-out mechanisms (no stress records involved) the field misses by 0.298, Kostrov
+smoothing by 0.313 at 25 km, 0.330 at 50 km, the nearest neighbour by 0.399: it learned more than
+averaging. ~30 s per seed on the RTX 2060.
+
+**A bug found by the first score.** The first CB-34 run gave central Italy no answer (45° on every
+cell): the box holds 22 crustal mechanisms before 2016, fewer than the 48 slots, and a guard refused
+instead of padding. Padding was the design (training never hit the guard: its pool is 16,950); fixed
+and tested, the checkpoints unchanged, the run discarded before the ratchet. Nothing else changed.
+
+CB-34, three seeds (`craton bench run craton-mini --tasks CB-34`):
+
+| | CB-34 | seen | zero-shot | reads |
+|---|---|---|---|---|
+| `stress_interpolation` | 27.9° | 26.7° | 29.4° | the other cells' answers |
+| `stress_regional` | 29.8° | 27.2° | 33.2° | the other cells' answers |
+| **craton-mini** (tensor field) | **31.3° ± 0.95** | 31.5° | 31.1° | mechanisms |
+| `mechanism_kostrov` | 33.4° | 32.4° | 34.6° | mechanisms |
+| `quake_lineation` | 47.9° | 43.6° | 53.6° | positions |
+| a coin | 45° | | | |
+
+Per region (mean of seeds): central Italy 24.9° (Kostrov 25.6°), California 26.5° (29.5°), Japan
+39.9° (37.3°), New Zealand 34.6° (37.3°), Turkey 41.6° (41.3°), Chile 25.9° (37.7°), Alaska 25.9°
+(24.8°). It beats the textbook answer from the same mechanisms by 2° on average and by 12° in Chile, a
+region it never trained on; it does not beat copying the neighbouring cells' own answers, which no
+method that reads only quakes can see.
+
+**Rejected.** Feeding mechanisms into the Field's forecast (no forecasting task asks for direction;
+P11 may). A bigger network or more neighbours chosen on CB-34's numbers.
+
+### D-134 · 2026-11-06 · P9 — The map referee, and every public map through it
+
+`craton referee` tests clocks. Maps need their own: `craton/trust/maps.py`. A claim "this inferred
+map matches that truth" passes only if it beats a coin, beats the floor, beats 95% of 200 copies of
+itself slid around the panel's bounding box by at least two cells (a toroidal shift: the same texture,
+any real alignment broken; a map that knows only the regional trend fails here, tested), and keeps the
+sign of its lead over the floor on the second half of the cells after the first half's lead is hashed.
+`scripts/referee_maps.py` → `results/referee/maps.json`.
+
+| Map in the README | Claim | Verdict |
+|---|---|---|
+| CB-23, the squeeze | copying neighbours beats one direction per region | pass |
+| CB-34, the squeeze from mechanisms | the tensor field beats Kostrov | pass, three seeds |
+| CB-34 | the tensor field beats copying neighbours | fail (the floor test), as the board says |
+| CB-33, planted stress | craton-mini beats quake density | planets 0 and 2 pass; planet 1 fails the locked half (lead −0.020 on the first half, +0.054 on the second) |
+| CB-31, Groningen | craton-mini ranks the year's pressure drop | fails coin, floor and shifted maps on every seed: worse than all 200 of its own shifted copies (the negative result the README already states) |
+
+So one public claim needs softer words: CB-33's lead over quake density holds on two planets of
+three when half the cells are locked away first. The README says so beside its figure.
+
+**Rejected.** Shuffling cells (it breaks the map's own smoothness, so every smooth map would pass).
+One referee for clocks and maps (different nulls).
+
+### D-135 · 2026-11-06 · P9 — Three checks on the Field: the cap, one day, a linear probe
+
+`scripts/ablations/cap_and_mainshock.py`, `scripts/ablations/linear_probe.py`.
+
+**The cap binds where it matters.** The Field moves ETAS at most ×4 (`max_nudge`, P6). On CB-03's test
+days 82% of the M3+ quakes fall in a cell-day where at least one member sits within 10% of the bound,
+and 65-72% where all six do; on 6 April 2009 every member gives the epicentral cell ×4.0. Published
+gains that day were 5-25× over the long-term rate (INGV's operational forecast). On CB-02, 13-14%
+(Norcia's cell got ×2.7). Tested with a looser cap in D-136.
+
+**One day each.** Without 30 October 2016 (Norcia, 261 of CB-02's 1,065 quakes) craton-mini is −0.020
+bits per quake against ETAS (seeds −0.029, −0.047, +0.015) and the daily refit `etas_local_alpha` −0.002:
+CB-02's gain over ETAS is that day. Without 6 April 2009 (84 of CB-03's 315) craton-mini keeps +0.888
+and the refit +0.802: its lead over the refit falls from +0.576 to +0.086, so about 85% of it is that
+day (the other session's seed-0 probe said 90%).
+
+**A linear probe of the inside.** On CB-33's three physics planets, a ridge regression fitted on half
+the graded days reads the true fault state on the other half (Spearman, off-steady cells): from the
+Field's 64 hidden features 0.36 (planets 0.06 / 0.35 / 0.67), from its own inputs 0.38 (0.24 / 0.35 /
+0.55), from both 0.43; the Field's forecast read as a stress (no fitting) 0.45 (0.46 / 0.51 / 0.36).
+No consistent sign that the hidden layer holds the state in a way its inputs don't: only planet 2
+says so. The hydrology finding (Kratzert 2019) does not repeat here, at this size.
+
+### D-136 · 2026-11-06 · P9 — A looser cap wins the big day and loses the rest: ×4 stays
+
+D-135 found the Field pinned at its ×4 bound on the L'Aquila night. `cap16` is `mini` with a ×16 bound
+and nothing else (`configs/field/cap16.yaml`; published gains that day were 5-25×). The rule was set
+before it ran: adopt only if CB-02 and CB-03 hold on seed 0, then confirm on three seeds.
+
+Seed 0 (`scripts/ablations/curriculum.py cap16 CB-02,CB-03 0`, `results/ablation/cap16_on_italy.json`):
+CB-02 −0.019 bits per quake against `mini` (a tie within noise), CB-03 −0.116 (how many −0.100). Split
+by day (`scripts/ablations/cap16_days.py`, in bits per quake of the whole task): on 6 April 2009 the
+looser Field gains +0.179 (its gain over ETAS that day goes from +0.51 to +0.69), and on every other
+day together it loses −0.294. CB-02: Norcia's day +0.005, the rest −0.024. With room to multiply by 16,
+the Field overshoots the days after: the bound is a brake, and it costs the one day it was built to
+lose. Not adopted; seeds 1-2 not trained.
+
+What would help is knowing *which* day is the big one, which is P11's question (the storm detector);
+filed there: a bound that the detector opens.
+
+**Rejected.** A learned cap trained on these two tasks (fitted to their test days). Keeping cap16 for
+CB-03's mainshock day alone.

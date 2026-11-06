@@ -1053,3 +1053,58 @@ Surprises / problems:
 Decisions: D-129 … D-131.
 
 Next: P9i, direction from focal mechanisms (CB-34), the figure, the referee, v0.10.0.
+
+## 2026-11-06 — P9i — How quakes slipped, and a referee for maps
+
+TLDR: Global CMT moment tensors are tokens now, and CB-34 grades the squeeze they imply on stress no
+quake measured. Craton's tensor field (masked modelling of mechanisms) is 31.3° off, the textbook
+Kostrov sum 33.4°, copying the neighbouring boreholes 27.9°. A map referee checks every public map:
+CB-23 and CB-34 pass, CB-33 holds on two planets of three, CB-31 fails as stated. Checks on the
+Field: each Italian score rests on one day, and the ×4 cap is pinned on the L'Aquila night; a ×16
+cap wins that night and loses the rest, so ×4 stays. P9 is done; v0.10.0.
+
+Built:
+- Token Spec 1.3.0 (`moment_tensor`, unit `N.m`); adapter `gcmt` (`craton/adapters/gcmt.py`), region
+  `gcmt_world` (56,832 solutions, snapshot `2f1c16b8e40e91c4`); `tests/test_gcmt.py`
+- CB-34 `craton/bench/mechanisms.py` (non-quake WSM truth, `MechanismQuery`, protocol
+  `mechanism_stress_azimuths`, `shmax_of`, floor `mechanism_kostrov`), frozen; bench card;
+  `tests/test_mechanisms.py`
+- The tensor field `craton/field/tensors.py`, `configs/tensors/mini.yaml`, model cards; craton-mini's
+  `mechanism_stress_azimuths`; `tests/test_tensors.py`
+- The map referee `craton/trust/maps.py`, `scripts/referee_maps.py` → `results/referee/maps.json`;
+  `tests/test_maps.py`
+- `scripts/ablations/cap_and_mainshock.py`, `scripts/ablations/linear_probe.py`,
+  `configs/field/cap16.yaml`, `scripts/ablations/cap16_days.py`
+- `docs/assets/mechanisms-*.png` (`scripts/figures/mechanisms.py`); README sections; lesson P9i;
+  v0.10.0
+
+Scores:
+- CB-34 (new): craton-mini 31.32 ± 0.95° (32.2 / 31.5 / 30.3); seen 31.5, never seen 31.1;
+  `stress_interpolation` 27.86, `stress_regional` 29.81, `mechanism_kostrov` 33.36,
+  `quake_lineation` 47.90; coin 45
+- held-out mechanisms (2003-06), misfit: tensor field 0.298, Kostrov 0.313 (25 km) / 0.330 (50 km),
+  nearest neighbour 0.399
+- map referee: CB-23 pass; CB-34 over Kostrov pass ×3, over interpolation fail ×3 (floor); CB-33
+  planets 0, 2 pass, planet 1 fails the locked half (−0.020 / +0.054); CB-31 fails ×3
+- without the big day, bits per quake over ETAS: CB-02 mini −0.020 (−0.029 / −0.047 / +0.015), refit
+  −0.002; CB-03 mini +0.888, refit +0.802 (lead +0.576 → +0.086)
+- the cap: CB-03 quakes in a capped cell-day 82%, all members capped 65-72%, epicentre ×4.0 on
+  2009-04-06; CB-02 13-14%, Norcia's cell ×2.7
+- linear probe (Spearman, held-out days): hidden 0.36, inputs 0.38, both 0.43, the forecast 0.45
+- cap16 vs mini, seed 0: CB-02 −0.019, CB-03 −0.116 (how many −0.100); CB-03 split: the mainshock
+  day +0.179, every other day −0.294; CB-02: +0.005 / −0.024
+- the board: CB-34 added with its floors, everything else unchanged (ratchet pass)
+
+Surprises / problems:
+- The first CB-34 run gave central Italy no answer: 22 crustal mechanisms before 2016, 48 slots, and
+  a guard refused instead of padding. Fixed and tested before the ratchet; the trained fields were
+  unaffected (their pool is 16,950).
+- Adding GCMT to the seven region files would have changed every frozen snapshot; the whole Earth as
+  one region file avoids it.
+- Two ndk entries print "1.060.0" (no space between numbers); read by fixed columns.
+- An edit through a bash heredoc turned "\n" into a real line break again; fixed with the Edit tool.
+- One public claim needed softer words after the referee (CB-33).
+
+Decisions: D-132 … D-136.
+
+Next: P10, listening: seismic noise power and dv/v as instruments.
