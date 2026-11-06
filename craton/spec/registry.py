@@ -38,6 +38,8 @@ UNITS: Mapping[str, str] = {
     "mm/a": "millimetres per year",
     "m3": "cubic metre",
     "N.m": "newton metre (a seismic moment)",
+    "dB[(m/s2)2/Hz]": "decibels of ground-acceleration power per hertz (seismic noise, as in "
+    "Peterson's 1993 noise models)",
     "log10(m2)": "base-10 logarithm of a permeability in square metres",
     "log10(mm)": "base-10 logarithm of a length in millimetres",
 }

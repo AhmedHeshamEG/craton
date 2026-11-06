@@ -320,8 +320,58 @@ MOMENT_TENSOR = Instrument(
     ),
 )
 
+# ---------------------------------------------------------- 1.4.0: the ground's hum, every day
+_NOISE_DB = "dB[(m/s2)2/Hz]"
+#: Peterson's low and high noise models span about -190 to -90 dB over these periods; the range
+#: leaves room for quiet vaults and for a station next to a road.
+_NOISE_MIN, _NOISE_MAX = -250.0, -40.0
+
+SEISMIC_NOISE_POWER = Instrument(
+    name="seismic_noise_power",
+    description=(
+        "How loudly the ground hummed at one seismometer on one day, in three frequency bands: "
+        "the median of the day's hourly acceleration power spectra, so a quake that shook a few "
+        "of the hours does not move it."
+    ),
+    kinds=("observation",),
+    channels=(
+        Channel(
+            "primary", _NOISE_DB, "Mean power over 0.05-0.1 Hz (10-20 s).", _NOISE_MIN, _NOISE_MAX
+        ),
+        Channel(
+            "secondary",
+            _NOISE_DB,
+            "Mean power over 0.1-0.3 Hz (3.3-10 s, the secondary microseism).",
+            _NOISE_MIN,
+            _NOISE_MAX,
+        ),
+        Channel(
+            "short", _NOISE_DB, "Mean power over 0.3-0.45 Hz (2.2-3.3 s).", _NOISE_MIN, _NOISE_MAX
+        ),
+    ),
+    qualifiers=(
+        Qualifier(
+            "station",
+            "Network and station code, NET.STA.",
+            True,
+            pattern=r"[A-Z0-9]{1,2}\.[A-Z0-9]{1,5}",
+        ),
+        Qualifier("component", "Which direction the sensor moved.", True, ("Z", "N", "E")),
+        Qualifier(
+            "channel",
+            "The SEED location and channel code, LOC.CHA.",
+            pattern=r"[A-Z0-9]{0,2}\.[A-Z0-9]{3}",
+        ),
+    ),
+    added_in="1.4.0",
+    references=(
+        "Peterson (1993), Observations and modeling of seismic background noise, USGS OFR 93-322",
+        "McNamara & Buland (2004), BSSA 94, 1517-1527, doi:10.1785/012003001",
+    ),
+)
+
 #: Instruments added after 1.0.0, in the order they arrived.
-LATER_INSTRUMENTS = (FLUID_INJECTION, RESERVOIR_PRESSURE, MOMENT_TENSOR)
+LATER_INSTRUMENTS = (FLUID_INJECTION, RESERVOIR_PRESSURE, MOMENT_TENSOR, SEISMIC_NOISE_POWER)
 
 V1_INSTRUMENTS = (
     SEISMIC_CATALOG,

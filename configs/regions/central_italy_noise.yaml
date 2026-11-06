@@ -1,0 +1,21 @@
+# The hum under the 2016-17 sequence: every broadband station in the box with a 1 Hz channel,
+# from a year before Amatrice to the end of 2018. Its own file, so central_italy's frozen
+# snapshot never moves when the noise instruments arrive.
+name: central_italy_noise
+description: Seismic noise and velocity change around Amatrice, Visso, Norcia and Campotosto, 2015-2018.
+box:
+  lat_min: 42.2
+  lat_max: 43.4
+  lon_min: 12.5
+  lon_max: 14.0
+start: "2015-06-01T00:00:00Z"
+end: "2019-01-01T00:00:00Z"
+adapters: [seismic_noise_power]
+sources:
+  fdsn_waveforms:
+    station_service: https://webservices.ingv.it/fdsnws/station/1/query
+    dataselect_service: https://webservices.ingv.it/fdsnws/dataselect/1/query
+    networks: [IV, MN]
+    channels: LH?
+    provider: INGV (EIDA Italia)
+    license: CC-BY-4.0

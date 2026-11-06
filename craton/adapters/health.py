@@ -168,10 +168,44 @@ class TideCollector(Collector):
         }
 
 
+class NoiseCollector(Collector):
+    """Seismic noise power: how many stations, the usual ocean hum, the loudest day heard."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.days: dict[str, set[float]] = defaultdict(set)
+        self.secondary: list[float] = []
+        self.loudest: tuple[float, str, str] | None = None
+
+    def see(self, t: Token) -> None:
+        self.days[t.qualifiers["station"]].add(t.time)
+        if t.qualifiers.get("component") == "Z":
+            self.secondary.append(t.value[1])
+            short = t.value[2]
+            if self.loudest is None or short > self.loudest[0]:
+                self.loudest = (short, t.qualifiers["station"], _day(t.time))
+
+    def extra(self) -> dict[str, Any]:
+        per_station = [len(v) for v in self.days.values()]
+        loud = None
+        if self.loudest is not None:
+            db, station, day = self.loudest
+            loud = {"short_db": round(db, 1), "station": station, "day": day}
+        return {
+            "stations": len(self.days),
+            "median_days_per_station": int(np.median(per_station)) if per_station else 0,
+            "median_secondary_db": (
+                round(float(np.median(self.secondary)), 1) if self.secondary else None
+            ),
+            "loudest_short_band": loud,
+        }
+
+
 COLLECTORS: dict[str, type[Collector]] = {
     "seismic_catalog": CatalogCollector,
     "gnss_daily": GnssCollector,
     "solid_earth_tide": TideCollector,
+    "seismic_noise_power": NoiseCollector,
 }
 
 
