@@ -8,6 +8,7 @@ Every source Craton reads, who made it, under what terms, and what to watch out 
 |---|---|---|---|
 | [`earthquakenpp`](earthquakenpp.md) | EarthquakeNPP benchmark datasets | `seismic_catalog` | `LicenseRef-USGS-public-domain` |
 | [`fdsn_catalog`](fdsn_catalog.md) | Earthquake catalogues through any FDSN event web service | `seismic_catalog` | `LicenseRef-per-region` |
+| [`gcmt`](gcmt.md) | Global Centroid-Moment-Tensor catalogue (one ndk release) | `moment_tensor` | `LicenseRef-GCMT-cite` |
 | [`iers_tides`](iers_tides.md) | Solid-Earth body tide (IERS 2010), computed by Craton | `solid_earth_tide` | `CC-BY-4.0` |
 | [`ingv_catalog`](ingv_catalog.md) | INGV earthquake catalogue (ISIDe) | `seismic_catalog` | `CC-BY-4.0` |
 | [`jma_hypocenter`](jma_hypocenter.md) | JMA Unified Hypocenter Catalogue (the Seismological Bulletin of Japan) | `seismic_catalog` | `CC-BY-4.0` |

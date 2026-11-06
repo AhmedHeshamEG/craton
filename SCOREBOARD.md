@@ -300,6 +300,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `earthquakenpp` | 92,263 | 1971-01-01 → 2020-01-16 | 0 | largest M 7.3 on 1992-06-28; M 92,263; longest quiet spell 8.11 days |
 
+### gcmt_world · snapshot `2f1c16b8e40e91c4` · 1976-01-01 → 2021-01-01
+
+| Source | Tokens | Span | Rejected | What it holds |
+|---|---|---|---|---|
+| `gcmt` | 56,832 | 1976-01-01 → 2020-12-31 | 0 | · |
+
 ### groningen · snapshot `b392ac5e4c87e6dc` · 1957-10-01 → 2026-10-01
 
 | Source | Tokens | Span | Rejected | What it holds |
