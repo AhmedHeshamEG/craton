@@ -2525,3 +2525,94 @@ filed there: a bound that the detector opens.
 
 **Rejected.** A learned cap trained on these two tasks (fitted to their test days). Keeping cap16 for
 CB-03's mainshock day alone.
+
+### D-137 · 2026-11-06 · P10 — The ear is 1 Hz, our own GPU code, and five parts
+
+P10 is built in five parts, the instruments before the model: **P10a** waveforms and daily noise power ·
+**P10b** dv/v and CB-28 · **P10c** both in the Field, ablation · **P10d** a borrowed ear (SeisLM) against
+ours · **P10e** figure, lesson, v0.11.0. No version bump before P10e.
+
+**The spike** (INGV FDSN, station IV.NRCA, 2016-10): a day of the 1 Hz `LH?` channels is 455 KB for three
+components; a day of `HHZ` alone (100 Hz) is 13.5 MB and took 79 s. A month of `LH?` in one request:
+14.6 MB in 89 s, about 3 s per station-day. Sixteen stations with `LH` sit in the box around the 2016
+sequence (15 IV, 1 MN), seven around L'Aquila 2009: about 800 station-months, ~11 GB, ~5 h at four
+requests in flight. The same at 100 Hz would be ~300 GB. So the ear listens at 1 Hz: noise power up
+to 0.45 Hz and correlations in 0.1-0.45 Hz. Published monitoring of this sequence used 0.1-1 Hz on 28
+stations and found three drops at the Mw ≥ 5.5 shocks with recovery by late 2017 (GNGTS 2018 abstract);
+our band is its lower half.
+
+**Choices.**
+- *Own code on the GPU, not MSNoise.* MSNoise 2.0 is still a development branch (xarray rewrite) and
+  runs as a database-backed job system; a PSD per hour and a correlation per pair are a few lines of
+  `torch.fft`, and the rule is GPU first for heavy numerics.
+- *pymseed (EarthScope's libmseed binding, Apache-2.0) reads miniSEED, not ObsPy.* Same licence as
+  Craton, one small wheel; ObsPy is LGPL and brings matplotlib, lxml and SQLAlchemy. A month decodes
+  in 0.1 s.
+- *Noise power = median of hourly band powers.* McNamara & Buland (2004) with one window per hour and
+  three bands (0.05-0.1, 0.1-0.3, 0.3-0.45 Hz), in dB of ground acceleration as Peterson's models are,
+  so a quake that shakes a few hours does not move the day. Hours with a missing sample are dropped; a
+  day needs 8 (the Norcia day at NRCA kept 10 of 24).
+- *New region files* `central_italy_noise` (2015-06 → 2019-01) and `laquila_noise` (2008-06 → 2010-06):
+  adding a source to `central_italy` would change its frozen snapshot. Stations are found from the
+  box, so any FDSN data centre on Earth works by YAML.
+- *Token Spec 1.4.0* adds `seismic_noise_power` and the unit `dB[(m/s2)2/Hz]`. dv/v gets its own
+  instrument in P10b, defined when its method is.
+
+**Found while researching.** EIDA's WFCatalog gives daily `sample_rms` and quartiles per channel with no
+waveform download, but over the whole band in raw counts: a cheap fallback for a station with no `LH`,
+not the instrument. SeisLM's weights are public (Hugging Face, MIT; base 11.4M, large 90.7M parameters)
+but it reads 100 Hz windows of 30 s, so P10d pulls ten quiet minutes of `HH?` per station-day (~0.3 MB),
+never whole days.
+
+**Rejected.** 100 Hz whole days (30× the disk and time). MSNoise. ObsPy as a core dependency. Putting
+the waveforms on C: (11 GB free).
+
+### D-138 · 2026-11-06 · P10 — At 1 Hz the hum's loudness is clear; its speed needs all nine components
+
+The P10 spike's second half: do daily noise correlations at 1 Hz see L'Aquila? Two years of seven
+stations around it (`laquila_noise`, 2008-06 → 2010-06), hourly 1-bit + whitened correlations in
+0.1-0.45 Hz, reference 2008-06 → 2008-12, trailing stacks (only the past), stretching on the coda.
+
+| | 10-day stack | 30-day | 50-day |
+|---|---|---|---|
+| one station, Z-N / Z-E / N-E (6 stations) | 0.25-0.42% scatter | | |
+| one station pair, Z-Z (15 pairs) | 0.52% median | 0.35% | 0.29% |
+| all pairs averaged, weighted by coherence | 0.17% | 0.14% | 0.09% |
+
+Scatter = standard deviation of dv/v on quiet days before the reference ended. The drop across
+6 April 2009 (ten days before vs ten days after a stack that holds only post-shock days): −0.10%,
+−0.03%, −0.07% for the network average: inside the scatter. The 50-day network series dips to about
+−0.3% 15-30 days after the shock and is back by day 90, but it wanders as far on quiet days.
+
+Why: the published L'Aquila drop is strongest at 0.5-1 Hz (Zaccarelli et al. 2011, GRL,
+doi:10.1029/2011GL049750; Soldati et al. 2015, GJI 202, 604), above the 0.5 Hz ceiling of 1 Hz data.
+Single-station correlations are known to be the weaker method below 0.5 Hz (Hobiger et al. 2014),
+and they are here too.
+
+The loudness instrument, by contrast, is clear at 1 Hz: on the shock day the 0.3-0.45 Hz band rises
+by about 20 dB at FAGN and 24 dB at AQU (a median of hours, so aftershocks filled the day), and is back
+within about five days; the ocean bands barely move.
+
+**All nine components.** Correlating every component of one station with every component of the
+other (Z-Z, Z-N, … E-E; Hobiger et al. 2012, JGR, doi:10.1029/2012JB009402), stretching each and
+averaging them weighted by coherence (126 series instead of 14):
+
+| | 10-day stack | 30-day | 50-day |
+|---|---|---|---|
+| Z-Z only, scatter in the reference months | 0.17% | 0.14% | 0.09% |
+| all nine, scatter in the reference months | 0.035% | 0.025% | 0.020% |
+| all nine, scatter out of sample (Jan-Mar 2009) | 0.062% | 0.043% | |
+| all nine, drop across the shock | −0.09% | −0.04% | −0.12% |
+
+Scatter inside the reference months flatters (the reference is made of those days), so the honest
+number is the out-of-sample one. The 10-day series goes from +0.07% ten days before the shock to
+−0.11% on its day and holds near −0.12% for ten days: 2-3 times the honest scatter. A year later it
+wanders to −0.2% with no shock, so the seasonal correction is not optional.
+
+**For P10b.** Station pairs, all nine components, not single stations. A seasonal and ocean-noise
+regression fitted before the test, and the stack length chosen on the reference period only. INGV also serves 20 Hz
+`BH?` on most of these stations: six stations around Norcia, vertical only, 2016-17 is ~13 GB and
+~7 h, which would open 0.5-1 Hz. Tried only if the 1 Hz series stays inside its noise.
+
+**Rejected.** Single-station dv/v as the instrument. Calling the Z-Z dip a detection, or the
+nine-component drop one before the seasonal term is fitted.

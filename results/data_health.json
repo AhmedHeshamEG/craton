@@ -1286,6 +1286,46 @@
         "2010-01-01T00:00:00Z"
       ]
     },
+    "laquila_noise": {
+      "adapters": {
+        "seismic_noise_power": {
+          "files": 3,
+          "health": {
+            "seismic_noise_power": {
+              "first": "2008-06-01",
+              "last": "2010-05-31",
+              "per_year": {
+                "2008": 3153,
+                "2009": 6032,
+                "2010": 2721
+              },
+              "tokens": 11906
+            }
+          },
+          "raw_bytes": 2236252127,
+          "raw_files": 152,
+          "rejects": {
+            "mixed_sample_rates": 3,
+            "no_channel_epoch": 145,
+            "too_few_hours": 1579,
+            "unreadable_record": 3149
+          },
+          "tokens": 11906,
+          "version": "1.0.0"
+        }
+      },
+      "box": {
+        "lat_max": 42.8,
+        "lat_min": 41.9,
+        "lon_max": 13.9,
+        "lon_min": 12.9
+      },
+      "snapshot": "da37464db905627a",
+      "window": [
+        "2008-06-01T00:00:00Z",
+        "2010-06-01T00:00:00Z"
+      ]
+    },
     "new_zealand": {
       "adapters": {
         "fdsn_catalog": {

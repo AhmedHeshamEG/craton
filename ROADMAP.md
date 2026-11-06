@@ -581,6 +581,12 @@ on CB-19 and CB-25.
 
 **Learn:** ambient-noise interferometry, why the Earth hums, new modalities.
 
+Built in parts (D-137), the instruments before the model: **P10a** continuous waveforms from any FDSN
+data centre and daily noise power · **P10b** dv/v from noise correlations, CB-28 and its neighbour floor ·
+**P10c** both instruments in the Field, the ablation · **P10d** a borrowed ear: frozen SeisLM embeddings
+against our band powers · **P10e** the figure, the lesson, v0.11.0. The ear listens at 1 Hz: a 100 Hz
+year of sixteen stations would be ~300 GB.
+
 ## P11 · The storm detector: the mainshock days → v0.12.0
 **Goal:** raise tomorrow's rate on the days a big quake is coming, without crying wolf.
 
