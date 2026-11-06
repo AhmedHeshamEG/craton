@@ -278,8 +278,50 @@ RESERVOIR_PRESSURE = Instrument(
     ),
 )
 
+# ---------------------------------------------------------------- 1.3.0: how a quake slipped
+
+#: The largest seismic moment ever measured is ~2.5e23 N·m (Chile 1960); 1e24 leaves room.
+_MAX_MOMENT = 1e24
+
+MOMENT_TENSOR = Instrument(
+    name="moment_tensor",
+    description=(
+        "How an earthquake slipped: its centroid moment tensor, the six independent elements "
+        "of the symmetric force-couple tensor, in the r (up), t (south), p (east) frame, placed "
+        "at the centroid."
+    ),
+    kinds=("event",),
+    channels=(
+        Channel("m_rr", "N.m", "Element rr (up-up).", -_MAX_MOMENT, _MAX_MOMENT),
+        Channel("m_tt", "N.m", "Element tt (south-south).", -_MAX_MOMENT, _MAX_MOMENT),
+        Channel("m_pp", "N.m", "Element pp (east-east).", -_MAX_MOMENT, _MAX_MOMENT),
+        Channel("m_rt", "N.m", "Element rt (up-south).", -_MAX_MOMENT, _MAX_MOMENT),
+        Channel("m_rp", "N.m", "Element rp (up-east).", -_MAX_MOMENT, _MAX_MOMENT),
+        Channel("m_tp", "N.m", "Element tp (south-east).", -_MAX_MOMENT, _MAX_MOMENT),
+        Channel("moment", "N.m", "Scalar seismic moment M0.", 0, _MAX_MOMENT),
+    ),
+    qualifiers=(
+        Qualifier("event_id", "The catalogue's own ID for the solution.", True, pattern=_ID),
+        Qualifier(
+            "source_type",
+            "What the inversion solved for.",
+            vocabulary=("general", "deviatoric", "double_couple"),
+        ),
+        Qualifier(
+            "depth_type",
+            "How the centroid depth was found.",
+            vocabulary=("free", "fixed", "waveform"),
+        ),
+    ),
+    added_in="1.3.0",
+    references=(
+        "Dziewonski, Chou & Woodhouse (1981), JGR 86, 2825-2852, doi:10.1029/JB086iB04p02825",
+        "Ekström, Nettles & Dziewonski (2012), PEPI 200-201, 1-9, doi:10.1016/j.pepi.2012.04.002",
+    ),
+)
+
 #: Instruments added after 1.0.0, in the order they arrived.
-LATER_INSTRUMENTS = (FLUID_INJECTION, RESERVOIR_PRESSURE)
+LATER_INSTRUMENTS = (FLUID_INJECTION, RESERVOIR_PRESSURE, MOMENT_TENSOR)
 
 V1_INSTRUMENTS = (
     SEISMIC_CATALOG,
