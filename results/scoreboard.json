@@ -703,6 +703,25 @@
         "CB-03.terms": 1.3333333333333333,
         "CB-03.validation_share": 0.7785482244442125
       }
+    },
+    "CB-33": {
+      "task_id": "CB-33",
+      "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+      "direction": "higher",
+      "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+      "mean": 0.44798475166760304,
+      "std": 0.09259546730489528,
+      "n_seeds": 3,
+      "run_id": "20261105-081102-craton-mini",
+      "model": "craton-mini",
+      "accepted": "2026-11-05T08:11:30Z",
+      "extras": {
+        "cells_per_day": 93.64761904761905,
+        "graded_days": 70.0,
+        "planet": 1.0,
+        "shadow_cells_per_day": 8.995238095238095,
+        "shadows_below_median": 0.8852921473931552
+      }
     }
   },
   "baselines": {
@@ -3756,6 +3775,122 @@
           "CB-03.validation_share": 0.5289535361625699
         }
       }
+    },
+    "CB-33": {
+      "quake_density": {
+        "task_id": "CB-33",
+        "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+        "direction": "higher",
+        "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+        "mean": 0.3949801158671142,
+        "std": 0.1098240923012791,
+        "n_seeds": 3,
+        "run_id": "20261105-072638-quake-density",
+        "model": "quake_density",
+        "accepted": "2026-11-05T08:11:30Z",
+        "extras": {
+          "cells_per_day": 93.64761904761905,
+          "graded_days": 70.0,
+          "planet": 1.0,
+          "shadow_cells_per_day": 8.995238095238095,
+          "shadows_below_median": 0.8242501957320378
+        }
+      },
+      "etas": {
+        "task_id": "CB-33",
+        "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+        "direction": "higher",
+        "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+        "mean": 0.34749640858946834,
+        "std": 0.176435516769871,
+        "n_seeds": 3,
+        "run_id": "20261105-073336-etas",
+        "model": "etas",
+        "accepted": "2026-11-05T08:11:30Z",
+        "extras": {
+          "cells_per_day": 93.64761904761905,
+          "graded_days": 70.0,
+          "planet": 1.0,
+          "shadow_cells_per_day": 8.995238095238095,
+          "shadows_below_median": 0.7962656167399408
+        }
+      },
+      "poisson": {
+        "task_id": "CB-33",
+        "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+        "direction": "higher",
+        "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+        "mean": 0.18510667539524647,
+        "std": 0.17635239517860687,
+        "n_seeds": 3,
+        "run_id": "20261105-073347-poisson",
+        "model": "poisson",
+        "accepted": "2026-11-05T08:11:30Z",
+        "extras": {
+          "cells_per_day": 93.64761904761905,
+          "graded_days": 70.0,
+          "planet": 1.0,
+          "shadow_cells_per_day": 8.995238095238095,
+          "shadows_below_median": 0.6268602908210039
+        }
+      },
+      "etas_aniso": {
+        "task_id": "CB-33",
+        "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+        "direction": "higher",
+        "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+        "mean": 0.3474827274245002,
+        "std": 0.17642889581881208,
+        "n_seeds": 3,
+        "run_id": "20261105-074049-etas-aniso",
+        "model": "etas_aniso",
+        "accepted": "2026-11-05T08:11:30Z",
+        "extras": {
+          "cells_per_day": 93.64761904761905,
+          "graded_days": 70.0,
+          "planet": 1.0,
+          "shadow_cells_per_day": 8.995238095238095,
+          "shadows_below_median": 0.7962656167399408
+        }
+      },
+      "etas_incomplete": {
+        "task_id": "CB-33",
+        "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+        "direction": "higher",
+        "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+        "mean": 0.34749640858946834,
+        "std": 0.176435516769871,
+        "n_seeds": 3,
+        "run_id": "20261105-075505-etas-incomplete",
+        "model": "etas_incomplete",
+        "accepted": "2026-11-05T08:11:30Z",
+        "extras": {
+          "cells_per_day": 93.64761904761905,
+          "graded_days": 70.0,
+          "planet": 1.0,
+          "shadow_cells_per_day": 8.995238095238095,
+          "shadows_below_median": 0.7962656167399408
+        }
+      },
+      "crs": {
+        "task_id": "CB-33",
+        "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+        "direction": "higher",
+        "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+        "mean": 0.24843708222405456,
+        "std": 0.19167974276984467,
+        "n_seeds": 3,
+        "run_id": "20261105-080242-crs",
+        "model": "crs",
+        "accepted": "2026-11-05T08:11:30Z",
+        "extras": {
+          "cells_per_day": 93.64761904761905,
+          "graded_days": 70.0,
+          "planet": 1.0,
+          "shadow_cells_per_day": 8.995238095238095,
+          "shadows_below_median": 0.733073169845699
+        }
+      }
     }
   },
   "history": [
@@ -4115,6 +4250,55 @@
       "kind": "baseline",
       "accepted": "2026-11-05T02:57:54Z",
       "summary": "1 new"
+    },
+    {
+      "run_id": "20261105-072638-quake-density",
+      "model": "quake_density",
+      "kind": "baseline",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new"
+    },
+    {
+      "run_id": "20261105-073336-etas",
+      "model": "etas",
+      "kind": "baseline",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new, 13 same"
+    },
+    {
+      "run_id": "20261105-073347-poisson",
+      "model": "poisson",
+      "kind": "baseline",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new, 12 same"
+    },
+    {
+      "run_id": "20261105-074049-etas-aniso",
+      "model": "etas_aniso",
+      "kind": "baseline",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new, 12 same"
+    },
+    {
+      "run_id": "20261105-075505-etas-incomplete",
+      "model": "etas_incomplete",
+      "kind": "baseline",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new, 10 same"
+    },
+    {
+      "run_id": "20261105-080242-crs",
+      "model": "crs",
+      "kind": "baseline",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new, 10 same"
+    },
+    {
+      "run_id": "20261105-081102-craton-mini",
+      "model": "craton-mini",
+      "kind": "model",
+      "accepted": "2026-11-05T08:11:30Z",
+      "summary": "1 new, 19 same"
     }
   ]
 }

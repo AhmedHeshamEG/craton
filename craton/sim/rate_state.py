@@ -155,6 +155,59 @@ class FluidSource:
     p0: float  # MPa
 
 
+@dataclass
+class StressRecord:
+    """What the planet writes down about itself, for CB-33: at each of ``at`` (days since the
+    catalogue's start), every patch's Coulomb stress change so far (MPa): all the quakes'
+    steps plus the fluid's μ'·p. Tectonic loading is left out; it rises the same everywhere
+    on a patch's own clock, and no quake says anything about it."""
+
+    at: FloatArray
+    patches: Patches | None = None
+    steps: FloatArray | None = None  # (times, patches) MPa from quakes
+    fluid: FloatArray | None = None  # (times, patches) MPa from pore pressure, μ'·p
+    gamma: FloatArray | None = None  # (times, patches) the rate-and-state state variable
+
+    def fill(
+        self,
+        planet: RateStatePlanet,
+        p: Patches,
+        fluids: list[FluidSource],
+        steps: FloatArray,
+        gamma: FloatArray,
+    ) -> None:
+        self.patches = p
+        self.steps = steps
+        self.gamma = gamma
+        self.fluid = (
+            np.stack(
+                [
+                    planet.friction * planet.pressure(p, fluids, a + planet.burn_in_days)
+                    for a in self.at
+                ]
+            )
+            if len(self.at)
+            else np.zeros((0, len(p)))
+        )
+
+    @property
+    def coulomb(self) -> FloatArray:
+        """(times, patches) the total Coulomb stress change, MPa."""
+        assert self.steps is not None
+        assert self.fluid is not None
+        return np.asarray(self.steps + self.fluid, dtype=np.float64)
+
+    @property
+    def state(self) -> FloatArray:
+        """(times, patches) how close each patch is to failure, in units of Aσ:
+        ln(1 / (γ τ̇)) = ln(R / r). Zero is steady loading; +1 is a rate e times its
+        background; negative is a stress shadow. Dieterich (1994): this is the stress the
+        seismicity rate reads, every quake and the fluid since the start folded in."""
+        assert self.gamma is not None
+        assert self.patches is not None
+        return np.asarray(-np.log(self.gamma * self.patches.tau_dot[None]), dtype=np.float64)
+
+
 @dataclass(frozen=True)
 class RateStatePlanet:
     """A planet where rate-and-state friction and stress transfer are the truth."""
@@ -319,7 +372,10 @@ class RateStatePlanet:
     def planet(self, box: tuple[float, float, float, float], seed: int) -> Patches:
         return self.patches(box, np.random.default_rng([seed, 1]))
 
-    def simulate(self, spec: SimSpec, seed: int) -> Events:
+    def simulate(self, spec: SimSpec, seed: int, record: StressRecord | None = None) -> Events:
+        """A catalogue. With ``record``, the planet also writes down its own stress history
+        (CB-33's truth) at ``record.at``; that draws no random numbers, so the catalogue is
+        the same with or without it."""
         rng = np.random.default_rng([seed, 2])
         p = self.planet(spec.box, seed)
         total = spec.days + self.burn_in_days
@@ -334,6 +390,12 @@ class RateStatePlanet:
         times: list[FloatArray] = []
         where: list[IntArray] = []
         mags: list[FloatArray] = []
+        steps = np.zeros(len(p))  # every quake's Coulomb step so far, per patch (MPa)
+        targets = (
+            np.zeros(0) if record is None else np.asarray(record.at, float) + self.burn_in_days
+        )
+        snaps: list[FloatArray] = []
+        states: list[FloatArray] = []
         while t < total:
             dt = self.fine_dt_days if t < fine_until else self.dt_days
             dt = min(dt, total - t)
@@ -359,10 +421,20 @@ class RateStatePlanet:
                         p, p.lat[idx[big]], p.lon[idx[big]], m[big], p.strike[idx[big]], rng
                     )
                     gamma = gamma * np.exp(-ds / p.a_sigma)
+                    steps = steps + ds
                 if m.max() >= self.fine_after:
                     fine_until = t + dt + self.fine_for_days
             pres = nxt
             t += dt
+            # Steps fall on whole hours (and five minutes), so a midnight is a step's end.
+            while len(snaps) < len(targets) and t >= targets[len(snaps)] - 1e-6:
+                snaps.append(steps.copy())
+                states.append(gamma.copy())
+        if record is not None:
+            while len(snaps) < len(targets):
+                snaps.append(steps.copy())
+                states.append(gamma.copy())
+            record.fill(self, p, fluids, np.asarray(snaps), np.asarray(states))
         tt = np.concatenate(times) if times else np.zeros(0)
         ii = np.concatenate(where) if where else np.zeros(0, np.int64)
         mm = np.concatenate(mags) if mags else np.zeros(0)

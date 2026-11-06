@@ -1087,6 +1087,47 @@
           "CB-03"
         ]
       }
+    },
+    "CB-33": {
+      "name": "Planted stress",
+      "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+      "direction": "higher",
+      "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+      "files": {
+        "state-0.parquet": "c89ea0abf57e155b15baa157d3a1d36c1d3a7cf5c399fc5c89d00753c4c6d422",
+        "state-1.parquet": "9d21f7cbeddc66db9495af3a78a624872c5edd832a5a1bffd47f65d11ec50db2",
+        "state-2.parquet": "3f4311fc414d4dc6a0d4846e449bd4fa9d2a388f102f9bd66a55f0f2f6ad7005"
+      },
+      "summary": {
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "planets": [
+          {
+            "seed": 0,
+            "cells_per_day": 97.32857142857142,
+            "shadow_cells_per_day": 12.457142857142857,
+            "largest_state": 4.844794938996132,
+            "deepest_shadow": -68.3670467206085
+          },
+          {
+            "seed": 1,
+            "cells_per_day": 91.77142857142857,
+            "shadow_cells_per_day": 8.0,
+            "largest_state": 2.211828532414869,
+            "deepest_shadow": -12.223842509323728
+          },
+          {
+            "seed": 2,
+            "cells_per_day": 91.84285714285714,
+            "shadow_cells_per_day": 6.5285714285714285,
+            "largest_state": 1.4122414915652537,
+            "deepest_shadow": -1.5209337783857524
+          }
+        ]
+      }
     }
   }
 }

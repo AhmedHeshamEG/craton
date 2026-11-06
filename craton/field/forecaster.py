@@ -46,6 +46,7 @@ from craton.field.base import KernelCache, etas_daily
 from craton.field.config import FieldConfig, field_hash, load_field_config
 from craton.field.hidden import make_net
 from craton.field.memory import MemorySpec, memory
+from craton.field.meter import MeterFieldNet, deltas, scan
 from craton.field.steer import quadrupole
 from craton.field.wiring import WiredFieldNet, band_kernels
 from craton.field.wiring import sources as wiring_sources
@@ -91,6 +92,9 @@ class Days:
     wiring: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None = None
     #: (P9d, the camera) (days,) log share of the M2-3 band the network saw each day.
     eyes: np.ndarray | None = None
+    #: (P9f, the stress meter) (days, cells) ETAS's log rate at or above mc, and (cells,) the
+    #: log of ETAS's background, per day, when the Field's output is a stress.
+    meter: tuple[np.ndarray, np.ndarray] | None = None
 
 
 def _counts(
@@ -184,7 +188,15 @@ def build_days(
     eyes = None
     if camera and with_counts:
         eyes = log_band_seen(events, starts, span_days, fit.b, fit.mc, scored)
-    return Days(starts, mem, log_etas.astype(np.float32), counts, span_days, quad, wiring, eyes)
+    meter = None
+    if cfg.meter is not None and cfg.meter.stress:
+        pr = fit.params
+        bg = span_days * pr.mu * fit.background.cell_mass(grid, proj)
+        bg = bg * etas.cascade_factor(pr, fit.b, fit.mc, span_days)
+        meter = (log_r.astype(np.float32), np.log(np.maximum(bg, 1e-30)).astype(np.float32))
+    return Days(
+        starts, mem, log_etas.astype(np.float32), counts, span_days, quad, wiring, eyes, meter
+    )
 
 
 def log_band_seen(
@@ -218,6 +230,9 @@ def make_field(days: Days, grid: csep.Grid, cfg: FieldConfig) -> torch.nn.Module
     if cfg.wiring is not None and cfg.wiring.attention:
         assert days.wiring is not None
         return WiredFieldNet(days.memory.shape[-1], grid, cfg.model, cfg.wiring, days.wiring[3])
+    if cfg.meter is not None and cfg.meter.stress:
+        assert days.meter is not None
+        return MeterFieldNet(days.memory.shape[-1], grid, cfg.model, cfg.meter, days.meter[1])
     return make_net(days.memory.shape[-1], grid, cfg.model, cfg.hidden)
 
 
@@ -260,11 +275,35 @@ def train_member(
     mem = torch.from_numpy(days.memory)
     log_e = torch.from_numpy(days.log_etas)
     y = torch.from_numpy(days.counts)
+    metered = isinstance(net, MeterFieldNet)
+    deficit = torch.zeros(0)
+
+    def rescan() -> torch.Tensor:
+        """(P9f) Every training day's deficit under the net as it is now (days are consecutive)."""
+        assert isinstance(net, MeterFieldNet)
+        assert days.meter is not None
+        total = torch.from_numpy(days.meter[0]).to(dev)
+        dl = deltas(net, days.memory, days.log_etas[..., 1], dev)
+        d, end = scan(net, dl, total, torch.zeros(grid.n_cells))
+        carry = net.get_buffer("carry")
+        carry.copy_(end.to(carry.device))
+        return d.cpu()
+
+    def inputs(sel: IntArray) -> tuple[torch.Tensor, ...]:
+        if metered:
+            assert days.meter is not None
+            return (torch.from_numpy(days.meter[0][sel]).to(dev), deficit[sel].to(dev))
+        return extra_inputs(days, sel, dev)
+
+    if metered:
+        if days.span_days != 1:
+            raise ValueError("the stress meter walks consecutive single days")
+        deficit = rescan()
 
     def nll(sel: IntArray) -> tuple[torch.Tensor, torch.Tensor]:
         lb = log_e[sel].to(dev)
         with torch.autocast(dev.type, torch.float16, enabled=dev.type == "cuda"):
-            corr = net(mem[sel].to(dev).float(), lb[..., 1], *extra_inputs(days, sel, dev))
+            corr = net(mem[sel].to(dev).float(), lb[..., 1], *inputs(sel))
         lam = lb + corr
         if days.eyes is not None:  # the answers are one network's: M2-3 through its eyes
             seen = torch.from_numpy(days.eyes[sel]).to(dev)
@@ -296,6 +335,8 @@ def train_member(
             scaler.scale(loss / (tc.days_per_step * 1000.0)).backward()  # type: ignore[no-untyped-call]
             scaler.step(opt)
             scaler.update()
+        if metered:
+            deficit = rescan()  # the deficits this net leaves, for validation and the next epoch
         v = validate()
         if v < best - 1e-4:
             best, bad = v, 0
@@ -331,6 +372,9 @@ def predict_members(
         net = make_field(days, grid, cfg)
         net.load_state_dict(state)
         net.to(dev).eval()
+        if isinstance(net, MeterFieldNet):
+            out[k] = metered_rates(net, days, dev)
+            continue
         with torch.no_grad():
             for i in range(0, len(days.starts), INFER_DAYS):
                 lb = log_e[i : i + INFER_DAYS].to(dev)
@@ -339,6 +383,24 @@ def predict_members(
                 rate = (lb + corr[..., 1]).exp().double().cpu().numpy()
                 out[k, i : i + INFER_DAYS] = rate
     return out
+
+
+def metered_rates(net: MeterFieldNet, days: Days, dev: torch.device) -> FloatArray:
+    """(days, cells) a stress-meter Field's M3+ rates: its stress for every day, then the days
+    walked in order from the deficit its training days left (P9f). The days must be
+    consecutive; a gap between the training days and these is walked as if empty."""
+    if days.meter is None or days.span_days != 1:
+        raise ValueError("the stress meter forecasts consecutive single days")
+    if len(days.starts) > 1 and not np.allclose(np.diff(days.starts), DAY):
+        raise ValueError("the stress meter needs consecutive days")
+    total = torch.from_numpy(days.meter[0]).to(dev)
+    dl = deltas(net, days.memory, days.log_etas[..., 1], dev)
+    carry = net.get_buffer("carry")
+    deficit, _ = scan(net, dl, total, carry)
+    with torch.no_grad():
+        corr = net.correction(dl, total, deficit)
+    lb = torch.from_numpy(days.log_etas[..., 1]).to(dev)
+    return np.asarray((lb + corr[..., 1]).exp().double().cpu().numpy(), dtype=np.float64)
 
 
 @dataclass

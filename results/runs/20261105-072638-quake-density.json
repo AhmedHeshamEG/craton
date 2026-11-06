@@ -1,0 +1,54 @@
+{
+  "run_id": "20261105-072638-quake-density",
+  "model": "quake_density",
+  "kind": "baseline",
+  "config_hash": "baseline",
+  "git_commit": "3230dd811516",
+  "created": "2026-11-05T07:26:38Z",
+  "results": [
+    {
+      "task_id": "CB-33",
+      "metric": "rank correlation of inferred and true state, off-steady cells of physics planets",
+      "direction": "higher",
+      "fingerprint": "c09dbf6f28af0f5de7fce6a1d3946f3a605681068aebeb50de902814e24631df",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "values": [
+        0.40621949691977,
+        0.49875232853734264,
+        0.2799685221442298
+      ],
+      "extras": {
+        "planet": [
+          0.0,
+          1.0,
+          2.0
+        ],
+        "graded_days": [
+          70.0,
+          70.0,
+          70.0
+        ],
+        "cells_per_day": [
+          97.32857142857142,
+          91.77142857142857,
+          91.84285714285714
+        ],
+        "shadow_cells_per_day": [
+          12.457142857142857,
+          8.0,
+          6.5285714285714285
+        ],
+        "shadows_below_median": [
+          0.7224770642201835,
+          0.875,
+          0.87527352297593
+        ]
+      },
+      "carried_from": null
+    }
+  ]
+}

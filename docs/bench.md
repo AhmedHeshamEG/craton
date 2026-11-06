@@ -224,6 +224,14 @@ CB-02's calendar and scoring on six simulated planets where the truth is known. 
 | physics planet | 1 | 2.47 | 0.995 | 0.0666 | 0.698 | 1.89 | 0.88 | 108 |
 | physics planet | 2 | 2.43 | 1 | 0.0548 | 0.67 | 1.15 | 1.08 | 127 |
 
+## CB-33 · Planted stress
+
+
+
+- **Metric:** rank correlation of inferred and true state, off-steady cells of physics planets (higher is better)
+- **Fingerprint:** `c09dbf6f28af0f5d`
+- **Test data:** seeds [0, 1, 2] · planets [{'seed': 0, 'cells_per_day': 97.32857142857142, 'shadow_cells_per_day': 12.457142857142857, 'largest_state': 4.844794938996132, 'deepest_shadow': -68.3670467206085}, {'seed': 1, 'cells_per_day': 91.77142857142857, 'shadow_cells_per_day': 8.0, 'largest_state': 2.211828532414869, 'deepest_shadow': -12.223842509323728}, {'seed': 2, 'cells_per_day': 91.84285714285714, 'shadow_cells_per_day': 6.5285714285714285, 'largest_state': 1.4122414915652537, 'deepest_shadow': -1.5209337783857524}]
+
 ## CB-23 · Hidden-state truth
 
 Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
