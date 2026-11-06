@@ -234,3 +234,29 @@ def test_one_damaged_record_costs_one_record(version: int) -> None:
     segments, bad = decode(bytes(data))
     assert bad == 1
     assert len(x) - 512 < sum(len(s.samples) for s in segments) < len(x)
+
+
+def test_the_health_report_names_the_loudest_day(tmp_path: Path) -> None:
+    from craton.adapters.health import collector_for
+    from craton.bench.scoreboard import _says
+
+    raw = RawStore(tmp_path)
+    r = region()
+    raw.put(
+        SOURCE,
+        stations_label(r.sources[SOURCE] | {"channels": "LH?"}, r),
+        "u",
+        STATIONS.encode(),
+        "2026-11-06",
+        ".txt",
+    )
+    quiet = mseed("FDSN:XX_ABC__L_H_Z", white_velocity_day(1e-8), "2020-01-01T00:00:00Z")
+    loud = mseed("FDSN:XX_ABC__L_H_Z", white_velocity_day(1e-6, 1), "2020-01-02T00:00:00Z")
+    raw.put(SOURCE, "XX.ABC.2020-01", "u", quiet + loud, "2026-11-06", ".mseed")
+    toks = [t for y in get_adapter("seismic_noise_power").tokens(BuildContext(r, raw)) for t in y]
+    c = collector_for("seismic_noise_power")
+    c.observe(toks)
+    h = c.result()
+    assert h["stations"] == 1
+    assert h["loudest_short_band"]["day"] == "2020-01-02"
+    assert "loudest day 2020-01-02 at XX.ABC" in _says("x", {"seismic_noise_power": h})

@@ -1294,11 +1294,19 @@
             "seismic_noise_power": {
               "first": "2008-06-01",
               "last": "2010-05-31",
+              "loudest_short_band": {
+                "day": "2009-01-14",
+                "short_db": -106.6,
+                "station": "IV.CERT"
+              },
+              "median_days_per_station": 628,
+              "median_secondary_db": -131.8,
               "per_year": {
                 "2008": 3153,
                 "2009": 6032,
                 "2010": 2721
               },
+              "stations": 7,
               "tokens": 11906
             }
           },

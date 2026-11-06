@@ -78,6 +78,16 @@ def _says(name: str, health: dict[str, Any]) -> str:
             f"{_n(h['at_events'])} at earthquakes + {_n(h['hourly'])} hourly; peak "
             f"{pk['u']:.3f} m up, {pk['n']:.3f} m north, {pk['e']:.3f} m east"
         )
+    if "seismic_noise_power" in health:
+        h = health["seismic_noise_power"]
+        text = (
+            f"{h['stations']} stations, median {_n(h['median_days_per_station'])} days each; "
+            f"ocean hum (0.1-0.3 Hz, vertical) median {h['median_secondary_db']:g} dB"
+        )
+        loud = h.get("loudest_short_band")
+        if loud:
+            text += f"; loudest day {loud['day']} at {loud['station']}, {loud['short_db']:g} dB"
+        return text
     return "·"
 
 

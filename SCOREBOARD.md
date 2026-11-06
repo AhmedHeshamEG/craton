@@ -338,7 +338,7 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
-| `seismic_noise_power` | 11,906 | 2008-06-01 → 2010-05-31 | 4,876 (unreadable_record 3,149, too_few_hours 1,579) | · |
+| `seismic_noise_power` | 11,906 | 2008-06-01 → 2010-05-31 | 4,876 (unreadable_record 3,149, too_few_hours 1,579) | 7 stations, median 628 days each; ocean hum (0.1-0.3 Hz, vertical) median -131.8 dB; loudest day 2009-01-14 at IV.CERT, -106.6 dB |
 
 ### new_zealand · snapshot `0ad42fd967748d63` · 1987-01-01 → 2026-10-01
 
