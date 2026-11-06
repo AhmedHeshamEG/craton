@@ -6,9 +6,9 @@ the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
 CORE       ██████████████████████████████   8/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ████░░░░░░░░░░░░░░░░░░░░░░░░░░   1/7    P8–P14  other planets, hidden state, listening, storm detector, ghost, translator, microscope
+DISCOVERY  █████████░░░░░░░░░░░░░░░░░░░░░   2/7    P8–P14  other planets, hidden state, listening, storm detector, ghost, translator, microscope
 SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    P15–P16 any time horizon + the predictability horizon, then mini → planet
-ALL        ████████████████░░░░░░░░░░░░░░   9/17
+ALL        ██████████████████░░░░░░░░░░░░   10/17
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -545,8 +545,12 @@ each graded on a truth the model never sees (D-116):
   trained without each region beats ETAS fitted there in all four, on every sequence and seed (+0.34,
   best floor +0.07). Dimensionless inputs help central Italy and California, hurt Japan and New
   Zealand, lose on the mean (+0.30) and are not kept (D-129 … D-131)
-- **P9i** direction from focal mechanisms (CB-34), the figure (inferred stress and pressure next to
-  the truth), the referee on every public map, v0.10.0
+- **P9i** ✓ direction from focal mechanisms (CB-34), the referee on every public map, v0.10.0. Done
+  2026-11-06: Global CMT moment tensors as tokens (Token Spec 1.3.0); the tensor field (masked
+  modelling of mechanisms) 31.3° off stress no quake measured, the textbook Kostrov sum 33.4°, copying
+  neighbouring boreholes 27.9°. The map referee passes CB-23 and CB-34, CB-33 on two planets of three,
+  and fails CB-31 as stated. CB-02's gain over ETAS is the Norcia day; the ×4 cap binds on L'Aquila
+  (D-132 … D-136)
 
 ## P10 · Listening: continuous noise as instruments → v0.11.0
 **Goal:** two instruments that report every day, quake or no quake: seismic noise power and seismic velocity

@@ -37,6 +37,7 @@ UNITS: Mapping[str, str] = {
     "K": "kelvin",
     "mm/a": "millimetres per year",
     "m3": "cubic metre",
+    "N.m": "newton metre (a seismic moment)",
     "log10(m2)": "base-10 logarithm of a permeability in square metres",
     "log10(mm)": "base-10 logarithm of a length in millimetres",
 }

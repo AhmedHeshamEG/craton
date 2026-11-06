@@ -155,6 +155,14 @@ ABOUT = {
         "with the state a forecast implies, ln(rate / the cell's long-run rate). Floor: "
         "`quake_density` (the cell's last year of quakes over its long-run rate)."
     ),
+    "CB-34": (
+        "Which way the crust is squeezed, from how quakes slipped. CB-23's seven regions and "
+        "cuts, with every Global CMT moment tensor before the cut as input too, graded only on "
+        "World Stress Map records that were not read from quakes (boreholes, drilling "
+        "fractures, hydraulic fracturing, overcoring, fault-slip data), one record enough for "
+        "a 0.5° cell. Same angle, 0-90°. Floors: CB-23's three, and `mechanism_kostrov` (unit "
+        "moment tensors summed within ~150 km, SHmax of the sum, Lund & Townend 2007)."
+    ),
 }
 
 
@@ -219,6 +227,29 @@ def _stress(summary: dict[str, Any]) -> list[str]:
         )
     snaps = ", ".join(f"{r} `{i}`" for r, i in summary["snapshots"].items())
     return [*out, "", f"Snapshots: {snaps}."]
+
+
+def _mechanisms(summary: dict[str, Any]) -> list[str]:
+    """CB-34's frozen regions: cells, non-quake records, mechanisms a method may read."""
+    from craton.bench.stress import CASES
+
+    out = [
+        "| Region | Half | Mechanisms read (crust, before) | Cells | Non-quake records |",
+        "|---|---|---|---|---|",
+    ]
+    for c in CASES:
+        v = summary[c.region]
+        out.append(
+            f"| {c.region.replace('_', ' ')} | {c.half.replace('_', '-')} | "
+            f"{v['mechanisms']:,} ({v['crustal_mechanisms']:,}, {c.cut[:10]}) | {v['cells']} | "
+            f"{v['records']:,} |"
+        )
+    return [
+        *out,
+        "",
+        f"Mechanisms: gcmt_world snapshot `{summary['mechanism_snapshot']}`; "
+        f"{summary['non_quake_records']:,} non-quake WSM records worldwide.",
+    ]
 
 
 def _migration(summary: dict[str, Any]) -> list[str]:
@@ -320,7 +351,15 @@ def render() -> str:
             f"- **Fingerprint:** `{f.get('fingerprint', '?')[:16]}`",
         ]
         summary = f.get("summary", {})
-        if summary and task_id not in ("CB-09", "CB-22", "CB-23", "CB-24", "CB-30", "CB-32"):
+        if summary and task_id not in (
+            "CB-09",
+            "CB-22",
+            "CB-23",
+            "CB-24",
+            "CB-30",
+            "CB-32",
+            "CB-34",
+        ):
             parts = []
             for k, v in summary.items():
                 if isinstance(v, dict):
@@ -344,6 +383,8 @@ def render() -> str:
             lines += ["", *_stress(summary)]
         if task_id == "CB-24" and summary:
             lines += ["", *_migration(summary)]
+        if task_id == "CB-34" and summary:
+            lines += ["", *_mechanisms(summary)]
     lines += [
         "",
         "## Add a method",

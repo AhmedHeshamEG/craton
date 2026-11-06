@@ -108,7 +108,10 @@ class CratonMini:
     world_config: str = "world"
     #: The Field config that answers CB-30 (P8e): quakes plus the measured forcing.
     forced_config: str = "forced"
+    #: The tensor field that answers CB-34 (P9i, ``configs/tensors/``): mechanisms in, SHmax out.
+    tensor_config: str = "mini"
     log: Log = _quiet
+    _tensors: list[Any] = field(default_factory=list)
     _world: list[Any] = field(default_factory=list)
     _forced: list[Any] = field(default_factory=list)
     _unseen: list[Any] = field(default_factory=list)
@@ -608,6 +611,15 @@ class CratonMini:
             )
         return self._quake_only[0]
 
+    def mechanism_stress_azimuths(self, query: Any, seed: int) -> Any:
+        """(P9i, CB-34) SHmax from the tensor field (``craton.field.tensors``): masked
+        modelling of the mechanisms, never a stress record. CB-23 can't call this (D-116)."""
+        if not self._tensors:
+            from craton.field.tensors import TensorFieldMapper
+
+            self._tensors.append(TensorFieldMapper(self.tensor_config, log=self.log))
+        return self._tensors[0].mechanism_stress_azimuths(query, seed)
+
     def predictive(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> Predictive:
         """CB-05 and the other trust tasks: the Field's members and fitted dispersion."""
         if self.field_config:
@@ -703,6 +715,14 @@ class CratonMini:
                 for f in sorted(cdir.glob(pattern))
                 if (f / "card.md").is_file()
             ]
+        if self.tensor_config:
+            from craton.field.tensors import checkpoint_path, load_tensor_config
+
+            tc = load_tensor_config(self.tensor_config, root)
+            for seed in tc.seeds:
+                c = checkpoint_path(tc, seed, root).parent / "card.md"
+                if c.is_file():
+                    fields.append(c.read_text("utf-8"))
         return checkpoint.write_index(
             root,
             sorted(set(folders)),

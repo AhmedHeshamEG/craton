@@ -1159,6 +1159,9 @@ from craton.bench import enhanced as _enhanced  # noqa: E402, F401
 from craton.bench import induced as _induced  # noqa: E402, F401
 from craton.bench import locks as _locks  # noqa: E402, F401
 
+# P9i: CB-34, the squeeze from how quakes slipped, graded on stress no quake measured.
+from craton.bench import mechanisms as _mechanisms  # noqa: E402, F401
+
 # P9b: CB-24, where a sequence lights up next.
 from craton.bench import migration as _migration  # noqa: E402, F401
 

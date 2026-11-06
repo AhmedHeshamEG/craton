@@ -1,0 +1,18 @@
+# How quakes slipped, the whole Earth: the Global CMT catalogue, 1976-2020, one release.
+# A source of moment tensors that any region reads by cutting its box and window out of this
+# one snapshot (CB-34), so no other region's snapshot changes when mechanisms arrive.
+name: gcmt_world
+description: Global CMT moment tensors, every solution 1976-2020, the whole Earth.
+box:
+  lat_min: -90.0
+  lat_max: 90.0
+  lon_min: -180.0
+  lon_max: 179.9999
+start: "1976-01-01T00:00:00Z"
+end: "2021-01-01T00:00:00Z"     # the release's last month; a newer release is a new file
+adapters: [gcmt]
+sources:
+  gcmt:
+    url: https://www.ldeo.columbia.edu/~gcmt/projects/CMT/catalog/jan76_dec20.ndk
+    sha256: baed5ad29a69b57344c6025b27769b1012858aa6b5c807f984696d573c0f0eb4
+    license: LicenseRef-GCMT-cite

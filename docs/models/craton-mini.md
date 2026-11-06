@@ -558,3 +558,51 @@ Craton-mini: a transformer over central Italy that reads the INGV earthquake cat
 - **Size:** 110,658 parameters per member, 4 members.
 - **Training:** validation gain over ETAS (nats per quake) 0.0741, 0.0687, 0.0829, 0.0953; 4.9 min.
 - **Code:** Craton 0.8.0, forced f0.1, pool `dbe039ec50c1`, config hash `a6ba6957b81dde0b`.
+
+### tensors-mini-fdaa97e1-s0
+
+The tensor field: hide a Global CMT moment tensor, predict its shape from the mechanisms around it. It answers CB-34 (the squeeze at a stress cell, from the field's tensor there). It never reads a stress record.
+
+| | |
+|---|---|
+| Trained on | `moment_tensor`, gcmt_world snapshot `2f1c16b8e40e91c4`, crust above 40 km, before 2007-01-01, outside turkey, chile, alaska |
+| Examples | 16,950 mechanisms; 12,093 training targets, 4,741 validation targets (from 2003-01-01) |
+| Shape | d = 64, 2 cross-attention layers, 4 heads, 48 neighbours within 300 km |
+| Parameters | 76,614 |
+| Seed | 0 |
+| Training | best at epoch 8 of 15, misfit 0.2945 (1 − alignment of unit tensors) |
+| Code | tensors-v1 |
+
+**Not for.** Any decision about safety: a statistical smoother of mechanisms, graded against a few hundred stress records.
+
+### tensors-mini-fdaa97e1-s1
+
+The tensor field: hide a Global CMT moment tensor, predict its shape from the mechanisms around it. It answers CB-34 (the squeeze at a stress cell, from the field's tensor there). It never reads a stress record.
+
+| | |
+|---|---|
+| Trained on | `moment_tensor`, gcmt_world snapshot `2f1c16b8e40e91c4`, crust above 40 km, before 2007-01-01, outside turkey, chile, alaska |
+| Examples | 16,950 mechanisms; 12,093 training targets, 4,741 validation targets (from 2003-01-01) |
+| Shape | d = 64, 2 cross-attention layers, 4 heads, 48 neighbours within 300 km |
+| Parameters | 76,614 |
+| Seed | 1 |
+| Training | best at epoch 17 of 24, misfit 0.2903 (1 − alignment of unit tensors) |
+| Code | tensors-v1 |
+
+**Not for.** Any decision about safety: a statistical smoother of mechanisms, graded against a few hundred stress records.
+
+### tensors-mini-fdaa97e1-s2
+
+The tensor field: hide a Global CMT moment tensor, predict its shape from the mechanisms around it. It answers CB-34 (the squeeze at a stress cell, from the field's tensor there). It never reads a stress record.
+
+| | |
+|---|---|
+| Trained on | `moment_tensor`, gcmt_world snapshot `2f1c16b8e40e91c4`, crust above 40 km, before 2007-01-01, outside turkey, chile, alaska |
+| Examples | 16,950 mechanisms; 12,093 training targets, 4,741 validation targets (from 2003-01-01) |
+| Shape | d = 64, 2 cross-attention layers, 4 heads, 48 neighbours within 300 km |
+| Parameters | 76,614 |
+| Seed | 2 |
+| Training | best at epoch 14 of 21, misfit 0.2932 (1 − alignment of unit tensors) |
+| Code | tensors-v1 |
+
+**Not for.** Any decision about safety: a statistical smoother of mechanisms, graded against a few hundred stress records.

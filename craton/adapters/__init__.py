@@ -36,6 +36,7 @@ def get_adapter(name: str) -> Adapter:
 from craton.adapters import (  # noqa: E402
     earthquakenpp,
     fdsn,
+    gcmt,
     gridded,
     ingv,
     jma,
@@ -53,6 +54,7 @@ __all__ = [
     "FetchReport",
     "earthquakenpp",
     "fdsn",
+    "gcmt",
     "get_adapter",
     "gridded",
     "ingv",

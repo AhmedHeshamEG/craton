@@ -1,0 +1,31 @@
+# The tensor field (craton/field/tensors.py): masked modelling of Global CMT mechanisms.
+# Craton's answer to CB-34. Its own file: changing it never retrains the Field or the trunk.
+name: mini
+description: Hide a mechanism, predict its shape from its neighbours; SHmax from the field.
+
+data:
+  max_depth_km: 40.0                  # the crust, as the stress records
+  train_end: "2007-01-01T00:00:00Z"   # the earliest CB-34 cut
+  validation_start: "2003-01-01T00:00:00Z"   # targets from here on choose the epochs
+  exclude_regions: [turkey, chile, alaska]   # CB-22's never-seen regions stay never seen
+  radius_km: 300.0
+  neighbours: 48
+  twin_km: 20.0                       # a target's own sequence is hidden with it
+  twin_days: 30.0
+
+model:
+  d_model: 64
+  n_heads: 4
+  n_layers: 2
+  dropout: 0.1
+
+train:
+  lr: 1.0e-3
+  weight_decay: 0.01
+  batch: 256
+  max_epochs: 60
+  patience: 6
+  seeds: [0, 1, 2]
+
+answer:
+  query_depths_km: [5.0, 10.0, 15.0, 20.0, 25.0]   # the field's answer is averaged over the upper crust

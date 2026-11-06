@@ -1,0 +1,18 @@
+{
+ "CB-02": {
+  "seed": 0,
+  "big_day": "2016-10-30",
+  "big_day_cap16_minus_mini": 0.004514768739033031,
+  "other_days_cap16_minus_mini": -0.023963531643298393,
+  "big_day_mini_over_etas": 0.321024103997743,
+  "big_day_cap16_over_etas": 0.325538872736776
+ },
+ "CB-03": {
+  "seed": 0,
+  "big_day": "2009-04-06",
+  "big_day_cap16_minus_mini": 0.17855422654530081,
+  "other_days_cap16_minus_mini": -0.2941225042545327,
+  "big_day_mini_over_etas": 0.5125216343466248,
+  "big_day_cap16_over_etas": 0.6910758608919256
+ }
+}

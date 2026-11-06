@@ -35,7 +35,7 @@ from craton.spec.instruments import REGISTRY, word_added_in
 from craton.spec.registry import Kind, Registry
 from craton.spec.timeaxis import EARTH_AGE_S, to_seconds
 
-SPEC_VERSION = "1.2.0"
+SPEC_VERSION = "1.3.0"
 #: What a token says when it asks for nothing newer: tokens are written under the oldest spec
 #: that accepts them (``craton.spec.instruments.WORDS_ADDED``).
 BASE_SPEC = "1.0.0"

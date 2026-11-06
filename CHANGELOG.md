@@ -5,7 +5,33 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-06 · P9 The hidden state: stress, pressure and the wiring
+
 ### Added
+- **Token Spec 1.3.0** (D-132): the `moment_tensor` instrument (Mrr … Mtp and M0 in N·m, at the
+  centroid) and the unit `N.m`. Add-only; every older token keeps its version and hash.
+- **Global CMT adapter** (`gcmt`, `craton/adapters/gcmt.py`): one ndk release read into tokens,
+  56,832 solutions 1976-2020; the whole Earth is one region file, `configs/regions/gcmt_world.yaml`.
+- **CB-34, stress from mechanisms (P9i, D-132, D-133).** CB-23's regions and cells, with the
+  mechanisms before the cut as input, graded only on World Stress Map records not read from quakes.
+  craton-mini 31.3° ± 0.95 through the **tensor field** (`craton/field/tensors.py`,
+  `configs/tensors/mini.yaml`: masked modelling of moment tensors, never a stress record); floors
+  `stress_interpolation` 27.9°, `stress_regional` 29.8°, `mechanism_kostrov` (new) 33.4°,
+  `quake_lineation` 47.9°.
+- **The map referee (P9i, D-134)** (`craton/trust/maps.py`, `scripts/referee_maps.py`): coin,
+  floor, 200 toroidally shifted copies, a locked half; verdicts in `results/referee/maps.json`.
+- **Three checks on the Field (P9i, D-135)**: `scripts/ablations/cap_and_mainshock.py` (how often the
+  ×4 bound binds; the scores without Norcia's and L'Aquila's days) and
+  `scripts/ablations/linear_probe.py` (the hidden features against the planets' fault state).
+- Figure `docs/assets/mechanisms-{dark,light}.png` (`scripts/figures/mechanisms.py`).
+- Benchmark card renderer for CB-34; model cards for the tensor field's checkpoints.
+
+### Changed
+- `cells_of` (CB-23) takes the minimum records per cell as an argument (default unchanged).
+- The README says where a public map passed the referee and where it didn't (CB-33: two planets of
+  three).
+
+### Added (P9a-P9h)
 - **CB-23, which way the crust is squeezed (P9a, D-106 … D-108).** 983 half-degree cells in
   central Italy and CB-22's six regions, graded against the World Stress Map 2025: give the
   direction of largest horizontal stress from the quake catalogue alone. Floors
@@ -55,7 +81,7 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
   +0.339 against +0.336 and +0.361; `scripts/ablations/dimless.py`).
 - Figure `docs/assets/unseen-regions-{dark,light}.png` (`scripts/figures/unseen.py`).
 
-### Changed
+### Changed (P9a-P9h)
 - World Field configs can read another config's pool of days (`dimless.pool_of`).
 - ETAS's fit is cached by its cut as well as its task and seed.
 - Benchmark cards print list values in a task's frozen summary.
