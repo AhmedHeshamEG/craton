@@ -574,6 +574,11 @@ register_method(StressRegional())
 register_method(StressInterpolation())
 register_method(QuakeLineation())
 
+# CB-34's floor from mechanisms: unit tensors summed near the cell (Kostrov), SHmax of the sum.
+from craton.bench.mechanisms import MechanismKostrov  # noqa: E402
+
+register_method(MechanismKostrov())
+
 # CB-24's floors live with their task.
 from craton.bench.migration import DistanceOnly, QuakeHistory  # noqa: E402
 

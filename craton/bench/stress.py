@@ -159,8 +159,10 @@ class StressCells:
         )
 
 
-def cells_of(rec: StressRecords, box: tuple[float, float, float, float]) -> StressCells:
-    """Bin a box's records into CELL_DEG cells; keep cells with MIN_RECORDS or more.
+def cells_of(
+    rec: StressRecords, box: tuple[float, float, float, float], min_records: int = MIN_RECORDS
+) -> StressCells:
+    """Bin a box's records into CELL_DEG cells; keep cells with ``min_records`` or more.
 
     A cell's azimuth is the axial mean of its records weighted by 1/σ² of their quality.
     """
@@ -179,7 +181,7 @@ def cells_of(rec: StressRecords, box: tuple[float, float, float, float]) -> Stre
     out: dict[str, list[Any]] = {k: [] for k in ("lat", "lon", "azi", "n", "sd", "reg")}
     for key in sorted(set(zip(i.tolist(), j.tolist(), strict=True))):
         m = (i == key[0]) & (j == key[1])
-        if m.sum() < MIN_RECORDS:
+        if m.sum() < min_records:
             continue
         azi, rr = axial_mean(r.azimuth[m], w[m])
         regimes, counts = np.unique(r.regime[m], return_counts=True)

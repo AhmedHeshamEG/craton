@@ -171,6 +171,44 @@ Snapshots: groningen `b392ac5e4c87e6dc`, oklahoma `1989705b223c5506`.
 - **Fingerprint:** `ad899191ff41ab37`
 - **Test data:** reads ['CB-02', 'CB-03']
 
+## CB-23 · Hidden-state truth
+
+Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
+
+- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
+- **Fingerprint:** `fc7056d6f3c077d8`
+
+| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
+|---|---|---|---|---|---|
+| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
+| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
+| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
+| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
+| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
+| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
+| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
+
+Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
+
+## CB-34 · Stress from mechanisms
+
+Which way the crust is squeezed, from how quakes slipped. CB-23's seven regions and cuts, with every Global CMT moment tensor before the cut as input too, graded only on World Stress Map records that were not read from quakes (boreholes, drilling fractures, hydraulic fracturing, overcoring, fault-slip data), one record enough for a 0.5° cell. Same angle, 0-90°. Floors: CB-23's three, and `mechanism_kostrov` (unit moment tensors summed within ~150 km, SHmax of the sum, Lund & Townend 2007).
+
+- **Metric:** degrees between inferred SHmax and non-quake World Stress Map records, mean over cells, then over regions (lower is better)
+- **Fingerprint:** `c62352129658814c`
+
+| Region | Half | Mechanisms read (crust, before) | Cells | Non-quake records |
+|---|---|---|---|---|
+| central italy | seen | 25 (22, 2016-08-24) | 24 | 71 |
+| california | seen | 136 (136, 2007-01-01) | 77 | 183 |
+| japan | seen | 1,253 (765, 2007-01-01) | 14 | 32 |
+| new zealand | seen | 149 (93, 2007-01-01) | 20 | 70 |
+| turkey | zero-shot | 187 (165, 2007-01-01) | 13 | 29 |
+| chile | zero-shot | 931 (357, 2007-01-01) | 37 | 89 |
+| alaska | zero-shot | 194 (84, 2007-01-01) | 5 | 5 |
+
+Mechanisms: gcmt_world snapshot `2f1c16b8e40e91c4`; 5,075 non-quake WSM records worldwide.
+
 ## CB-24 · Migration
 
 Where a sequence lights up next. A 0.1° cell lights at its first quake of the scored size (completeness + 1) on or after the day of the first big shock. Before every next lighting a method sees the cells lit so far and the quakes before the sequence, never the sequence's other quakes, and ranks the cells still dark. The number is how often the cell that really lit next is in its top 3, over the first 50 lightings of each of sixteen sequences (central Italy 2016 and 2009, and CB-22's fourteen), mean over sequences; a coin gets 3 in ~1,000. Floors: `distance_only` (nearest to the cell that lit last) and `quake_history` (the busiest cells before the sequence).
@@ -265,25 +303,6 @@ Can a forecast that reads only quakes see a gas reservoir drain? Groningen, CB-3
 - **Metric:** rank correlation of a quake-only forecast map and the yearly reservoir pressure drop (higher is better)
 - **Fingerprint:** `1670759a6305caf9`
 - **Test data:** snapshot b392ac5e4c87e6dc · graded cells 86 · loading mpa 2017 0.098/0.24/0.387, 2018 0.069/0.228/0.377, 2019 -0.035/0.192/0.322, 2020 0/0.175/0.305, 2021 -0.05/0.151/0.284, 2022 -0.095/0.136/0.254 · loading vs static 2017 -0.02, 2018 0.04, 2019 -0.402, 2020 -0.485, 2021 -0.625, 2022 -0.662
-
-## CB-23 · Hidden-state truth
-
-Which way the crust is squeezed, inferred from quakes alone. For every 0.5° cell of central Italy and CB-22's six regions that holds at least three World Stress Map readings (quality A-C, above 40 km), a method gives the azimuth of the largest horizontal stress (SHmax), reading only the region's quakes before a cut: where, when and how big, never how they slipped. The number is the angle to WSM's azimuth, 0-90° (a coin gets 45°), mean over a region's cells, then over the regions. Two floors read the answers of the other cells (`stress_regional`, one mean per region; `stress_interpolation`, the neighbours within ~100 km); `quake_lineation` reads quakes only, as Craton does.
-
-- **Metric:** degrees between inferred and measured SHmax, mean over cells, then over regions (lower is better)
-- **Fingerprint:** `fc7056d6f3c077d8`
-
-| Region | Half | Quakes read (before) | Cells | WSM records | Median spread in a cell |
-|---|---|---|---|---|---|
-| central italy | seen | 28,173 M2+ (2016-08-24) | 25 | 421 | 19.8° |
-| california | seen | 56,106 M2.5+ (2007-01-01) | 145 | 2,485 | 13.7° |
-| japan | seen | 65,964 M3+ (2007-01-01) | 401 | 16,382 | 21.4° |
-| new zealand | seen | 66,703 M3+ (2007-01-01) | 95 | 1,178 | 14.5° |
-| turkey | zero-shot | 17,703 M3+ (2007-01-01) | 124 | 1,041 | 14.4° |
-| chile | zero-shot | 4,253 M4.5+ (2007-01-01) | 137 | 1,991 | 13.7° |
-| alaska | zero-shot | 7,618 M3+ (2007-01-01) | 56 | 310 | 13.8° |
-
-Snapshots: central_italy `96a163f798d8f9cc`, california `2e933cc433533857`, japan `646e06efcb8292d8`, new_zealand `0ad42fd967748d63`, turkey `bfb1790b549c2dfe`, chile `16c9638835d229d7`, alaska `857cc9fcdf860e01`.
 
 ## CB-32 · Unseen-region forecast
 

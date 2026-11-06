@@ -1308,6 +1308,83 @@
           "fit_quakes": 9574
         }
       }
+    },
+    "CB-34": {
+      "name": "Stress from mechanisms",
+      "metric": "degrees between inferred SHmax and non-quake World Stress Map records, mean over cells, then over regions",
+      "direction": "lower",
+      "fingerprint": "c62352129658814c69683e8e05aa188842e8b423ceb66c6f54c063a4f9d50836",
+      "files": {
+        "central_italy.parquet": "1e248cb651e331d4f7ab12a529f755790bbfba877b0e22a1db4a911c8197b25e",
+        "california.parquet": "736fdbdba9bf315a59029ed5864b4ef075ea6c05bc7260a7fcdad78c3012b9a4",
+        "japan.parquet": "11c1e368444bb0225540647f6e3449d53fea739e449fc724f4d42d04f4b3a15e",
+        "new_zealand.parquet": "965b8f597faa74a61c858e6a5433530c7f42e4e2b5947ef42aa85568fa3c1d71",
+        "turkey.parquet": "76b7887f062969c647c63fd66d93730ae6a10a12f0e384a9ae9bccf789b27c5a",
+        "chile.parquet": "92f56c5b2b22d6970a91da7c8025e82f53b47348ede05c668192db1f85e49742",
+        "alaska.parquet": "5b58c96c9f52d61c210c8fdee95a7caefc059ef6a18e73071491a6cf4393612d"
+      },
+      "summary": {
+        "snapshots": {
+          "central_italy": "96a163f798d8f9cc",
+          "california": "2e933cc433533857",
+          "japan": "646e06efcb8292d8",
+          "new_zealand": "0ad42fd967748d63",
+          "turkey": "bfb1790b549c2dfe",
+          "chile": "16c9638835d229d7",
+          "alaska": "857cc9fcdf860e01"
+        },
+        "mechanism_snapshot": "2f1c16b8e40e91c4",
+        "non_quake_records": 5075,
+        "central_italy": {
+          "cells": 24,
+          "records": 71,
+          "mechanisms": 25,
+          "crustal_mechanisms": 22,
+          "history_quakes": 28173
+        },
+        "california": {
+          "cells": 77,
+          "records": 183,
+          "mechanisms": 136,
+          "crustal_mechanisms": 136,
+          "history_quakes": 56106
+        },
+        "japan": {
+          "cells": 14,
+          "records": 32,
+          "mechanisms": 1253,
+          "crustal_mechanisms": 765,
+          "history_quakes": 65964
+        },
+        "new_zealand": {
+          "cells": 20,
+          "records": 70,
+          "mechanisms": 149,
+          "crustal_mechanisms": 93,
+          "history_quakes": 66703
+        },
+        "turkey": {
+          "cells": 13,
+          "records": 29,
+          "mechanisms": 187,
+          "crustal_mechanisms": 165,
+          "history_quakes": 17703
+        },
+        "chile": {
+          "cells": 37,
+          "records": 89,
+          "mechanisms": 931,
+          "crustal_mechanisms": 357,
+          "history_quakes": 4253
+        },
+        "alaska": {
+          "cells": 5,
+          "records": 5,
+          "mechanisms": 194,
+          "crustal_mechanisms": 84,
+          "history_quakes": 7618
+        }
+      }
     }
   }
 }
