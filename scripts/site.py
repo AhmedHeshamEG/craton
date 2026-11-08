@@ -15,6 +15,7 @@ import statistics
 from pathlib import Path
 from typing import Any
 
+import craton.bench.tasks  # noqa: F401  (first: registers every task; world.py alone hits the pressure cycle)
 from craton.bench.catalog import CATALOG
 from craton.bench.world import SEQUENCES, ZERO_SHOT
 
@@ -42,7 +43,22 @@ PHASES = {
     "20261025-132227": ("P8a", "Two planets"),
     "20261025-195238": ("P8b", "Thirty days"),
     "20261026-102634": ("P8d", "The whole Earth"),
+    "20261029-105451": ("P8c", "Machine-learning catalogues"),
+    "20261029-164113": ("P8e", "Groningen and Oklahoma"),
+    "20261105-015133": ("P9e", "The leak audit"),
+    "20261105-081102": ("P9f", "Planted stress"),
+    "20261105-160534": ("P9g", "The pressure truth"),
+    "20261106-041034": ("P9h", "Regions it never read"),
+    "20261106-093225": ("P9i", "How quakes slipped"),
 }
+#: CB-32's regions, each forecast by a world Field trained on the other three.
+UNSEEN = (
+    ("central_italy", "Central Italy"),
+    ("california", "California"),
+    ("japan", "Japan"),
+    ("new_zealand", "New Zealand"),
+)
+UNSEEN_FLOORS = ("etas_local_alpha", "etas_incomplete")
 ORACLES = (
     ("roof", "Roof: count and exact cell"),
     ("where_cell", "Knowing the exact cell"),
@@ -117,6 +133,17 @@ def climb(board: dict[str, Any]) -> list[dict[str, Any]]:
                     ),
                 }
             )
+    return rows
+
+
+def unseen(entries: dict[str, Any], base: dict[str, Any]) -> list[dict[str, Any]]:
+    """CB-32 per held-out region: bits per quake above ETAS fitted on that region's own past."""
+    rows: list[dict[str, Any]] = []
+    sources = {"craton": entries["CB-32"]} | {m: base["CB-32"][m] for m in UNSEEN_FLOORS}
+    for key, name in (*UNSEEN, ("mean", "Mean of the four")):
+        for method, entry in sources.items():
+            gain = entry["mean"] if key == "mean" else entry["extras"][f"{key}.mean_gain"]
+            rows.append({"region": name, "method": method, "gain": round(gain, 4)})
     return rows
 
 
@@ -201,6 +228,7 @@ def main() -> None:
         "vs_etas": vs_etas(entries, base),
         "climb": climb(board),
         "sequences": sequences(),
+        "unseen": unseen(entries, base),
         "building": building(entries, base),
         "scoreboard": scoreboard(entries, base),
     }
