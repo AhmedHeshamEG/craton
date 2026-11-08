@@ -587,6 +587,11 @@ data centre and daily noise power · **P10b** dv/v from noise correlations, CB-2
 against our band powers · **P10e** the figure, the lesson, v0.11.0. The ear listens at 1 Hz: a 100 Hz
 year of sixteen stations would be ~300 GB.
 
+*P10b done (2026-11-08, D-140 … D-142):* dv/v per station pair is on the spec (1.5.0), clean between
+quakes (0.04% network scatter) but blind to the 2016 shocks at 1 Hz and at 20 Hz (Norcia reads the
+wrong way). CB-28 is frozen and its best floor is "nothing changed" (0.347%); the neighbour average
+loses (0.378%), so P10c's model has to beat zero, not the neighbours.
+
 ## P11 · The storm detector: the mainshock days → v0.12.0
 **Goal:** raise tomorrow's rate on the days a big quake is coming, without crying wolf.
 

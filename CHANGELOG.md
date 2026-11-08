@@ -5,6 +5,23 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+### Added
+- **Token Spec 1.4.0** (P10a, D-137): `seismic_noise_power`, daily median of hourly band powers in
+  three bands at every broadband station; `craton/adapters/waveforms.py` (any FDSN data centre)
+  and `craton/adapters/noise.py`; regions `laquila_noise`, `central_italy_noise`.
+- **Token Spec 1.5.0** (P10b, D-140): `seismic_velocity_change`, dv/v per station pair and day
+  (10- and 30-day stacks) from nine-component ambient-noise correlations, corrected for the hum's
+  loudness, its spectral tilt and the season with terms fitted and chosen on the reference period
+  only. `craton/adapters/interferometry.py` (GPU correlations, cached per month),
+  `craton/adapters/velocity.py`, `craton/adapters/dvv.py`. 81,264 tokens in central Italy (41 pairs),
+  10,146 at L'Aquila (9).
+- **CB-28, velocity gap-fill** (P10b, D-141): hide a station, rebuild its pairs' dv/v. Floors
+  `velocity_zero` 0.347% (best) and `velocity_neighbours` 0.378%.
+
+### Fixed
+- `scripts/site.py` and `scripts/figures/scorecard.py` import the task registry before
+  `craton.bench.world` (an import cycle since P9g had stopped the project page from building).
+
 ## [0.10.0] — 2026-11-06 · P9 The hidden state: stress, pressure and the wiring
 
 ### Added

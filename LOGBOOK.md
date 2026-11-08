@@ -1150,3 +1150,45 @@ Surprises / problems:
 Decisions: D-137, D-138, D-139.
 
 Next: P10b, dv/v as an instrument (nine components, seasonal regression) and CB-28.
+
+## 2026-11-08 — P10b — How fast the hum travels
+
+TLDR: Craton now measures how fast seismic waves cross the crust between every pair of nearby
+stations, every day (dv/v from noise correlations, Token Spec 1.5.0). The measurement is clean:
+central Italy's network average scatters 0.04% over ten days and sits at zero eighteen months
+later. But the 2016 shocks aren't in it: Amatrice is a 2σ dip and Norcia goes the wrong way,
+at 1 Hz and again at 20 Hz. CB-28 (hide a station, rebuild its pairs) is frozen, and the best
+floor is "nothing changed": the neighbours' dv/v makes a rebuild worse.
+
+Built:
+- Token Spec 1.5.0 (`seismic_velocity_change`: dvv, dvv_raw, coherence; pair, stack, reference); frozen
+- `craton/adapters/interferometry.py` (daily nine-component correlations for every pair within
+  80 km, GPU, cached per month), `craton/adapters/velocity.py` (batched correlations, per-pair
+  series, the correction), `craton/adapters/dvv.py` (the adapter; terms chosen on the reference)
+- regions `laquila_noise` (snapshot `203de40a57a6952e`, 10,146 dv/v tokens, 9 pairs) and
+  `central_italy_noise` (`96c9c1265bc7c1f8`, 81,264, 41 pairs) gain a `velocity.reference`
+- CB-28 (`craton/bench/velocity.py`), floors `velocity_zero`, `velocity_neighbours`; data card;
+  benchmark card; tests `test_velocity.py` (8), `test_cb28.py` (4)
+
+Scores:
+- CB-28: `velocity_zero` 0.347% (central Italy 0.293, L'Aquila 0.401), `velocity_neighbours` 0.378%
+- network dv/v, 10-day stack, scatter held out inside the reference: central Italy 0.039%,
+  L'Aquila 0.085%; one pair ~0.24%
+- across the shocks (10-day, network): Amatrice −0.08% (2σ), Norcia +0.07%, L'Aquila −0.11% (1.3σ)
+- 20 Hz spike (4 stations around Norcia, 0.5-1 Hz, Z-Z): scatter 0.13%, Amatrice −0.16%, Norcia +0.23%
+
+Surprises / problems:
+- `scripts/site.py` had crashed since P9g (world → tasks → pressure → world import cycle): the
+  project page had not updated since P9f. Fixed in the page PR.
+- Correlating channel by channel took 58 s a month; the day's channels in one FFT call, 7 s.
+- Stations installed for an aftershock sequence (LNSS, T0104) have no quiet reference, so their
+  pairs make no tokens. Half of central Italy's pairs drop out this way.
+- The spike's 2-3σ L'Aquila drop (D-138) was 1.3σ once the reference stopped containing its own
+  scatter window.
+- The correction rule picked "no terms" for central Italy by 0.002%; the annual sine did better
+  out of sample. Kept the rule, logged the miss.
+- C: has 2 GB free. Nothing here writes to it, but the drive is nearly full.
+
+Decisions: D-140, D-141, D-142.
+
+Next: P10c, both noise instruments in the Field, ablation on CB-02 / CB-03 / CB-19.

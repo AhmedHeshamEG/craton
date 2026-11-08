@@ -2633,3 +2633,88 @@ two faster bands, so the margin leaves real quiet days alone.
 them (the token would still say "quiet"). Also checked: the quiet Amatrice median and the loud 22-23
 August 2016 aren't a time bug. The raw hours show the shock as spikes on the 24th, and the catalogue
 has no quake above M2 on the 22nd or 23rd.
+
+### D-140 · 2026-11-08 · P10b — dv/v is per station pair, nine components, 10 and 30 days, corrected on the reference only
+
+`seismic_velocity_change` (Token Spec 1.5.0) is one token per station pair, day and stack: the
+corrected dv/v, the raw dv/v and the coherence, at the pair's midpoint. Daily correlations are hourly
+1-bit + whitened in 0.1-0.45 Hz, every component of one station against every component of the other,
+on the GPU, cached per month under `data/cache/velocity/` (`craton/adapters/interferometry.py`; 7 s a
+month for seven stations once a day's channels go through the FFT together, 18 min for central Italy's
+86 pairs over 43 months).
+
+**Choices.**
+- *The nine components averaged with weights 1/σ²* (Weaver et al. 2011's error from each stretch's
+  coherence), not by coherence alone: a component that matches badly says so through σ.
+- *Two stacks, 10 and 30 days, both kept.* Scatter falls with the stack (L'Aquila, held out inside
+  the reference: 0.109% at 5 days, 0.085% at 10, 0.043% at 30) and nothing on the reference says how
+  much time resolution a forecaster needs; P10c can read both. The correction is chosen on the 10-day
+  stack.
+- *The correction is fitted on the reference only, and its terms are chosen there too*: fit on the
+  first three quarters, keep the set whose network dv/v scatters least on the last quarter.
+  Candidates: none · secondary-microseism level · level + the spectrum's tilt (short band minus
+  secondary; Zhan, Tsai & Clayton 2013 show a shift in frequency content alone fakes ~0.05% under
+  stretching) · an annual sine · all three, the sine only when the reference holds a whole year.
+  L'Aquila (10 months) picked level + tilt; central Italy (14.5 months) picked none, 0.039% against
+  0.041% for the sine, although the sine does better out of sample in 2018 (0.063% vs 0.069%). The
+  rule stays as written; the miss is recorded here.
+- *A component needs 30 reference days with hours* (three 10-day stacks). Pairs with a station
+  installed after the reference (LNSS and T0104 came for L'Aquila's aftershocks) have no reference
+  and make no tokens: 9 of 20 pairs at L'Aquila, 41 of 86 in central Italy.
+- References in the region YAML (`sources.fdsn_waveforms.velocity.reference`), before any test:
+  L'Aquila 2008-06-01 → 2009-04-01, central Italy 2015-06-01 → 2016-08-20.
+
+**Rejected.** A per-pair choice of terms (14 months can't pick five models per pair). A network-wide
+dv/v as the token (it hides which path changed, and CB-28 needs pairs). Coherence weighting.
+
+### D-141 · 2026-11-08 · P10b — CB-28: hide a station, rebuild its pairs; saying "nothing changed" wins
+
+CB-28 asks whether a pair's dv/v is the crust's (shared by neighbouring paths) or the pair's own.
+Each station in turn is hidden: every pair it belongs to loses its values after the reference; a
+method sees every other pair on every day and the hidden pairs' reference months. Two regions,
+`central_italy_noise` (snapshot `96c9c1265bc7c1f8`, 41 pairs, 10 stations hidden, 23,588 test values)
+and `laquila_noise` (`203de40a57a6952e`, 9 pairs, 5 stations, 3,130), 10-day corrected dv/v. Score:
+RMSE in percent over the hidden pairs' test days, mean over stations, then regions; NaN counts as 0.
+Frozen into `central_italy.json` (fingerprint `78ebf025`).
+
+| floor | CB-28 | central Italy | L'Aquila |
+|---|---|---|---|
+| `velocity_zero` (dv/v = 0) | **0.347%** | 0.293 | 0.401 |
+| `velocity_neighbours` (1/σ² × Gaussian 30 km of the midpoints) | 0.378% | 0.302 | 0.455 |
+
+The neighbours lose to zero in both regions. One pair scatters ~0.24% in central Italy against 0.04%
+for the 41-pair network mean: at 1 Hz most of a pair's day-to-day dv/v is its own noise, and borrowing
+the neighbours' noise adds error. The plan expected Craton to beat a neighbour average; the floor it
+has to beat is now zero, the harder one.
+
+**Rejected.** Removing each pair's mean offset before the RMSE (as CB-04 does for GNSS datums): a
+lasting drop after a shock is the signal, not a datum.
+
+### D-142 · 2026-11-08 · P10b — At 1 Hz and at 20 Hz, the 2016 shocks are not in dv/v
+
+**1 Hz, central Italy, 41 pairs, nine components** (network mean, held-out scatter 0.039% at 10 days,
+0.018% at 30): Amatrice −0.08% (2σ), Norcia **+0.07%**, the wrong sign for a shock that cracks the
+crust. Week by week the 2016-17 series wanders ±0.1%: −0.07% after Amatrice, −0.08% around Visso,
++0.09% after Norcia, −0.13% in late December with no shock. Eighteen months later (Mar-Sep 2018) it
+sits at zero (±0.01% mean, 0.06% scatter), so the correction holds; the shocks just aren't above
+the wander. L'Aquila (9 pairs): −0.11% across 6 April 2009, 1.3σ of the honest scatter; the spike's
+2-3σ (D-138) came from a reference that included its own scatter window.
+
+**The fallback D-138 named, as a throwaway spike** (scripts not kept in the repo): 20 Hz `BHZ` at the
+stations around Norcia with it (CESI, FDMO, GUMA, LNSS, NRCA; CESI returned nothing), May-Dec 2016,
+3.3 GB, 0.5-1 Hz, Z-Z, 6 pairs, reference to 20 August. Held-out scatter 0.13% (10 days), pair median
+0.64%. Amatrice −0.16% (1.3σ), Norcia **+0.23%** (1.8σ), the wrong sign again; the series swings
+±0.3-0.6%.
+
+Two frequencies, both up at Norcia. The likeliest cause is the aftershocks themselves: thousands of
+them filled the hours being correlated, from one direction, and reshaped the coda, which stretching
+reads as faster rock. Published work on this sequence (0.1-1 Hz, 28 stations) saw drops; matching it
+needs aftershock-aware selection of hours or a method that doesn't trust one coda window
+(wavelet / moving-window cross-spectral). Left for later, not built here.
+
+**Decision.** The 1 Hz instrument ships as measured, labelled honestly in its data card; P10c's
+ablation decides whether a model gets anything from it (zero is a result). The 20 Hz path is not
+built into the adapter.
+
+**Rejected.** Tuning windows, stacks or bands on 2016 until a drop appears (that is fitting the
+test). Downloading three-component 20 Hz for all stations (~40 GB) before a cause is known.
