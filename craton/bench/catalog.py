@@ -104,7 +104,9 @@ CATALOG: tuple[PlannedTask, ...] = (
     PlannedTask(
         "CB-27", "Predictability horizon", "lead time where skill over ETAS reaches zero", "P15"
     ),
-    PlannedTask("CB-28", "Velocity gap-fill", "rebuild a hidden station's dv/v series", "P10"),
+    PlannedTask(
+        "CB-28", "Velocity gap-fill", "RMSE (%) rebuilding a hidden station's dv/v series", "P10"
+    ),
     PlannedTask(
         "CB-29", "EarthquakeNPP", "their California benchmark, their ETAS: nats per quake", "P8"
     ),

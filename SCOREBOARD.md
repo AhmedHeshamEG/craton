@@ -45,7 +45,7 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-25 | Mainshock days | · | · | P11 |
 | CB-26 | Distilled law | 0.8358 ± 0.047 ↑ · craton-mini | 0.6149 ± 0.0073 ↑ · law_constant | P9 |
 | CB-27 | Predictability horizon | · | · | P15 |
-| CB-28 | Velocity gap-fill | · | · | P10 |
+| CB-28 | Velocity gap-fill | · | 0.3468 ± 0 ↓ · velocity_zero | P10 |
 | CB-29 | EarthquakeNPP | 7.167 ± 0.0017 ↓ · craton-mini | 7.256 ± 0 ↓ · etas | P8 |
 | CB-30 | Human-made quakes | 0.7071 ± 0.045 ↑ · craton-mini | 0.4562 ± 0 ↑ · etas_forced | P8 |
 | CB-31 | Groningen pressure | −0.4235 ± 0.0089 ↑ · craton-mini | −0.2271 ± 0 ↑ · quake_density | P9 |
@@ -153,6 +153,8 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 | CB-24 | distance_only | 0.09329 ± 0 ↑ | share of next lit cells in the method's top 3, mean over sequences |  |
 | CB-24 | quake_history | 0.01448 ± 0 ↑ | share of next lit cells in the method's top 3, mean over sequences |  |
 | CB-26 | law_constant | 0.6149 ± 0.0073 ↑ | share of the network's held-out gain over ETAS a <=10-term formula keeps |  |
+| CB-28 | velocity_zero | 0.3468 ± 0 ↓ | RMSE (%) of a hidden station's dv/v, rebuilt from the other pairs |  |
+| CB-28 | velocity_neighbours | 0.3784 ± 0 ↓ | RMSE (%) of a hidden station's dv/v, rebuilt from the other pairs |  |
 | CB-29 | etas | 7.256 ± 0 ↓ | negative log-likelihood per test quake (nats), ComCat_25, their ETAS and splits |  |
 | CB-30 | etas_forced | 0.4562 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
 | CB-30 | etas | 0 ± 0 ↑ | bits per quake above ETAS fitted on the box's own past, mean of the two cases |  |
@@ -184,6 +186,8 @@ Simple methods, scored before any model exists. Each is ratcheted against itself
 
 | Accepted (UTC) | Run | Model | Ratchet |
 |---|---|---|---|
+| 2026-11-08 19:15 | `20261108-191551-velocity-zero` | velocity_zero (baseline) | 1 new |
+| 2026-11-08 19:15 | `20261108-191515-velocity-neighbours` | velocity_neighbours (baseline) | 1 new |
 | 2026-11-06 09:32 | `20261106-093225-craton-mini` | craton-mini | 1 new, 22 same |
 | 2026-11-06 09:32 | `20261106-093126-mechanism-kostrov` | mechanism_kostrov (baseline) | 1 new |
 | 2026-11-06 09:32 | `20261106-092924-quake-lineation` | quake_lineation (baseline) | 1 new, 1 same |
@@ -297,11 +301,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `zenodo_catalog` | 866,295 | 2016-08-15 → 2017-08-15 | 33,755 (not_kept 20,943, invalid:not_finite 7,197) | largest ML 6.03 on 2016-08-24; ML 866,295; completeness ML 0.3 in 2016; longest quiet spell 0.14 days |
 
-### central_italy_noise · snapshot `57e2d2b502ed3e74` · 2015-06-01 → 2019-01-01
+### central_italy_noise · snapshot `96c9c1265bc7c1f8` · 2015-06-01 → 2019-01-01
 
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `seismic_noise_power` | 33,572 | 2015-06-01 → 2018-12-31 | 6,742 (too_few_hours 6,162, below_low_noise_model 551) | 14 stations, median 1,074 days each; ocean hum (0.1-0.3 Hz, vertical) median -132.4 dB; loudest day 2018-10-30 at IV.OFFI, -86.3 dB |
+| `seismic_velocity_change` | 81,264 | 2015-06-01 → 2018-12-31 | 0 | · |
 
 ### chile · snapshot `16c9638835d229d7` · 1985-01-01 → 2026-10-01
 
@@ -340,11 +345,12 @@ Measured on the latest build of each region by `craton data build`. The snapshot
 |---|---|---|---|---|
 | `zenodo_catalog` | 190,872 | 2009-01-07 → 2009-12-31 | 16 (invalid:unparseable 16) | largest ML 5.9 on 2009-04-13; ML 190,872; completeness ML 0.1 in 2009; longest quiet spell 5.96 days |
 
-### laquila_noise · snapshot `da37464db905627a` · 2008-06-01 → 2010-06-01
+### laquila_noise · snapshot `203de40a57a6952e` · 2008-06-01 → 2010-06-01
 
 | Source | Tokens | Span | Rejected | What it holds |
 |---|---|---|---|---|
 | `seismic_noise_power` | 11,906 | 2008-06-01 → 2010-05-31 | 4,876 (unreadable_record 3,149, too_few_hours 1,579) | 7 stations, median 628 days each; ocean hum (0.1-0.3 Hz, vertical) median -131.8 dB; loudest day 2009-01-14 at IV.CERT, -106.6 dB |
+| `seismic_velocity_change` | 10,146 | 2008-06-01 → 2010-05-31 | 0 | · |
 
 ### new_zealand · snapshot `0ad42fd967748d63` · 1987-01-01 → 2026-10-01
 

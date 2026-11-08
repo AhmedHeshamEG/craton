@@ -311,6 +311,18 @@ Does the model work where it never trained? Each of the four regions the world F
 - **Metric:** bits per quake above ETAS fitted there, by a model that never read the region (higher is better)
 - **Fingerprint:** `41e6c7b3688246e6`
 
+## CB-28 · Velocity gap-fill
+
+Is a velocity change a property of the crust, or of one pair of sensors? `seismic_velocity_change` gives dv/v for every pair of stations, day by day. Hide one station: every pair it belongs to loses its values after the quiet reference period, and a method rebuilds them from the other pairs (every day) and the hidden pairs' own reference months. Two regions: central Italy 2016-18 and L'Aquila 2009-10, 10-day stacks, the corrected dv/v. RMSE in percent over the hidden pairs' test days, mean over the stations, then over the regions. Floors: `velocity_zero` (nothing changed) and `velocity_neighbours` (the other pairs that day, weighted by 1/σ² and by how close their midpoints are).
+
+- **Metric:** RMSE (%) of a hidden station's dv/v, rebuilt from the other pairs (lower is better)
+- **Fingerprint:** `78ebf025115622d5`
+
+| Region | Snapshot | Pairs | Stations hidden | Test values |
+|---|---|---|---|---|
+| `central_italy_noise` | `96c9c1265bc7c1f8` | 41 | 10 of 11 | 23,588 |
+| `laquila_noise` | `203de40a57a6952e` | 9 | 5 of 5 | 3,130 |
+
 ## Add a method
 
 Implement the task's protocol (`MaskedPredictor`, `Forecaster`, `GapFiller` or `EfficiencyReport` in `craton/bench/tasks.py`), register it with `register_method`, and run `craton bench run NAME`. The run lands in `results/pending/`; `craton ratchet --accept` puts it on the scoreboard if nothing got worse.

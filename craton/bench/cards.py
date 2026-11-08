@@ -138,6 +138,17 @@ ABOUT = {
         "built to read the push answers through its twin trained without it. Floor: "
         "`quake_density` (each cell's quakes of the year before)."
     ),
+    "CB-28": (
+        "Is a velocity change a property of the crust, or of one pair of sensors? "
+        "`seismic_velocity_change` gives dv/v for every pair of stations, day by day. Hide one "
+        "station: every pair it belongs to loses its values after the quiet reference period, "
+        "and a method rebuilds them from the other pairs (every day) and the hidden pairs' own "
+        "reference months. Two regions: central Italy 2016-18 and L'Aquila 2009-10, 10-day "
+        "stacks, the corrected dv/v. RMSE in percent over the hidden pairs' test days, mean "
+        "over the stations, then over the regions. Floors: `velocity_zero` (nothing changed) "
+        "and `velocity_neighbours` (the other pairs that day, weighted by 1/σ² and by how "
+        "close their midpoints are)."
+    ),
     "CB-32": (
         "Does the model work where it never trained? Each of the four regions the world Field "
         "learns from (central Italy, California, Japan, New Zealand) is left out in turn: the "
@@ -164,6 +175,18 @@ ABOUT = {
         "moment tensors summed within ~150 km, SHmax of the sum, Lund & Townend 2007)."
     ),
 }
+
+
+def _velocity(summary: dict[str, Any]) -> list[str]:
+    """CB-28's regions: pairs, the stations hidden in turn, the values graded."""
+    out = ["| Region | Snapshot | Pairs | Stations hidden | Test values |", "|---|---|---|---|---|"]
+    for region, snap in summary.get("snapshots", {}).items():
+        r = summary[region]
+        out.append(
+            f"| `{region}` | `{snap}` | {r['pairs']} | {len(r['folds'])} of {r['stations']} "
+            f"| {r['test_values']:,} |"
+        )
+    return out
 
 
 def _sequences(summary: dict[str, Any]) -> list[str]:
@@ -356,6 +379,7 @@ def render() -> str:
             "CB-22",
             "CB-23",
             "CB-24",
+            "CB-28",
             "CB-30",
             "CB-32",
             "CB-34",
@@ -377,6 +401,8 @@ def render() -> str:
             lines += ["", *_planets(summary)]
         if task_id == "CB-22" and summary:
             lines += ["", *_sequences(summary)]
+        if task_id == "CB-28" and summary:
+            lines += ["", *_velocity(summary)]
         if task_id == "CB-30" and summary:
             lines += ["", *_cases(summary)]
         if task_id == "CB-23" and summary:
