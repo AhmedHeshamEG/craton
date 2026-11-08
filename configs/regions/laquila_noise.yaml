@@ -8,7 +8,7 @@ box:
   lon_max: 13.9
 start: "2008-06-01T00:00:00Z"
 end: "2010-06-01T00:00:00Z"
-adapters: [seismic_noise_power]
+adapters: [seismic_noise_power, seismic_velocity_change]
 sources:
   fdsn_waveforms:
     station_service: https://webservices.ingv.it/fdsnws/station/1/query
@@ -17,3 +17,6 @@ sources:
     channels: LH?
     provider: INGV (EIDA Italia)
     license: CC-BY-4.0
+    velocity:
+      reference: ["2008-06-01", "2009-04-01"]   # quiet months before the test, never after
+      max_pair_km: 80

@@ -1385,6 +1385,51 @@
           "history_quakes": 7618
         }
       }
+    },
+    "CB-28": {
+      "name": "Velocity gap-fill",
+      "metric": "RMSE (%) of a hidden station's dv/v, rebuilt from the other pairs",
+      "direction": "lower",
+      "fingerprint": "78ebf025115622d5ea804ee9078da1c9b7227904e06696f8adc0d9bd3bbb3bee",
+      "files": {
+        "central_italy_noise.parquet": "bd70a59ac9417788fb2d113f3be37fceb8242fff4677466029d6bec38b11d63f",
+        "laquila_noise.parquet": "657ff9586e721715c707ba8992167203531f25d784af8d0602f6531e93183a9c"
+      },
+      "summary": {
+        "snapshots": {
+          "central_italy_noise": "96c9c1265bc7c1f8",
+          "laquila_noise": "203de40a57a6952e"
+        },
+        "central_italy_noise": {
+          "pairs": 41,
+          "stations": 11,
+          "folds": [
+            "IV.ASSB",
+            "IV.CING",
+            "IV.FDMO",
+            "IV.FIAM",
+            "IV.GUMA",
+            "IV.LNSS",
+            "IV.NRCA",
+            "IV.OFFI",
+            "IV.TERO",
+            "MN.AQU"
+          ],
+          "test_values": 23588
+        },
+        "laquila_noise": {
+          "pairs": 9,
+          "stations": 5,
+          "folds": [
+            "IV.CERT",
+            "IV.FAGN",
+            "IV.FIAM",
+            "IV.TERO",
+            "MN.AQU"
+          ],
+          "test_values": 3130
+        }
+      }
     }
   }
 }

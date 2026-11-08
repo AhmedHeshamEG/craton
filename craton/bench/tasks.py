@@ -1182,4 +1182,7 @@ from craton.bench import stress as _stress  # noqa: E402, F401
 
 # P9h: CB-32, each training region forecast by a model that never read it.
 from craton.bench import unseen as _unseen  # noqa: E402, F401
+
+# P10b: CB-28, a hidden station's dv/v rebuilt from the other pairs.
+from craton.bench import velocity as _velocity  # noqa: E402, F401
 from craton.bench import world as _world  # noqa: E402, F401

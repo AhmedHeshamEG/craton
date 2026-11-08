@@ -590,6 +590,12 @@ from craton.bench.distilled import ConstantLaw  # noqa: E402
 
 register_method(ConstantLaw())
 
+# CB-28's floors: say nothing changed, or average the neighbouring pairs.
+from craton.bench.velocity import VelocityNeighbours, VelocityZero  # noqa: E402
+
+register_method(VelocityZero())
+register_method(VelocityNeighbours())
+
 # CB-33's floor: recent quakes over long-run quakes, cell by cell.
 from craton.bench.planted import QuakeDensity  # noqa: E402
 

@@ -370,8 +370,70 @@ SEISMIC_NOISE_POWER = Instrument(
     ),
 )
 
+# ------------------------------------------------- 1.5.0: how fast the crust between two sensors is
+_STATION = r"[A-Z0-9]{1,2}\.[A-Z0-9]{1,5}"
+
+SEISMIC_VELOCITY_CHANGE = Instrument(
+    name="seismic_velocity_change",
+    description=(
+        "How much faster or slower seismic waves crossed the crust between two seismometers, "
+        "relative to a reference period: dv/v from the coda of their daily ambient-noise "
+        "correlations, all nine component pairs, stretched against the reference and "
+        "stacked over the past days only."
+    ),
+    kinds=("observation",),
+    channels=(
+        Channel(
+            "dvv",
+            "1",
+            "Relative velocity change dv/v, with the season and the ocean-noise terms fitted "
+            "on the reference period removed. -0.001 is 0.1% slower.",
+            -0.05,
+            0.05,
+        ),
+        Channel("dvv_raw", "1", "dv/v before that correction.", -0.05, 0.05),
+        Channel(
+            "coherence",
+            "1",
+            "How well the stretched reference matches the day's coda (correlation, "
+            "weighted over the component pairs). Low coherence = a less reliable dv/v.",
+            -1,
+            1,
+        ),
+    ),
+    qualifiers=(
+        Qualifier(
+            "station_a", "The first station, NET.STA (codes sorted).", True, pattern=_STATION
+        ),
+        Qualifier("station_b", "The second station, NET.STA.", True, pattern=_STATION),
+        Qualifier(
+            "stack_days", "Days stacked, ending with this one.", True, pattern=r"[1-9][0-9]{0,2}"
+        ),
+        Qualifier(
+            "reference",
+            "The reference period, ISO dates start/end.",
+            True,
+            pattern=r"\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}",
+        ),
+    ),
+    added_in="1.5.0",
+    references=(
+        "Shapiro & Campillo (2004), GRL 31, L07614, doi:10.1029/2004GL019491",
+        "Sens-Schönfelder & Wegler (2006), GRL 33, L21302, doi:10.1029/2006GL027797",
+        "Hobiger, Wegler, Shiomi & Nakahara (2012), JGR 117, B09313, doi:10.1029/2012JB009402",
+        "Weaver, Hadziioannou, Larose & Campillo (2011), GJI 185, 1393-1404, "
+        "doi:10.1111/j.1365-246X.2011.05015.x",
+    ),
+)
+
 #: Instruments added after 1.0.0, in the order they arrived.
-LATER_INSTRUMENTS = (FLUID_INJECTION, RESERVOIR_PRESSURE, MOMENT_TENSOR, SEISMIC_NOISE_POWER)
+LATER_INSTRUMENTS = (
+    FLUID_INJECTION,
+    RESERVOIR_PRESSURE,
+    MOMENT_TENSOR,
+    SEISMIC_NOISE_POWER,
+    SEISMIC_VELOCITY_CHANGE,
+)
 
 V1_INSTRUMENTS = (
     SEISMIC_CATALOG,

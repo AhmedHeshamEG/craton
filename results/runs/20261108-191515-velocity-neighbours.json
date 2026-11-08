@@ -1,0 +1,124 @@
+{
+  "run_id": "20261108-191515-velocity-neighbours",
+  "model": "velocity_neighbours",
+  "kind": "baseline",
+  "config_hash": "baseline",
+  "git_commit": "248eb28831e3",
+  "created": "2026-11-08T19:15:15Z",
+  "results": [
+    {
+      "task_id": "CB-28",
+      "metric": "RMSE (%) of a hidden station's dv/v, rebuilt from the other pairs",
+      "direction": "lower",
+      "fingerprint": "78ebf025115622d5ea804ee9078da1c9b7227904e06696f8adc0d9bd3bbb3bee",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "values": [
+        0.37839249862627844,
+        0.37839249862627844,
+        0.37839249862627844
+      ],
+      "extras": {
+        "central_italy_noise.IV.ASSB.pct": [
+          0.285787946260103,
+          0.285787946260103,
+          0.285787946260103
+        ],
+        "central_italy_noise.IV.CING.pct": [
+          0.22191036504075365,
+          0.22191036504075365,
+          0.22191036504075365
+        ],
+        "central_italy_noise.IV.FDMO.pct": [
+          0.31340216822073724,
+          0.31340216822073724,
+          0.31340216822073724
+        ],
+        "central_italy_noise.IV.FIAM.pct": [
+          0.3534794397038734,
+          0.3534794397038734,
+          0.3534794397038734
+        ],
+        "central_italy_noise.IV.GUMA.pct": [
+          0.27331960565292135,
+          0.27331960565292135,
+          0.27331960565292135
+        ],
+        "central_italy_noise.IV.LNSS.pct": [
+          0.3027010290254677,
+          0.3027010290254677,
+          0.3027010290254677
+        ],
+        "central_italy_noise.IV.NRCA.pct": [
+          0.29204916769117245,
+          0.29204916769117245,
+          0.29204916769117245
+        ],
+        "central_italy_noise.IV.OFFI.pct": [
+          0.2887253809605844,
+          0.2887253809605844,
+          0.2887253809605844
+        ],
+        "central_italy_noise.IV.TERO.pct": [
+          0.41623556460100886,
+          0.41623556460100886,
+          0.41623556460100886
+        ],
+        "central_italy_noise.MN.AQU.pct": [
+          0.27082474062197465,
+          0.27082474062197465,
+          0.27082474062197465
+        ],
+        "central_italy_noise.pct": [
+          0.3018435407778597,
+          0.3018435407778597,
+          0.3018435407778597
+        ],
+        "central_italy_noise.folds": [
+          10.0,
+          10.0,
+          10.0
+        ],
+        "laquila_noise.IV.CERT.pct": [
+          0.3634494388117858,
+          0.3634494388117858,
+          0.3634494388117858
+        ],
+        "laquila_noise.IV.FAGN.pct": [
+          0.6225492969002101,
+          0.6225492969002101,
+          0.6225492969002101
+        ],
+        "laquila_noise.IV.FIAM.pct": [
+          0.384166674540296,
+          0.384166674540296,
+          0.384166674540296
+        ],
+        "laquila_noise.IV.TERO.pct": [
+          0.4003297620939274,
+          0.4003297620939274,
+          0.4003297620939274
+        ],
+        "laquila_noise.MN.AQU.pct": [
+          0.5042121100272664,
+          0.5042121100272664,
+          0.5042121100272664
+        ],
+        "laquila_noise.pct": [
+          0.45494145647469714,
+          0.45494145647469714,
+          0.45494145647469714
+        ],
+        "laquila_noise.folds": [
+          5.0,
+          5.0,
+          5.0
+        ]
+      },
+      "carried_from": null
+    }
+  ]
+}
