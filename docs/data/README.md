@@ -15,6 +15,7 @@ Every source Craton reads, who made it, under what terms, and what to watch out 
 | [`ngl_gnss`](ngl_gnss.md) | GNSS daily positions, Nevada Geodetic Laboratory (IGS20) | `gnss_daily` | `LicenseRef-NGL-as-is` |
 | [`pressure_grid`](pressure_grid.md) | Reservoir pressure from a history-matched model, on a grid (one CSV) | `reservoir_pressure` | `LicenseRef-per-region` |
 | [`seismic_noise_power`](seismic_noise_power.md) | Daily seismic noise power at broadband stations, from FDSN waveforms | `seismic_noise_power` | `CC-BY-4.0` |
+| [`seismic_velocity_change`](seismic_velocity_change.md) | Daily seismic velocity change (dv/v) between station pairs, from ambient noise | `seismic_velocity_change` | `CC-BY-4.0` |
 | [`uic_workbook`](uic_workbook.md) | Injection well volumes, one regulator workbook a year (form 1012A layout) | `fluid_injection` | `LicenseRef-per-region` |
 | [`zenodo_catalog`](zenodo_catalog.md) | Research earthquake catalogues on Zenodo (one CSV per record) | `seismic_catalog` | `LicenseRef-per-region` |
 

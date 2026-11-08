@@ -790,6 +790,29 @@
           },
           "tokens": 33572,
           "version": "1.0.0"
+        },
+        "seismic_velocity_change": {
+          "files": 4,
+          "health": {
+            "seismic_velocity_change": {
+              "first": "2015-06-01",
+              "last": "2018-12-31",
+              "per_year": {
+                "2015": 17241,
+                "2016": 24333,
+                "2017": 22813,
+                "2018": 16877
+              },
+              "tokens": 81264
+            }
+          },
+          "raw_bytes": 6070562304,
+          "raw_files": 442,
+          "rejects": {
+            "reference_too_short": 0
+          },
+          "tokens": 81264,
+          "version": "1.0.0"
         }
       },
       "box": {
@@ -798,7 +821,7 @@
         "lon_max": 14.0,
         "lon_min": 12.5
       },
-      "snapshot": "57e2d2b502ed3e74",
+      "snapshot": "96c9c1265bc7c1f8",
       "window": [
         "2015-06-01T00:00:00Z",
         "2019-01-01T00:00:00Z"
@@ -1369,6 +1392,28 @@
           },
           "tokens": 11906,
           "version": "1.0.0"
+        },
+        "seismic_velocity_change": {
+          "files": 3,
+          "health": {
+            "seismic_velocity_change": {
+              "first": "2008-06-01",
+              "last": "2010-05-31",
+              "per_year": {
+                "2008": 2746,
+                "2009": 4786,
+                "2010": 2614
+              },
+              "tokens": 10146
+            }
+          },
+          "raw_bytes": 2236246528,
+          "raw_files": 151,
+          "rejects": {
+            "reference_too_short": 0
+          },
+          "tokens": 10146,
+          "version": "1.0.0"
         }
       },
       "box": {
@@ -1377,7 +1422,7 @@
         "lon_max": 13.9,
         "lon_min": 12.9
       },
-      "snapshot": "da37464db905627a",
+      "snapshot": "203de40a57a6952e",
       "window": [
         "2008-06-01T00:00:00Z",
         "2010-06-01T00:00:00Z"

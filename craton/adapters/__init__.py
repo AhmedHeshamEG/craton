@@ -34,6 +34,7 @@ def get_adapter(name: str) -> Adapter:
 
 # The built-ins register themselves on import.
 from craton.adapters import (  # noqa: E402
+    dvv,
     earthquakenpp,
     fdsn,
     gcmt,
@@ -53,6 +54,7 @@ __all__ = [
     "BuildContext",
     "DataCard",
     "FetchReport",
+    "dvv",
     "earthquakenpp",
     "fdsn",
     "gcmt",
