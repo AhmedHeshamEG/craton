@@ -56,6 +56,7 @@ h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; text-
 .dot.c { background: var(--accent); }
 .dot.i { border: 2px solid var(--muted); }
 .dot.a { background: var(--faint); width: 8px; height: 8px; }
+.fig { margin: 20px 0 0; } .fig img { width: 100%; height: auto; display: block; border-radius: 12px; }
 .tt { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--faint); border-radius: 8px; padding: 7px 10px; font-size: 12px; line-height: 1.5; max-width: 17rem; z-index: 5; box-shadow: 0 8px 24px rgba(0,0,0,.25); font-variant-numeric: tabular-nums; }
 .tt .h { color: var(--muted); }
 .table-wrap { overflow-x: auto; }
@@ -125,6 +126,15 @@ footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-t
     <p class="note">Each row is the year after a big quake, scored against ETAS fitted on that region's own past. The bar spans 3 seeds. Turkey, Chile and Alaska were never in training. Maule is shown but not counted: its ETAS had only 75 quakes to fit on, a rule added after seeing it (D-091).</p>
     <div class="legend"><span><i class="dot c"></i>Craton</span><span><i class="dot i"></i>ETAS-incomplete</span></div>
     <div class="chart" id="ch-seq"></div>
+  </section>
+
+  <section id="unseen">
+    <h2>Regions it never read</h2>
+    <p class="note">Train one Field on three of the four regions, forecast the fourth, and score it against ETAS fitted on that fourth region's own past. Craton never saw a single quake from the region it is graded on; ETAS saw all of them. Mean of 3 seeds (CB-32).</p>
+    <div class="legend"><span><i class="dot c"></i>Craton, region held out</span><span><i class="dot i"></i>ETAS refit on the last month</span><span><i class="dot a"></i>ETAS-incomplete</span></div>
+    <div class="chart" id="ch-unseen"></div>
+    <p class="note">Is it cheating? Moving the training cut a whole year earlier keeps the gain (+0.30 / +0.26 against +0.30 / +0.29 on the two Italian exams). Shuffling which day each answer belongs to drops it to −1.43 bits. Nothing from the future leaks in (P9e).</p>
+    <figure class="fig"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AhmedHeshamEG/craton/main/docs/assets/unseen-regions-dark.png"><img alt="Gain over ETAS fitted on each region's own past, for four regions each forecast by a Field trained on the other three." src="https://raw.githubusercontent.com/AhmedHeshamEG/craton/main/docs/assets/unseen-regions-light.png" loading="lazy"></picture></figure>
   </section>
 
   <section id="room">
@@ -285,6 +295,37 @@ footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-t
     });
   }
 
+  function drawUnseen(el) {
+    const rows = DATA.unseen, regions = [...new Set(rows.map(r => r.region))], tt = tip(el.closest('section'));
+    const UN = { craton: 'Craton, region held out', etas_local_alpha: 'ETAS refit on the last month', etas_incomplete: 'ETAS-incomplete' };
+    const rowH = 40, T = 24, B = 28, fs = 13;
+    const [svg, W] = svgIn(el, T + regions.length * rowH + B);
+    const L = Math.min(W * .4, widest(svg, regions, fs) + 14), R = 58, lo = -.4, hi = .6;
+    const x = d3.scaleLinear([lo, hi], [L, W - R]), y = d3.scaleBand(regions, [T, T + regions.length * rowH]);
+    axis(svg.append('g').attr('transform', `translate(0,${T + regions.length * rowH})`)
+      .call(d3.axisBottom(x).ticks(Math.max(3, Math.floor((W - L - R) / 60))).tickFormat(v => sign(v, 1)).tickSize(-regions.length * rowH)));
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', T - 6).attr('y2', T + regions.length * rowH).attr('stroke', css('--mid')).attr('stroke-width', 1.5);
+    svg.append('text').attr('x', x(0)).attr('y', T - 11).attr('text-anchor', 'middle').attr('fill', css('--muted')).attr('font-size', 11).text('ETAS fitted there');
+    regions.forEach((g, i) => {
+      const yc = y(g) + y.bandwidth() / 2, rs = rows.filter(r => r.region === g), c = rs.find(r => r.method === 'craton').gain, mean = i === regions.length - 1;
+      const cl = v => Math.max(lo, Math.min(hi, v));
+      if (mean) svg.append('line').attr('x1', 0).attr('x2', W).attr('y1', y(g)).attr('y2', y(g)).attr('stroke', css('--faint'));
+      svg.append('text').attr('x', L - 14).attr('y', yc).attr('dy', '.35em').attr('text-anchor', 'end').attr('fill', css('--ink')).attr('font-size', fs).attr('font-weight', mean ? 600 : 400).text(g);
+      svg.append('line').attr('x1', x(0)).attr('x2', x(cl(c))).attr('y1', yc).attr('y2', yc).attr('stroke', css('--accent')).attr('stroke-width', 2).attr('opacity', .35);
+      rs.forEach(r => {
+        if (r.method === 'craton') return;
+        const la = r.method === 'etas_local_alpha';
+        svg.append('circle').attr('cx', x(cl(r.gain))).attr('cy', yc).attr('r', la ? 5.5 : 4)
+          .attr('fill', la ? css('--ground') : css('--faint')).attr('stroke', la ? css('--muted') : 'none').attr('stroke-width', 2);
+      });
+      svg.append('circle').attr('cx', x(cl(c))).attr('cy', yc).attr('r', 7.5).attr('fill', css('--accent'));
+      svg.append('text').attr('x', W - R + 12).attr('y', yc).attr('dy', '.35em').attr('font-size', fs).attr('font-weight', 600)
+        .attr('fill', c > 0 ? css('--accent') : css('--muted')).text(sign(c));
+      svg.append('rect').attr('x', 0).attr('y', y(g)).attr('width', W).attr('height', rowH).attr('fill', 'transparent')
+        .on('mousemove', e => tt.show(e, g, rs.map(r => `${UN[r.method]}: ${sign(r.gain)} bits`))).on('mouseleave', () => tt.hide());
+    });
+  }
+
   function drawBuilding(el, task) {
     const rs = DATA.building, tt = tip(el.closest('section')), rowH = 30, fs = 12;
     const [svg, W] = svgIn(el, 6 + rs.length * rowH + 26);
@@ -331,7 +372,7 @@ footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-t
 
   function draw() {
     if (!DATA) return;
-    [['ch-tests', drawTests], ['ch-c2', el => drawClimb(el, 'CB-02')], ['ch-c3', el => drawClimb(el, 'CB-03')], ['ch-seq', drawSeq],
+    [['ch-tests', drawTests], ['ch-c2', el => drawClimb(el, 'CB-02')], ['ch-c3', el => drawClimb(el, 'CB-03')], ['ch-seq', drawSeq], ['ch-unseen', drawUnseen],
      ['ch-b2', el => drawBuilding(el, 'CB-02')], ['ch-b3', el => drawBuilding(el, 'CB-03')]].forEach(([id, fn]) => {
       const el = document.getElementById(id); el.replaceChildren(); fn(el);
     });

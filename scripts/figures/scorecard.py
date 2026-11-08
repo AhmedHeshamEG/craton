@@ -25,6 +25,7 @@ import numpy as np
 from style import ACCENT, ASSETS, ROOT, THEMES, Theme, inter
 
 sys.path.insert(0, str(ROOT))
+import craton.bench.tasks  # noqa: F401  (first: registers every task; world.py alone hits the pressure cycle)
 from craton.bench.world import SEQUENCES, ZERO_SHOT
 
 RUNS = ROOT / "results" / "runs"
