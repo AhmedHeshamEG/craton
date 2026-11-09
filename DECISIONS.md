@@ -2718,3 +2718,64 @@ built into the adapter.
 
 **Rejected.** Tuning windows, stacks or bands on 2016 until a drop appears (that is fitting the
 test). Downloading three-component 20 Hz for all stations (~40 GB) before a cause is known.
+
+### D-143 · 2026-11-09 · P10c — The noise instruments enter the Field as seven numbers per cell, from yesterday only
+
+**What.** `craton/field/listen.py`, switched on by a `listen:` section in a Field config
+(`configs/field/listen.yaml` = `mini.yaml` plus that section). At each midnight every cell reads the
+stations and station pairs within 75 km through a 25 km Gaussian, each value weighted by 1/σ²:
+
+- loudness: each station's three band powers (components averaged) on the last whole day, minus
+  its own median of the 60 days before that day, in units of 10 dB; and log1p of how many stations
+  the cell hears;
+- dv/v: the pairs' corrected 10- and 30-day stacks, in units of 0.2%; and log1p of how many pairs
+  it hears.
+
+The seven numbers are appended to the Omori memory, so the Field's input layer is the encoder and
+nothing else in the net changes. `mini`'s hash and checkpoints don't move.
+
+**Rules.** Exactly one day is read: the one stamped the midnight before (a token's time starts the
+day it covers). A missing day is zero and "hears nothing"; nothing is carried forward. Days before
+the instruments exist read the same way, so central Italy's 1991-2015 training days are silent.
+
+**Rejected.** A separate encoder per instrument added to the cell features: on ~450 training days
+with any signal it is more weights for the same information. Reading the latest token whatever its
+age: a station that dies would keep shouting its last value.
+
+### D-144 · 2026-11-09 · P10c — dv/v whose reference reaches past the training cut is not read; CB-03 hears loudness only
+
+dv/v is a stretch against a reference waveform stacked over a region's quiet period. `laquila_noise`'s
+reference runs from June 2008 to 1 April 2009, three months into CB-03's test year (2009). A Field
+trained to the end of 2008 that reads it would read test-era noise. The rule is general: a region's
+dv/v is read only if its reference ends at or before the training cut. `central_italy_noise`'s ends
+on 20 August 2016, four days before CB-02's cut; it is read. Loudness has no reference (each day is
+read over the 60 days before it) and is read everywhere.
+
+### D-145 · 2026-11-09 · P10c — Listening pays at 30 days in the count and costs next-day; not adopted
+
+Paired against `mini`, same seeds, same six members (`scripts/ablations/curriculum.py listen
+CB-02,CB-03,CB-19`, `results/ablation/listen_on_italy.json`):
+
+| Task | listen | mini | gain per seed | how many | where |
+|---|---|---|---|---|---|
+| CB-02 next day | −6.862 | −6.815 | −0.007, −0.107, −0.028 | −0.009, −0.122, −0.022 | +0.003, +0.015, −0.006 |
+| CB-03 next day (loudness only) | −8.230 | −8.232 | −0.003, +0.008, −0.000 | −0.005, +0.011, −0.010 | +0.002, −0.003, +0.010 |
+| CB-19 30 days | −6.100 | −6.226 | −0.027, +0.369, +0.036 | +0.170, +0.267, +0.076 | −0.197, +0.102, −0.040 |
+
+Next day the instruments are worth nothing (CB-03) or a little less than nothing (CB-02, every seed,
+almost all of it in the count: the Field fits ~15 months of listened days and the fit doesn't carry).
+At 30 days the count gains on every seed (+0.17 mean), the shape GPS had at 30 days (+0.13, D-085);
+where swings with the seed (−0.20 to +0.10). The net CB-19 gain, +0.13 ± 0.21, is inside the noise;
+seed 1 alone (−5.985) passes ETAS (−6.002), the mean doesn't.
+
+What the count gain is, this run can't say. The likeliest reading is the same as GPS's: the stations
+are loud and the paths slow while a sequence is on, so the instruments say "the sequence is still
+going" a little better than the quake memory does a month ahead. That is a state, not a precursor.
+
+**Decision.** Not adopted: CB-02 loses on every seed, and no phase may score below the last on any
+number. The code stays, off by default. The 30-day count share is the instruments' measured worth
+(the phase's "zero is a result" turned out positive at 30 days only). It goes to P11 as an input to
+the storm detector's box-level count, where it can move how many without moving where.
+
+**Rejected.** A count-only variant run now, on CB-19, after seeing which half gained: that is a
+design chosen by the test. P11 builds the box-level head for its own reasons and tests it there.

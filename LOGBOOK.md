@@ -1192,3 +1192,41 @@ Surprises / problems:
 Decisions: D-140, D-141, D-142.
 
 Next: P10c, both noise instruments in the Field, ablation on CB-02 / CB-03 / CB-19.
+
+## 2026-11-09 — P10c — Listening in the Field
+
+TLDR: The Field can now hear the crust: every cell reads how loud the stations near it were
+yesterday and how fast waves crossed the paths near it (`listen:` config section). Next day it
+hears nothing useful: CB-03 ties, CB-02 loses a little on every seed (−0.05). A month ahead the
+count gets better on every seed (+0.17 bits per quake, the shape GPS had), but where swings with
+the seed, so CB-19's net +0.13 sits inside the noise. Not adopted; the 30-day count share goes
+to P11's storm detector.
+
+Built:
+- `craton/field/listen.py`: seven features per cell per midnight (three loudness changes over
+  each station's own last 60 days, two dv/v stacks, two coverage counts), Gaussian 25 km, 1/σ²
+  weights, yesterday only; appended to the Omori memory (D-143)
+- `FieldListen` config section, `configs/field/listen.yaml`; `build_days(listen_cut=...)`; `mini`'s
+  hash unchanged
+- a region's dv/v is read only if its reference ends by the training cut: CB-03 hears loudness only
+  (L'Aquila's reference runs into April 2009, D-144)
+- tests `test_listen.py` (5)
+
+Scores (paired with `mini`, 3 seeds, 6 members, `results/ablation/listen_on_italy.json`):
+- CB-02: −6.862 vs −6.815, gain −0.007 / −0.107 / −0.028 (how many −0.05 mean)
+- CB-03: −8.230 vs −8.232, gain −0.003 / +0.008 / −0.000
+- CB-19: −6.100 vs −6.226, gain −0.027 / +0.369 / +0.036; how many +0.170 / +0.267 / +0.076,
+  where −0.197 / +0.102 / −0.040. Seed 1 (−5.985) passes ETAS (−6.002); the mean doesn't.
+
+Surprises / problems:
+- dv/v tokens are fractions, not percent (0.007 = 0.7%); the first feature scale was 100× off and
+  was fixed before any run.
+- Only ~450 of CB-02's 9,367 training days have any instrument (they start June 2015), ~210 of
+  CB-03's. The Field learns the instruments from a year and a half of mostly quiet days.
+- Loading both instruments' tokens takes ~60 s (Python lists from Parquet); cached per process.
+- The whole ablation (nine listening Fields; `mini`'s checkpoints already existed) took ~5.5 h.
+
+Decisions: D-143, D-144, D-145.
+
+Next: P10d, the SeisLM spike: frozen embeddings of ten quiet minutes per station-day against these
+band powers, the same ablation.
