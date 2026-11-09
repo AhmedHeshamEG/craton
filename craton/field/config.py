@@ -212,6 +212,32 @@ class FieldDimless(_Strict):
     )
 
 
+class FieldListen(_Strict):
+    """The noise instruments as Field inputs (P10c, ``craton.field.listen``): every cell reads
+    the stations and station pairs near it, from the last whole day before each midnight."""
+
+    noise_power: bool = Field(
+        default=True,
+        description="Each station's band powers over its own median of the days before "
+        "(seismic_noise_power, three bands), averaged over the stations near the cell.",
+    )
+    velocity: bool = Field(
+        default=True,
+        description="dv/v of the pairs near the cell, 10- and 30-day stacks "
+        "(seismic_velocity_change). A region whose reference reaches past the training cut "
+        "is not read: its reference would hold test-era noise.",
+    )
+    regions: tuple[str, ...] = Field(
+        default=("central_italy_noise", "laquila_noise"),
+        description="The regions whose noise tokens are read; their windows do not overlap.",
+    )
+    sigma_km: float = Field(default=25.0, gt=0, description="Gaussian width station → cell.")
+    cut_km: float = Field(default=75.0, gt=0, description="Stations farther away are ignored.")
+    baseline_days: int = Field(
+        default=60, gt=1, description="Days before whose median a station's power is read over."
+    )
+
+
 class FieldConfig(_Strict):
     name: str
     description: str
@@ -227,6 +253,7 @@ class FieldConfig(_Strict):
     audit: FieldAudit | None = None
     meter: FieldMeter | None = None
     dimless: FieldDimless | None = None
+    listen: FieldListen | None = None
 
 
 def load_field_config(name_or_path: str | Path, root: Path | None = None) -> FieldConfig:
@@ -249,6 +276,7 @@ def field_hash(config: FieldConfig) -> str:
         "audit",
         "meter",
         "dimless",
+        "listen",
     ):
         if dump.get(later) is None:
             # a config from before P8d / P8f / P9c-P9f / P9h keeps its hash and checkpoints

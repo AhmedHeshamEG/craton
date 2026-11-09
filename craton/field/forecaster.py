@@ -149,16 +149,25 @@ def build_days(
     scored: float = M_SCORED,
     memory_spec: MemorySpec | None = None,
     kernel_cache: KernelCache | None = None,
+    listen_cut: float | None = None,
 ) -> Days:
     """Memory, ETAS rates and (optionally) answers for ``starts``, reading only ``events``
     before each midnight; each start's rates and answers cover ``span_days`` days. Answers
-    split at ``scored`` (central Italy: M3); the memory follows ``cfg`` unless given."""
+    split at ``scored`` (central Italy: M3); the memory follows ``cfg`` unless given. (P10c) A
+    config that listens appends the noise instruments to the memory; ``listen_cut`` is the
+    training cut-off, which decides whose dv/v may be read."""
     proj = etas.Projection.for_grid(grid)
     camera = cfg.camera is not None and cfg.camera.world
     spec = memory_spec or MemorySpec(m_min=cfg.memory.m_min, start=to_seconds(cfg.memory.start))
     if camera:
         spec = replace(spec, world_b=fit.b)
     mem = memory(events, grid, starts, spec)
+    if cfg.listen is not None:
+        if listen_cut is None:
+            raise ValueError("a Field that listens needs the training cut (listen_cut)")
+        from craton.field.listen import features
+
+        mem = np.concatenate([mem, features(starts, grid, cfg.listen, listen_cut)], axis=-1)
     # ETAS reads every quake since the memory starts, also before its own fit window.
     hist = events.window(min(fit.t_ref, spec.start), float(starts[-1])).above(fit.mc)
     cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, fit.t_ref)
@@ -460,7 +469,14 @@ class FieldForecaster:
         starts = np.arange(first, cut - spec.period + 1, DAY)
         self.log(f"Field {spec.task_id} seed {seed}: building {len(starts)} training days")
         days = build_days(
-            fit, ctx.train_events(spec.fit_split), starts, spec.grid, cfg, True, spec.period_days
+            fit,
+            ctx.train_events(spec.fit_split),
+            starts,
+            spec.grid,
+            cfg,
+            True,
+            spec.period_days,
+            listen_cut=cut,
         )
         states, runs, base = self.grown_from(ctx, spec, seed)
         if base:
@@ -542,6 +558,7 @@ class FieldForecaster:
             self.config,
             False,
             spec.period_days,
+            listen_cut=to_seconds(spec.fit_end),
         )
         m3 = predict_members(states, days, spec.grid, self.config)
         shares = magnitude_shares(fit, spec.grid, spec.max_magnitude)
@@ -584,7 +601,9 @@ class FieldForecaster:
         idx = np.arange(len(starts))
         every = cfg.train.validation_every
         val = (idx // VALIDATION_BLOCK_DAYS) % every == every - 1
-        days = build_days(fit, ctx.train_events(spec.fit_split), starts[val], spec.grid, cfg, True)
+        days = build_days(
+            fit, ctx.train_events(spec.fit_split), starts[val], spec.grid, cfg, True, listen_cut=cut
+        )
         assert days.counts is not None
         mean = predict_members(states, days, spec.grid, cfg).mean(axis=0)
         n = days.counts[..., 1].astype(np.float64)
