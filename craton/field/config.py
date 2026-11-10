@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
@@ -236,6 +237,12 @@ class FieldListen(_Strict):
     baseline_days: int = Field(
         default=60, gt=1, description="Days before whose median a station's power is read over."
     )
+    ear: Literal["bands", "seislm"] = Field(
+        default="bands",
+        description="(P10d) What a station's day sounds like: our three band powers, or the "
+        "first three principal components of frozen SeisLM-base embeddings of ten quiet "
+        "minutes (basis fitted on days before the training cut only).",
+    )
 
 
 class FieldConfig(_Strict):
@@ -287,5 +294,8 @@ def field_hash(config: FieldConfig) -> str:
     dimless = dump.get("dimless")
     if dimless is not None and dimless.get("anchor") is False:
         dimless.pop("anchor")  # added in v2 (D-130); off keeps v1's hash and checkpoints
+    listen = dump.get("listen")
+    if listen is not None and listen.get("ear") == "bands":
+        listen.pop("ear")  # added in P10d; the band ear keeps P10c's hash and checkpoints
     body = json.dumps(dump, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(body.encode()).hexdigest()[:16]

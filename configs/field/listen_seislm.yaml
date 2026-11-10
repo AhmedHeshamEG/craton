@@ -1,0 +1,32 @@
+# P10d: listen.yaml with a borrowed ear. Each station-day is ten quiet minutes of 100 Hz
+# waveform through frozen SeisLM-base (scripts/ablations/seislm_ear.py), three principal
+# components in place of the three band powers; dv/v as in listen.yaml. One change.
+name: listen_seislm
+description: "listen with a borrowed ear: frozen SeisLM-base embeddings (three principal components) in place of the band powers."
+
+model:
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  dropout: 0.1
+  max_nudge: 4.0
+
+memory:
+  m_min: 1.5
+  start: "1990-01-01T00:00:00Z"
+
+train:
+  first_day: "1991-01-01T00:00:00Z"
+  validation_every: 8
+  days_per_step: 8
+  lr: 1.0e-3
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 5
+  members: 6
+  seeds: [0, 1, 2]
+
+listen:
+  noise_power: true
+  velocity: true
+  ear: seislm

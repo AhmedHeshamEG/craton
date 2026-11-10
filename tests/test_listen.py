@@ -9,10 +9,13 @@ from craton.bench.data import DAY
 from craton.field.config import FieldListen, field_hash, load_field_config
 from craton.field.listen import (
     N_FEATURES,
+    N_PCS,
+    Embeddings,
     Instruments,
     Series,
     _trailing_median,
     features,
+    seislm_series,
 )
 
 GRID = csep.Grid(42.0, 43.0, 13.0, 14.0, cell_deg=0.1, m_min=1.5, m_max=8.0)
@@ -79,3 +82,44 @@ def test_mini_keeps_its_hash_and_listen_differs() -> None:
     assert mini.listen is None
     assert field_hash(mini) != field_hash(load_field_config("listen"))
     assert field_hash(mini) == field_hash(mini.model_copy(update={"listen": None}))
+
+
+def _embeddings(n_days: int, rng: np.random.Generator) -> Embeddings:
+    v = rng.normal(size=(2, n_days, 240))
+    return Embeddings(
+        np.array([42.5, 42.6]),
+        np.array([13.5, 13.6]),
+        T0 + DAY * np.arange(n_days, dtype=np.float64),
+        v,
+        np.full_like(v, 0.1),
+    )
+
+
+def test_seislm_basis_sees_only_days_before_the_cut() -> None:
+    rng = np.random.default_rng(0)
+    e = _embeddings(200, rng)
+    cut = T0 + 120 * DAY
+    a = seislm_series([e], cut, 30)[0]
+    e.value[:, 120:] += 50 * rng.normal(size=(2, 80, 240))  # the future changes wildly
+    b = seislm_series([e], cut, 30)[0]
+    assert a.value.shape == (2, 200, N_PCS)
+    np.testing.assert_allclose(a.value[:, :120], b.value[:, :120])
+
+
+def test_seislm_ear_fills_the_loudness_columns() -> None:
+    e = _embeddings(100, np.random.default_rng(1))
+    inst = Instruments([], [], [e])
+    starts = T0 + DAY * np.array([80.0])
+    f = features(starts, GRID, SPEC, cut=T0 + 70 * DAY, instruments=inst).astype(np.float64)
+    cell = int(GRID.cell_of(np.array([42.5]), np.array([13.5]))[0])
+    assert np.any(f[0, cell, :3] != 0)
+    assert f[0, cell, 3] > 0
+    assert np.all(f[0, :, 4:] == 0)
+
+
+def test_the_band_ear_keeps_p10c_hash() -> None:
+    listen = load_field_config("listen")
+    assert listen.listen is not None
+    assert listen.listen.ear == "bands"
+    seislm = load_field_config("listen_seislm")
+    assert field_hash(seislm) != field_hash(listen)
