@@ -2779,3 +2779,55 @@ the storm detector's box-level count, where it can move how many without moving 
 
 **Rejected.** A count-only variant run now, on CB-19, after seeing which half gained: that is a
 design chosen by the test. P11 builds the box-level head for its own reasons and tests it there.
+
+### D-146 · 2026-11-10 · P10d — A borrowed ear: SeisLM-base's first three components in place of the band powers
+
+The spike's question is the plan's: does a frozen waveform foundation model hear the crust better
+than our three band powers? One change against `listen` (`configs/field/listen_seislm.yaml`,
+`listen.ear: seislm`), so the answer is the ear and nothing else.
+
+- **Waveform.** For every station-day our band powers exist on, ten minutes of 100 Hz `HH?` from
+  INGV, 02:00–02:10 UTC (one POST per station-month, 582 requests, 3.35 GB, ~3.5 h at four workers).
+  Cut into nineteen 30 s windows of 3001 samples, ZNE, normalised the way SeisLM was trained (per
+  component: demean, divide by the standard deviation). A window louder than 3× the day's median
+  rms (a quake, a truck) is dropped.
+- **Model.** `ltlltl2006/seislm-base` at revision `13a3dcd`, MIT, frozen, fp32 on the GPU (~120
+  windows/s; ~40 min for the 290 k windows). Its 240 contextual features are averaged over time and
+  over the day's quiet windows: one embedding per station-day. 13,800 station-days (~90% of the
+  band-power days: some days miss a whole `HH` component).
+- **Into the Field.** The first three principal components of the embedding take the three
+  loudness columns; each is read over its station's trailing 60-day median like the band powers,
+  in units of its robust spread. The centre, the basis and the spread are fitted on station-days
+  whole before the training cut only, so CB-03's basis has never heard 2009. dv/v as in `listen`.
+- **What it can't hear.** SeisLM's normalisation divides every window by its own spread: the
+  embedding is the noise's shape, never its loudness. The components correlate with our band-power
+  changes at |r| 0.3–0.6: part the same thing, mostly something else.
+
+SeisLM is a spike dependency, installed beside the lockfile; nothing in `craton/` imports it.
+`scripts/ablations/seislm_ear.py` fetches and embeds; the cache is `data/cache/seislm/<region>.npz`.
+
+### D-147 · 2026-11-10 · P10d — SeisLM loses to our band powers; not borrowed
+
+Paired against `mini` and against `listen` (P10c's band ear), same seeds, same six members
+(`results/ablation/listen_seislm_on_italy.json`):
+
+| Task | SeisLM vs mini, per seed | mean | bands vs mini (P10c) | SeisLM − bands, per seed |
+|---|---|---|---|---|
+| CB-02 next day | −0.058, −0.036, −0.070 | −0.055 | −0.047 | −0.052, +0.071, −0.042 |
+| CB-03 next day (no dv/v) | +0.005, +0.001, −0.007 | 0.000 | 0.002 | +0.008, −0.006, −0.007 |
+| CB-19 30 days | +0.121, +0.179, −0.260 | +0.013 | +0.126 | +0.148, −0.190, −0.296 |
+
+Next day the borrowed ear is worth what ours is: nothing on CB-03, a little less than nothing on
+CB-02, in the count. At 30 days it loses what made the band powers interesting: the count gain is
+smaller (+0.14 mean vs +0.17, and only one seed carries it) and seed 2 loses 0.26 in where.
+
+**Decision.** Not borrowed: it wins no task against the band powers and loses CB-19 by 0.11 bits
+per quake. The plan's rule was to borrow the ear only if it wins. The likeliest reason is the one
+D-146 names: the band powers' signal at 30 days is loudness while a sequence runs, and SeisLM was
+trained to throw loudness away. The `ear` option stays, off by default, so a later model can be
+tried in one line.
+
+**Rejected.** Feeding SeisLM's embedding together with the window rms (giving it the loudness back):
+that is the band powers again with extra inputs, chosen after seeing why it lost. More components,
+`seislm-large`, or fine-tuning on our days: a spike with a nil result doesn't earn a second
+spike's hours; filed in `IDEAS` for whenever a waveform task (picking, CB-28 on 100 Hz) needs an ear.

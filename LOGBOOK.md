@@ -1230,3 +1230,36 @@ Decisions: D-143, D-144, D-145.
 
 Next: P10d, the SeisLM spike: frozen embeddings of ten quiet minutes per station-day against these
 band powers, the same ablation.
+
+## 2026-11-10 — P10d — A borrowed ear
+
+TLDR: Frozen SeisLM-base, a foundation model for seismic waveforms, listened to ten quiet minutes a
+day at every station, and its embedding replaced our three band powers in the Field. It doesn't
+win: next day it ties our ear (both worth nothing), and a month ahead it loses (+0.01 bits per
+quake over `mini` vs our ear's +0.13). SeisLM throws loudness away by design, and loudness was what
+the instruments had. Not borrowed.
+
+Built:
+- `scripts/ablations/seislm_ear.py`: ten minutes of 100 Hz `HH?` per station-day (02:00–02:10 UTC,
+  one POST per station-month), nineteen 30 s windows, loud windows dropped, SeisLM-base embedding
+  averaged per day; cache `data/cache/seislm/<region>.npz`
+- `listen.ear: seislm` (`craton/field/listen.py`): first three principal components, centre, basis
+  and scale fitted before the training cut; `configs/field/listen_seislm.yaml`; `listen`'s hash
+  unchanged (D-146)
+- tests: 3 more in `test_listen.py`
+
+Scores (paired with `mini`, 3 seeds, 6 members, `results/ablation/listen_seislm_on_italy.json`):
+- CB-02: gain −0.058 / −0.036 / −0.070 (ours −0.047 mean)
+- CB-03: gain +0.005 / +0.001 / −0.007 (ours 0.00)
+- CB-19: gain +0.121 / +0.179 / −0.260, mean +0.013 (ours +0.126); how many +0.34 / +0.06 / +0.01
+
+Surprises / problems:
+- SeisLM's `encode` refuses fp16 input; fp32 is fast enough (~120 windows/s on the 2060).
+- Its components correlate with our band-power changes at only |r| 0.3–0.6: it hears another
+  thing (shape, 100 Hz) than the band powers (loudness, 1 Hz).
+- The first ablation process ran out of RAM at CB-03 after three CB-02 runs; restarted for
+  CB-03 and CB-19 in a fresh process. Fetch ~3.5 h, embedding ~40 min, nine Fields ~6 h.
+
+Decisions: D-146, D-147.
+
+Next: P10e, the figure (dv/v under 2016, day by day), the lesson, data cards, v0.11.0.

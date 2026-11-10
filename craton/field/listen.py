@@ -24,13 +24,20 @@ The dv/v of a region is read only if its reference period ends at or before the 
 its values are stretches against a reference waveform, and a reference that runs into the test
 era carries test-era noise. ``laquila_noise``'s runs to April 2009, inside CB-03's test year,
 so CB-03 hears loudness only.
+
+A second ear (P10d, ``ear: seislm``): the three loudness numbers are replaced by the first three
+principal components of each station-day's frozen SeisLM-base embedding (ten quiet minutes of
+100 Hz waveform, ``scripts/ablations/seislm_ear.py``), read over their own trailing median
+like the band powers. The basis, its centre and its scale are fitted on station-days before the
+training cut only. SeisLM normalises every window by its own standard deviation, so this ear
+hears the shape of the noise, never its loudness.
 """
 
 from __future__ import annotations
 
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -189,15 +196,79 @@ def _spread(
     return out
 
 
+@dataclass(frozen=True)
+class Embeddings:
+    """One region's SeisLM station-days: (stations, days, 240), NaN where missing."""
+
+    lat: FloatArray
+    lon: FloatArray
+    days: FloatArray
+    value: FloatArray
+    spread: FloatArray
+
+
+#: Principal components of the SeisLM embedding read in place of the three band powers.
+N_PCS = 3
+
+
+def seislm_series(regions: list[Embeddings], cut: float, baseline_days: int) -> list[Series]:
+    """Per region, each station-day's first ``N_PCS`` principal components over their trailing
+    median, in units of their pre-cut spread. Only days whole before ``cut`` shape the basis."""
+    pre = []
+    for e in regions:
+        whole = e.days + DAY <= cut
+        x = e.value[:, whole].reshape(-1, e.value.shape[-1])
+        pre.append(x[np.isfinite(x).all(-1)])
+    fit = np.concatenate(pre)
+    if len(fit) < 10 * N_PCS:
+        raise ValueError(f"only {len(fit)} SeisLM station-days before the cut")
+    centre = fit.mean(0)
+    _, _, vt = np.linalg.svd(fit - centre, full_matrices=False)
+    basis = vt[:N_PCS]  # (N_PCS, 240)
+    out = []
+    for e in regions:
+        pcs = (e.value - centre) @ basis.T
+        sig = np.sqrt(np.square(e.spread) @ np.square(basis.T))
+        out.append((e, pcs - _trailing_median(pcs, baseline_days), sig))
+    anomalies = np.concatenate([a[:, e.days + DAY <= cut].reshape(-1, N_PCS) for e, a, _ in out])
+    anomalies = anomalies[np.isfinite(anomalies).all(-1)]
+    if len(anomalies) == 0:
+        raise ValueError("no SeisLM anomaly before the cut: the baseline never filled")
+    scale = 1.4826 * np.median(np.abs(anomalies - np.median(anomalies, 0)), 0)
+    return [Series(e.lat, e.lon, e.days, a / scale, s / scale) for e, a, s in out]
+
+
+def load_embeddings(region: str, root: Path) -> Embeddings:
+    path = root / "data" / "cache" / "seislm" / f"{region}.npz"
+    if not path.exists():
+        raise FileNotFoundError(f"{path}: run scripts/ablations/seislm_ear.py fetch, then embed")
+    z = np.load(path)
+    return Embeddings(
+        z["lat"].astype(np.float64),
+        z["lon"].astype(np.float64),
+        z["days"].astype(np.float64),
+        z["embedding"].astype(np.float64),
+        z["spread"].astype(np.float64),
+    )
+
+
 @dataclass
 class Instruments:
     """The noise instruments of every listened region, loaded once per process."""
 
     noise: list[Series]
     velocity: list[tuple[Series, float]]
+    seislm: list[Embeddings] = field(default_factory=list)
+    _by_cut: dict[float, list[Series]] = field(default_factory=dict)
+
+    def ear(self, cut: float, baseline_days: int) -> list[Series]:
+        """The SeisLM ear's series for one training cut (its basis depends on the cut)."""
+        if cut not in self._by_cut:
+            self._by_cut[cut] = seislm_series(self.seislm, cut, baseline_days)
+        return self._by_cut[cut]
 
 
-_LOADED: dict[tuple[str, tuple[str, ...], int], Instruments] = {}
+_LOADED: dict[tuple[str, tuple[str, ...], int, str], Instruments] = {}
 
 
 def load(spec: FieldListen, root: Path | None = None) -> Instruments:
@@ -205,12 +276,14 @@ def load(spec: FieldListen, root: Path | None = None) -> Instruments:
     from craton.paths import find_root
 
     base = root or find_root()
-    key = (str(base), spec.regions, spec.baseline_days)
+    key = (str(base), spec.regions, spec.baseline_days, spec.ear)
     if key not in _LOADED:
-        noise, velocity = [], []
+        noise, velocity, seislm = [], [], []
         for region in spec.regions:
             view = BenchContext(root=base, region=region)
-            if spec.noise_power:
+            if spec.noise_power and spec.ear == "seislm":
+                seislm.append(load_embeddings(region, base))
+            elif spec.noise_power:
                 noise.append(
                     noise_series(
                         read_table(view._snapshot_files(NOISE), COLUMNS), spec.baseline_days
@@ -220,7 +293,7 @@ def load(spec: FieldListen, root: Path | None = None) -> Instruments:
                 velocity.append(
                     velocity_series(read_table(view._snapshot_files(VELOCITY), COLUMNS))
                 )
-        _LOADED[key] = Instruments(noise, velocity)
+        _LOADED[key] = Instruments(noise, velocity, seislm)
     return _LOADED[key]
 
 
@@ -235,8 +308,11 @@ def features(
     training cut-off (seconds), which decides whose dv/v may be read."""
     inst = instruments or load(spec)
     out = np.zeros((len(starts), grid.n_cells, N_FEATURES), np.float32)
-    for s in inst.noise:
-        part = _spread(s, starts, grid, spec, DB_SCALE, DB_CLIP)
+    ears = [(s, DB_SCALE) for s in inst.noise]
+    if inst.seislm:
+        ears += [(s, 1.0) for s in inst.ear(cut, spec.baseline_days)]
+    for s, scale in ears:
+        part = _spread(s, starts, grid, spec, scale, DB_CLIP)
         # Regions' windows do not overlap; where two regions both cover a day, the sum of
         # their averages would double, so each fills only days the others left empty.
         empty = out[..., 3:4] == 0
