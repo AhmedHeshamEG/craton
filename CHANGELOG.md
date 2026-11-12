@@ -5,6 +5,8 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+## [0.11.0] — 2026-11-12 · P10 Listening: the crust's hum as two instruments
+
 ### Added
 - **Token Spec 1.4.0** (P10a, D-137): `seismic_noise_power`, daily median of hourly band powers in
   three bands at every broadband station; `craton/adapters/waveforms.py` (any FDSN data centre)
@@ -15,6 +17,15 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
   only. `craton/adapters/interferometry.py` (GPU correlations, cached per month),
   `craton/adapters/velocity.py`, `craton/adapters/dvv.py`. 81,264 tokens in central Italy (41 pairs),
   10,146 at L'Aquila (9).
+- **Listening in the Field** (P10c, D-143 to D-145): `craton/field/listen.py`, seven numbers per
+  cell per midnight (loudness change in three bands against each station's own 60 days, two dv/v
+  stacks, two coverage counts), appended to the Omori memory; `configs/field/listen.yaml`. Not
+  adopted: CB-02 −0.047, CB-03 0.00, CB-19 +0.126 (count +0.17 on every seed, where inside noise).
+- **A borrowed ear** (P10d, D-146, D-147): `listen.ear: seislm`, three principal components of
+  frozen SeisLM-base embeddings of ten quiet minutes per station-day
+  (`scripts/ablations/seislm_ear.py`). Not borrowed: CB-19 +0.013 against the band powers' +0.126.
+- **The P10 figure** (`scripts/figures/velocity.py`, `docs/assets/velocity-*.png`): central Italy's
+  network dv/v day by day under the 2016-17 sequence, the shocks marked. `lessons/P10.md` complete.
 - **CB-28, velocity gap-fill** (P10b, D-141): hide a station, rebuild its pairs' dv/v. Floors
   `velocity_zero` 0.347% (best) and `velocity_neighbours` 0.378%.
 
