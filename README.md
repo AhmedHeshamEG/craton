@@ -656,7 +656,7 @@ members sat at its ×4 limit in the epicentral cell, while INGV's published gain
 
 So we let it go to ×16. It won the L'Aquila night (+0.18 bits per quake for the whole task) and lost
 more than that on every other day (−0.29), overshooting the calmer days after. The limit is a brake,
-and it stays (D-136). Telling the big night from the rest is the next phase's job: the storm detector.
+and it stays (D-136). Telling the big night from the rest is a measurement the plan takes check-first, in P15.
 
 ## Built like a building
 
@@ -696,8 +696,8 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 
 ```
 CORE       ██████████████████████████████   8/8    foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  █████████░░░░░░░░░░░░░░░░░░░░░   2/7    other planets, hidden state, listening, storm detector, ghost, translator, microscope
-SCALE      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/2    any time horizon + how far ahead the crust is predictable, then mini → planet
+DISCOVERY  ████████████████████░░░░░░░░░░   2/3    other planets, hidden state, listening
+FIELD 2    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/6    a transformer shaped for the Earth, judged on the whole world
 ```
 
 | | Phase | Borrowed from the LLM world |
@@ -713,12 +713,12 @@ SCALE      ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
 | ✅ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (stress from quakes CB-23 and from mechanisms CB-34, migration CB-24, the distilled law CB-26, planted stress CB-33, Groningen pressure CB-31, regions it never read CB-32; five blocks built and not kept; a referee for maps) | latent variables, probing, masked modelling |
 | ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
-| ◻️ | **P11** The storm detector: the days a big quake comes | calibrated classifiers, test-time sampling |
-| ◻️ | **P12** The ghost channel: forces we forgot, and the atlas | register tokens |
-| ◻️ | **P13** The translator: plain-language answers, numbers only from the model | tool use |
-| ◻️ | **P14** The microscope and the law: what the model learned, as a formula | sparse autoencoders, symbolic distillation |
-| ◻️ | **P15** Any horizon, and how far ahead the crust is predictable at all | long context |
-| ◻️ | **P16** Scale-ready, open to every dataset | scaling laws, LoRA |
+| ◻️ | **P11** The viable test: the smallest real Field 2, born equal to ETAS, trained on the world | relative position encodings, the tiny first run |
+| ◻️ | **P12** The heart and the fair judge: a world gate with a sealed vault, and the growth curve | the eval harness, scaling laws |
+| ◻️ | **P13** The places: every patch of crust carries a hidden state, quakes write into it | latent state tokens, masked modelling, in-context learning |
+| ◻️ | **P14** What pushes the places: plate charging, what the rock is, the faults between them | conditioning, graph attention |
+| ◻️ | **P15** Understanding and the equation: what it learned, read out as one formula | auxiliary objectives, test-time sampling, distillation |
+| ◻️ | **P16** Grow and ship: weights, a live demo, an open leaderboard, 1.0.0 | model hubs, leaderboards |
 
 The full plan, with every benchmark and exit test: [`ROADMAP.md`](ROADMAP.md).
 
