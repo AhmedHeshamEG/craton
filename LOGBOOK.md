@@ -1263,3 +1263,36 @@ Surprises / problems:
 Decisions: D-146, D-147.
 
 Next: P10e, the figure (dv/v under 2016, day by day), the lesson, data cards, v0.11.0.
+
+## 2026-11-12 — Plan — P11 to P16 redrawn: Field 2 and a world gate
+
+TLDR: Fifteen ideas in a row were "not adopted", and every one had been graded on CB-02, whose whole
+lead over ETAS is one day. The record says the judge was too narrow, the new instruments were
+starved of days, and the Field was never a transformer shaped for the Earth: it is a stock one
+reading 54 hand-made counters. So the last six phases are now a new model, Field 2, and a new judge,
+a world gate with a sealed vault. No code changed today.
+
+Built:
+- `ROADMAP.md`: "Why the plan changed after P10", and P11 to P16 rewritten (the viable test, the
+  heart and the fair judge, the places, what pushes the places, understanding and the equation, grow
+  and ship)
+- `README.md`: the roadmap table and bars
+- `craton/bench/catalog.py`: CB-10, CB-12, CB-13, CB-14, CB-18 are `later`; CB-16 → P12, CB-25 → P15;
+  CB-35, CB-36, CB-37 reserved
+
+Scores: none moved.
+
+Surprises / problems:
+- CB-02 has vetoed ideas that won elsewhere on every seed: GPS (+0.13) and noise (+0.17 in the count)
+  at 30 days, the curriculum on CB-20 (+0.09). They were never run together.
+- The world has only fourteen sharp test sequences today. The gate needs a second tier at the global
+  network's hearing to see a small gain.
+- "Starts as ETAS" and "no addresses" contradict each other unless the region's ETAS numbers come in
+  as context. They do, from P11.
+- Plate charging takes centuries and the catalogues span about forty years: it can pay in where, not
+  in when. When has to come from the planets, which have whole cycles.
+
+Decisions: D-148, D-149, D-150, D-151.
+
+Next: P11, the viable test: close P10 (the dv/v figure, the lesson, v0.11.0), then the smallest real
+Field 2, born equal to ETAS, trained on the world and scored on CB-32 and CB-29.

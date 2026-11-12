@@ -2831,3 +2831,129 @@ tried in one line.
 that is the band powers again with extra inputs, chosen after seeing why it lost. More components,
 `seislm-large`, or fine-tuning on our days: a spike with a nil result doesn't earn a second
 spike's hours; filed in `IDEAS` for whenever a waveform task (picking, CB-28 on 100 Hz) needs an ear.
+
+### D-148 · 2026-11-12 · Plan — P11 to P16 are redrawn: what the record said
+
+After P10d the board had a run of results that all read "not adopted", and the remaining phases
+(storm detector, ghost, translator, microscope, long horizons, scale) had been written on 2026-10-21,
+before any of them. Reading the record end to end:
+
+| What was tried on top of the Field | Graded on | Result |
+|---|---|---|
+| curriculum of planets, pumped planets, Sumatra, GPS without jumps (P8f) | CB-02, CB-03, CB-20, CB-21 | CB-20 +0.09, the rest −0.02 to −0.03, every seed |
+| clock shift, steerable kernel (P9c) | CB-02 | −0.01 to −0.08 |
+| wiring, camera (P9d) | CB-02 | lose on every seed |
+| stress meter (P9f) | CB-02, planets | loses everywhere |
+| dimensionless inputs (P9h) | CB-32 | +0.304 against +0.336 |
+| noise power and dv/v (P10c) | CB-02, CB-03, CB-19 | −0.047, 0.00, 30-day count +0.17 every seed |
+| SeisLM (P10d) | CB-02, CB-03, CB-19 | −0.055, 0.00, +0.013 |
+
+Four things explain the streak better than "the ideas are wrong":
+
+1. **The judge was one day.** CB-02's whole lead over ETAS is the Norcia day (D-136), and
+   `etas_local_alpha` ties it (+0.297 against +0.303, D-127). A 0.03 dip on that test vetoed ideas
+   that gained on other tasks, every seed (GPS and noise at 30 days, the curriculum on CB-20).
+2. **The instruments were starved.** About 450 of CB-02's 9,367 training days carry any of them.
+3. **Every idea was built in full before a cheap check.** An ablation cost five to six hours.
+4. **The model is not shaped for the problem.** `FieldNet` is a stock two-layer, 64-wide transformer
+   over 54 counters written by hand, nudging ETAS by at most ×4. It never reads an earthquake.
+
+Meanwhile the results that hold are about transfer: CB-32 (+0.336 against the best floor's +0.065,
+8 of 8 sequences, every seed), CB-29 (7.167 against EarthquakeNPP's ETAS at 7.256, where the
+benchmark's five neural point processes all lose to it), CB-30 (+0.71).
+
+**Decision.** P11 to P16 are replaced (D-149 to D-151). The numbering and the count of phases stay:
+seventeen, P0 to P16. All of geology stays the destination; central Italy is one example.
+
+**Rejected.** Carrying on with the storm detector as planned: its targets (+1.3 on CB-02, +2.2 on
+CB-03) rest on three large days. Calling the streak the end of the idea: none of the losing tests
+could have seen a gain of the size these ideas could give.
+
+### D-149 · 2026-11-12 · Plan — Field 2: a transformer shaped for the Earth
+
+The conjecture behind it: the more a transformer's scheme is fitted to the problem, the better it
+does, and science problems are small enough for that to be cheap. The scheme:
+
+1. **Places are the words.** Each patch of crust carries a hidden state of many numbers; its
+   earthquakes are the visible tip. Quakes are messages that write into the places around them.
+   "Every quake is a word" was considered first and dropped: a quake is a symptom, quiet places
+   would have no words, and poorly watched places would have missing ones.
+2. **No addresses.** Only relative geometry, plus how well the local network hears.
+3. **Each quake brings its own ruler; time is logarithmic.** Distance in rupture lengths, so a
+   magnitude 3 and a magnitude 7 are one picture at two zooms; in log time Omori is a line.
+4. **Attention that counts.** Softmax attention sums to one, so it can say which quake matters and
+   never how many are coming. Additive heads sit beside the softmax ones. One additive head with
+   fixed settings is ETAS, so the model starts equal to ETAS; the region's own ETAS numbers arrive
+   as context, which is how "starts as ETAS" and "no addresses" hold together.
+5. **A memory that ages**: the place state relaxing on the log clock, the squeezing learned. P4's
+   model read the last 1,024 quakes and forgot everything older than about two days.
+6. **Ask anywhere**, and a last layer of readable curves (each a series fitted in log scale and
+   snapped to a known function).
+7. **Three parts behind their own switches**: a large quake writes along its whole rupture; the
+   month ahead is sampled many times; hidden chunks of the past are rebuilt (never across a test cut).
+8. **What pushes the places**: plate charging computed from open GPS velocities, the place's
+   identity, links along faults, and a receipt per forecast (the counting attention is a sum).
+
+Other instruments are **predicted from the hidden state, never fed in** (GPS motion, mechanisms).
+Fed in, they lost six times.
+
+"Understands the Earth" is three tests: it predicts what it was never asked to forecast; it works
+on a planet with other physics; its inside reads out as a formula. And the second conjecture: no
+addresses and shared weights make the model one update rule applied at every place and time, so an
+equation exists to be read out. The test is the formula alone on the world gate (CB-37).
+
+Order of training follows the language models: all the real data first, then experiments (planets
+where one thing is pushed, and the human-made cases). P8f tried planets first and lost; this is the
+other order. Weights stay frozen at forecast time; a region's history is its context.
+
+**Rejected.** Offered and turned down for now: one set of weights shared across zoom levels, a slip
+budget, a magnitude head, identity as constants of one law, feeding the read-out formula back in as
+the starting point. A new name: it is Field 2. GEM's strain-rate map (CC BY-SA 3.0) and active-faults
+database (CC BY-SA 4.0) as inputs: share-alike terms could reach the weights, so they are comparison
+floors only.
+
+### D-150 · 2026-11-12 · Plan — The world gate, the vault, and what "adopted" means
+
+Adoption moves from CB-02 to a world gate (CB-35, built in P12): tier one is the sharp sequences
+already on the board (CB-22's and CB-32's, fourteen today); tier two is hundreds of sequences at the
+global network's hearing. Scores are paired per quake with bootstrap error bars, and an idea must win
+on both tiers. A share of tier two is a **vault**, sealed by hash: nobody reads its sequences until a
+model is up for adoption, and then only the score comes out. Central Italy's test sequences have been
+read many times while explaining losses (D-130 says so of one); the vault and the nightly locked
+forecasts are the answer to that.
+
+The rule that no number may drop on any seed is retired. The board shows the best score ever reached
+on each task, and a model is adopted when it wins the gate and no task drops beyond noise (2σ over
+three seeds, as the ratchet always said).
+
+Before any part is built: a signal check of minutes (does this input explain ETAS's mistakes on the
+pool at all?), then a small judge of about a quarter of an hour for its on/off test. The full gate
+runs only for adoption. Every part keeps a switch; a part that doesn't pay is switched off.
+
+Stop rules: if P11's heart is not above ETAS on every seed of CB-32, or P12's full heart cannot pass
+`etas_local_alpha` on the gate, the plan stops and is redrawn before the next phase.
+
+**Rejected.** Keeping both rules (the gate and every seed of CB-02): the one day would keep its veto.
+A gate of the fourteen sharp sequences alone: too few to see a gain of 0.03.
+
+### D-151 · 2026-11-12 · Plan — Six phases, what moved to Later, and the task numbers
+
+P11 the viable test (the heart alone, trained on the world, scored on CB-32 and CB-29; it also
+closes P10 as v0.11.0) → P12 the heart and the fair judge (CB-35, the growth curve CB-16) → P13 the
+places (CB-36) → P14 what pushes the places → P15 understanding and the equation (CB-37, CB-27, and
+CB-25 check-first) → P16 grow and ship (v1.0.0). The places were one phase and were cut in two
+because one run of it would have taken days. A phase runs once, start to end; a phase too long for
+that becomes two phases.
+
+Moved to Later, with their planned tasks: the ghost channel and the atlas (CB-10), the translator as
+its own phase (CB-12; a small layer in P16's demo), the sparse-autoencoder microscope (CB-13; the
+readable curves do its job from the inside), the million-year router (CB-14), ladder rung 3 (CB-18).
+None of these tasks was ever built, so no frozen test changes. The catalogue lists them as `later`.
+CB-16 moves to P12 and CB-25 to P15. New, reserved: CB-35 the world gate, CB-36 a new region from
+its first year, CB-37 the world law.
+
+The nightly locked forecast stays on the Field until Field 2 has passed it on the gate and the vault.
+The Field, its checkpoints and every task on the board stay as they are.
+
+**Rejected.** Deleting the cut tasks from the catalogue (the board would lose the record that they
+were planned). Renumbering the phases.

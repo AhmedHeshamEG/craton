@@ -47,7 +47,7 @@ CATALOG: tuple[PlannedTask, ...] = (
         "CB-09", "Two planets", "tie ETAS on an ETAS planet, beat it on a physics planet", "P8"
     ),
     PlannedTask(
-        "CB-10", "Planted discovery", "tidal periods recovered by the ghost channel", "P12"
+        "CB-10", "Planted discovery", "tidal periods recovered by the ghost channel", "later"
     ),
     PlannedTask(
         "CB-11",
@@ -57,16 +57,18 @@ CATALOG: tuple[PlannedTask, ...] = (
         True,
     ),
     PlannedTask(
-        "CB-12", "Interpreter faithfulness", "numbers traced to tool calls, abstentions", "P13"
+        "CB-12", "Interpreter faithfulness", "numbers traced to tool calls, abstentions", "later"
     ),
-    PlannedTask("CB-13", "Microscope", "planted hidden variable found by a sparse feature", "P14"),
-    PlannedTask("CB-14", "Deep time", "plate positions vs GPlates reconstructions", "P15"),
+    PlannedTask(
+        "CB-13", "Microscope", "planted hidden variable found by a sparse feature", "later"
+    ),
+    PlannedTask("CB-14", "Deep time", "plate positions vs GPlates reconstructions", "later"),
     PlannedTask("CB-15", "Efficiency", "tokens/s and peak VRAM on the RTX 2060", "P4"),
-    PlannedTask("CB-16", "Scaling-law fit", "next size's loss, predicted before training", "P16"),
+    PlannedTask("CB-16", "Scaling-law fit", "next size's loss, predicted before training", "P12"),
     PlannedTask(
         "CB-17", "In-context adaptation", "CB-01 gain from N days of a new region in context", "P5"
     ),
-    PlannedTask("CB-18", "Ladder rung 3", "timing of repeating small earthquakes", "P16"),
+    PlannedTask("CB-18", "Ladder rung 3", "timing of repeating small earthquakes", "later"),
     PlannedTask("CB-19", "30-day forecast", "bits per M3+ quake, one forecast per 30 days", "P8"),
     PlannedTask(
         "CB-20", "Apennines, enhanced inputs", "CB-02 scored with the ML catalogue as input", "P8"
@@ -96,7 +98,7 @@ CATALOG: tuple[PlannedTask, ...] = (
         "CB-25",
         "Mainshock days",
         "held-out world M6+ days: Molchan skill, false alarms per hit",
-        "P11",
+        "P15",
     ),
     PlannedTask(
         "CB-26", "Distilled law", "a formula's held-out gain over ETAS vs the network's", "P9"
@@ -127,6 +129,21 @@ CATALOG: tuple[PlannedTask, ...] = (
     ),
     PlannedTask(
         "CB-34", "Stress from mechanisms", "CB-23 from focal mechanisms, non-quake records", "P9"
+    ),
+    PlannedTask(
+        "CB-35",
+        "World gate",
+        "bits per quake above ETAS on hundreds of world sequences, with a sealed vault",
+        "P12",
+    ),
+    PlannedTask(
+        "CB-36",
+        "New region from its first year",
+        "forecasts for a never-seen region from one year of context, frozen weights",
+        "P13",
+    ),
+    PlannedTask(
+        "CB-37", "World law", "a formula read out of Field 2, scored alone on the world gate", "P15"
     ),
 )
 

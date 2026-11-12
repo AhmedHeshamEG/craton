@@ -22,6 +22,13 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 - `scripts/site.py` and `scripts/figures/scorecard.py` import the task registry before
   `craton.bench.world` (an import cycle since P9g had stopped the project page from building).
 
+### Changed
+- **The plan for P11 to P16** (D-148 to D-151): the remaining phases are now Field 2, a transformer
+  shaped for the Earth, judged on a world gate with a sealed vault. The ghost channel, the
+  translator, the microscope and the million-year router move to Later; their planned tasks
+  (CB-10, CB-12, CB-13, CB-14, CB-18) are listed as `later`. CB-35, CB-36 and CB-37 are reserved.
+  No code or score changed.
+
 ## [0.10.0] — 2026-11-06 · P9 The hidden state: stress, pressure and the wiring
 
 ### Added

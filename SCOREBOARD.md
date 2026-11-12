@@ -27,22 +27,22 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-07 | Fake-precursor attack | 1.002 ± 0.0039 ↓ · craton-mini | 1 ± 0 ↓ · poisson | P7 |
 | CB-08 | Physics sanity | 0 ± 0 ↓ · craton-mini | 0 ± 0 ↓ · poisson | P7 |
 | CB-09 | Two planets | −14.38 ± 0.42 ↑ · craton-mini | −14.57 ± 0.44 ↑ · etas_incomplete | P8 |
-| CB-10 | Planted discovery | · | · | P12 |
+| CB-10 | Planted discovery | · | · | later |
 | CB-11 | Predictability meter | 0.843 ± 0.06 ↓ · craton-mini | 1.317 ± 0 ↓ · etas_aniso | P7 |
-| CB-12 | Interpreter faithfulness | · | · | P13 |
-| CB-13 | Microscope | · | · | P14 |
-| CB-14 | Deep time | · | · | P15 |
+| CB-12 | Interpreter faithfulness | · | · | later |
+| CB-13 | Microscope | · | · | later |
+| CB-14 | Deep time | · | · | later |
 | CB-15 | Efficiency | 16.27 ± 0.043 ↑ · craton-mini | · | P4 |
-| CB-16 | Scaling-law fit | · | · | P16 |
+| CB-16 | Scaling-law fit | · | · | P12 |
 | CB-17 | In-context adaptation | 24.56 ± 0.56 ↓ · craton-mini | 19.03 ± 0 ↓ · context_kde | P5 |
-| CB-18 | Ladder rung 3 | · | · | P16 |
+| CB-18 | Ladder rung 3 | · | · | later |
 | CB-19 | 30-day forecast | −6.226 ± 0.13 ↑ · craton-mini | −6.001 ± 0 ↑ · etas_aniso | P8 |
 | CB-20 | Apennines, enhanced inputs | −7.028 ± 0.017 ↑ · craton-mini | −6.955 ± 0 ↑ · etas_incomplete | P8 |
 | CB-21 | L'Aquila, enhanced inputs | −8.224 ± 0.0067 ↑ · craton-mini | −8.846 ± 0 ↑ · etas_local_alpha | P8 |
 | CB-22 | World sequences | 0.3612 ± 0.083 ↑ · craton-mini | 0.3363 ± 1.6e−05 ↑ · etas_incomplete | P8 |
 | CB-23 | Hidden-state truth | · | 16.58 ± 0 ↓ · stress_interpolation | P9 |
 | CB-24 | Migration | · | 0.09329 ± 0 ↑ · distance_only | P9 |
-| CB-25 | Mainshock days | · | · | P11 |
+| CB-25 | Mainshock days | · | · | P15 |
 | CB-26 | Distilled law | 0.8358 ± 0.047 ↑ · craton-mini | 0.6149 ± 0.0073 ↑ · law_constant | P9 |
 | CB-27 | Predictability horizon | · | · | P15 |
 | CB-28 | Velocity gap-fill | · | 0.3468 ± 0 ↓ · velocity_zero | P10 |
@@ -52,6 +52,9 @@ Every number here comes from a script and is a mean ± std over 3 seeds. The rat
 | CB-32 | Unseen-region forecast | 0.3357 ± 0.041 ↑ · craton-mini | 0.06522 ± 7.4e−06 ↑ · etas_local_alpha | P9 |
 | CB-33 | Planted stress | 0.448 ± 0.093 ↑ · craton-mini | 0.395 ± 0.11 ↑ · quake_density | P9 |
 | CB-34 | Stress from mechanisms | 31.32 ± 0.95 ↓ · craton-mini | 27.86 ± 0 ↓ · stress_interpolation | P9 |
+| CB-35 | World gate | · | · | P12 |
+| CB-36 | New region from its first year | · | · | P13 |
+| CB-37 | World law | · | · | P15 |
 
 ## The building
 
