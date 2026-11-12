@@ -6,9 +6,9 @@ the day-by-day story is in [`LOGBOOK.md`](LOGBOOK.md).
 
 ```
 CORE       ██████████████████████████████   8/8    P0–P7   foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ████████████████████░░░░░░░░░░   2/3    P8–P10  other planets, hidden state, listening
+DISCOVERY  ██████████████████████████████   3/3    P8–P10  other planets, hidden state, listening
 FIELD 2    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/6    P11–P16 a transformer shaped for the Earth: viable test, heart + fair judge, places, what pushes them, the equation, ship
-ALL        ██████████████████░░░░░░░░░░░░   10/17
+ALL        ███████████████████░░░░░░░░░░░   11/17
 ```
 
 Two versions share one codebase: **Craton-mini** (a laptop RTX 2060 with 6 GB, central Italy; every phase runs
@@ -597,6 +597,10 @@ quakes (0.04% network scatter) but blind to the 2016 shocks at 1 Hz and at 20 Hz
 wrong way). CB-28 is frozen and its best floor is "nothing changed" (0.347%); the neighbour average
 loses (0.378%), so P10c's model has to beat zero, not the neighbours.
 
+*P10 closed (2026-11-12, v0.11.0):* listening in the Field (P10c) and a borrowed ear (P10d) were not
+adopted: next day both are worth nothing, a month ahead the hum's loudness helps the count (+0.17 bits
+per quake on every seed) but not the whole forecast. The figure: `docs/assets/velocity-*.png`.
+
 ## Why the plan changed after P10
 
 P8, P9 and P10 tested about fifteen ideas on top of the Field: a hidden state, attention wired like
@@ -906,6 +910,6 @@ ocean-floor data adapters · a prior-fitted Craton (FIM-PP, arXiv 2509.24762).
 
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
 - [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [x] P7 The 8 locks
-- [x] P8 Other planets (v0.9.0) · [x] P9 Hidden state (v0.10.0) · [ ] P10 Listening (closes inside P11)
+- [x] P8 Other planets (v0.9.0) · [x] P9 Hidden state (v0.10.0) · [x] P10 Listening (v0.11.0)
 - [ ] P11 The viable test · [ ] P12 The heart + the fair judge · [ ] P13 The places
 - [ ] P14 What pushes the places · [ ] P15 Understanding + the equation · [ ] P16 Grow and ship (v1.0.0)

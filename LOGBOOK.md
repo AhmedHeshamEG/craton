@@ -1296,3 +1296,24 @@ Decisions: D-148, D-149, D-150, D-151.
 
 Next: P11, the viable test: close P10 (the dv/v figure, the lesson, v0.11.0), then the smallest real
 Field 2, born equal to ETAS, trained on the world and scored on CB-32 and CB-29.
+
+## 2026-11-12 — P10 closed — The hum, day by day
+
+TLDR: P10 is closed as v0.11.0. The figure puts central Italy's dv/v under the whole 2016-17
+sequence, day by day: four large shocks, and the hum's speed stays inside its own wobble
+(Amatrice a 2σ dip, Norcia the wrong way). The lesson now covers all four parts and ends with
+what P10 found and why the replan moved instruments from inputs to homework.
+
+Built:
+- `scripts/figures/velocity.py` → `docs/assets/velocity-{dark,light}.png`
+- `lessons/P10.md`: P10c, P10d and "P10 in one page"
+- CHANGELOG 0.11.0; README / ROADMAP trackers
+
+Scores: none moved.
+
+Surprises / problems: none. The data cards for both instruments were already written in P10a/P10b.
+
+Decisions: none.
+
+Next: P11, the viable test: Field 2's heart, born equal to ETAS, trained on the world, scored on
+CB-32 and CB-29.
