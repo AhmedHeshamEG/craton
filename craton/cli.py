@@ -475,6 +475,7 @@ def cmd_bench(args: argparse.Namespace) -> int:
     from craton.bench import harness
     from craton.bench.baselines import METHODS
     from craton.bench.tasks import TASKS, BenchContext, load_frozen
+    from craton.field2 import method as _field2  # noqa: F401  registers field2
     from craton.train import method as _craton_mini  # noqa: F401  registers craton-mini
 
     root = find_root()
