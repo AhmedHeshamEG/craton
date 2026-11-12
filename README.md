@@ -117,6 +117,20 @@ predictability meter. Every version has to shrink it, or it doesn't count as pro
 | **Predictability meter** | How wide is the 90% window, in days, kilometres and magnitude? | Calibrated uncertainty |
 | **Information gain over ETAS** | Does it beat the standard statistical model on a real sequence (Amatrice–Norcia, 2016–17)? | Beating the strong baseline |
 
+**What a bit is.** Most scores on this page are in bits per quake. A forecast is a bet: how many quakes
+tomorrow, and on which squares of the map. The bet is a fixed budget, so painting the whole map red loses.
+When a quake happens, the score asks how much of the bet sat on that square that day. Twice ETAS's share is
++1 bit, the same share is 0, half is −1. Averaged over every quake in a test, +0.30 bits means the real
+quakes got 1.2 times ETAS's probability, and +1.16 means 2.2 times.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/bits-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/bits-light.svg">
+    <img alt="Two maps of 60 squares with the same outlined square, where a quake happened. ETAS had 2% of its bet on that square and Craton 4%: twice as much, so +1 bit. A ruler marks −1 bit as half, 0 as the same as ETAS and +1 as twice, with Craton's real scores on it: +0.30 on the Apennines 2016-17 and +1.16 on L'Aquila 2009." src="docs/assets/bits-dark.svg" width="100%">
+  </picture>
+</p>
+
 The simple methods were scored first, so the first model had something honest to beat. Live numbers:
 [`SCOREBOARD.md`](SCOREBOARD.md), and drawn, with every chart you can hover, on
 [the project page](https://ahmedheshameg.github.io/craton/).
