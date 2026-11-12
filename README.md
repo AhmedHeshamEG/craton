@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AhmedHeshamEG/craton/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P10%20of%20P16-ff6b35"></a>
+  <a href="ROADMAP.md"><img alt="Phase" src="https://img.shields.io/badge/phase-P11%20of%20P16-ff6b35"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1d1d1f"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-1d1d1f">
   <img alt="Runs on" src="https://img.shields.io/badge/runs%20on-a%206%20GB%20laptop%20GPU-1d1d1f">
@@ -696,7 +696,7 @@ Parameter counts come from `craton config <size>`, and a config that lies about 
 
 ```
 CORE       ██████████████████████████████   8/8    foundation → beat ETAS → a model that knows when it doesn't know
-DISCOVERY  ████████████████████░░░░░░░░░░   2/3    other planets, hidden state, listening
+DISCOVERY  ██████████████████████████████   3/3    other planets, hidden state, listening
 FIELD 2    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0/6    a transformer shaped for the Earth, judged on the whole world
 ```
 
@@ -712,7 +712,7 @@ FIELD 2    ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P7** The 8 locks: knowing when it doesn't know | calibration, ensembles, red-teaming |
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
 | ✅ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (stress from quakes CB-23 and from mechanisms CB-34, migration CB-24, the distilled law CB-26, planted stress CB-33, Groningen pressure CB-31, regions it never read CB-32; five blocks built and not kept; a referee for maps) | latent variables, probing, masked modelling |
-| ◻️ | **P10** Listening: the crust's continuous hum as two new instruments | a new modality |
+| ✅ | **P10** Listening: the crust's continuous hum as two new instruments (noise power, dv/v, CB-28); at the 2016 shocks the hum's speed stayed inside its own wobble, and neither our ear nor a borrowed one (SeisLM) helped the Field | a new modality |
 | ◻️ | **P11** The viable test: the smallest real Field 2, born equal to ETAS, trained on the world | relative position encodings, the tiny first run |
 | ◻️ | **P12** The heart and the fair judge: a world gate with a sealed vault, and the growth curve | the eval harness, scaling laws |
 | ◻️ | **P13** The places: every patch of crust carries a hidden state, quakes write into it | latent state tokens, masked modelling, in-context learning |
