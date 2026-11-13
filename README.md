@@ -672,49 +672,6 @@ So we let it go to ×16. It won the L'Aquila night (+0.18 bits per quake for the
 more than that on every other day (−0.29), overshooting the calmer days after. The limit is a brake,
 and it stays (D-136). Telling the big night from the rest is a measurement the plan takes check-first, in P15.
 
-## The ground's hum
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/velocity-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/velocity-light.png">
-    <img alt="Central Italy's network dv/v, day by day from September 2015 to June 2018, with the four large shocks of 2016-17 marked and the M3+ quakes per day underneath. The line stays inside a band of two standard deviations of its pre-sequence scatter, about ±0.08%: Amatrice dips to the band's edge, Norcia goes up." src="docs/assets/velocity-dark.png" width="100%">
-  </picture>
-</p>
-
-Quakes are rare; the ground's hum isn't. Ocean waves shake every seismometer all day, and the rock
-the hum crosses changes it a little when the rock changes. Craton now reads the hum from any FDSN
-network as two instruments: how loud each station is, and how fast the hum travels between every pair
-of stations (dv/v, from the late part of their correlations; Token Spec 1.4.0 and 1.5.0). The speed is
-clean, wobbling 0.04% across central Italy. And through four large shocks it barely moved: Amatrice is a
-two-sigma dip, Norcia goes the wrong way, at one sample per second and again at twenty.
-
-In the Field, next day, both are worth nothing. A month ahead, loudness helps the count on every seed
-(+0.17 bits per quake) but not the whole forecast. A borrowed ear (frozen
-[SeisLM](https://arxiv.org/abs/2410.15765)) does worse: it normalises loudness away, and loudness was
-the signal. From P11 on, instruments are things the model predicts, never inputs.
-
-## A heart that starts as ETAS
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/field2-heart-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/field2-heart-light.png">
-    <img alt="For eight test sequences in regions the model never read, the quakes ETAS expected and the quakes Field 2's rebuilt heart expected, as a share of those that came. In California the heart nearly doubles ETAS and lands on what came (El Mayor 92%, Ridgecrest 100%); in Japan it turns ETAS down (Tohoku 27% against ETAS's 32%); in New Zealand it stays ETAS. Each row names the region the heart stopped training on." src="docs/assets/field2-heart-dark.png" width="100%">
-  </picture>
-</p>
-
-Field 2 starts with its heart: attention that adds instead of averaging, because ten aftershock
-sequences make ten times the quakes. Its learned part starts at zero, so untrained it *is* ETAS, to the
-last decimal. Trained on four regions and asked about the one it never read (CB-32), the first version
-lost (−0.25): every place heard the same thing from the same quake, so none could say "I'm busy right
-now". The rebuilt one gives each place a learned state its quakes write into, lets places read their
-neighbours, and learns from days that ETAS was fitted *before*, the way the test asks. One member, one
-seed: **−0.044**, still below ETAS (the Field: +0.34). Look inside, though: where it stopped training on
-central Italy it counted California's sequences almost exactly; where it stopped on California, whose
-past-fitted ETAS over-counts, it learned to turn ETAS down, and did so in Japan when ETAS was already
-three times short. The stop rule fired, so the plan waits for a decision before P12.
-
 ## Built like a building
 
 You don't redesign the foundation every time you add a floor. Craton is constructive-only:
@@ -770,7 +727,7 @@ FIELD 2    ░░░░░░░░░░░░░░░░░░░░░░░
 | ✅ | **P8** Other planets: the world's sequences, Groningen, Oklahoma, fake planets | more pretraining data, synthetic data |
 | ✅ | **P9** The hidden state: stress and pressure nobody measures, graded against data it never saw (stress from quakes CB-23 and from mechanisms CB-34, migration CB-24, the distilled law CB-26, planted stress CB-33, Groningen pressure CB-31, regions it never read CB-32; five blocks built and not kept; a referee for maps) | latent variables, probing, masked modelling |
 | ✅ | **P10** Listening: the crust's continuous hum as two new instruments (noise power, dv/v, CB-28); at the 2016 shocks the hum's speed stayed inside its own wobble, and neither our ear nor a borrowed one (SeisLM) helped the Field | a new modality |
-| ⏸️ | **P11** The viable test: the smallest real Field 2, born equal to ETAS, trained on the world. Stopped: below ETAS in regions it never read (−0.044) | relative position encodings, the tiny first run |
+| ◻️ | **P11** The viable test: the smallest real Field 2, born equal to ETAS, trained on the world | relative position encodings, the tiny first run |
 | ◻️ | **P12** The heart and the fair judge: a world gate with a sealed vault, and the growth curve | the eval harness, scaling laws |
 | ◻️ | **P13** The places: every patch of crust carries a hidden state, quakes write into it | latent state tokens, masked modelling, in-context learning |
 | ◻️ | **P14** What pushes the places: plate charging, what the rock is, the faults between them | conditioning, graph attention |
