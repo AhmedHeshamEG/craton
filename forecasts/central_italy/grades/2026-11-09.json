@@ -1,0 +1,14 @@
+{
+ "abstained": false,
+ "craton_day_log_score": -0.05380646115306628,
+ "craton_expected": 0.06252338148600001,
+ "craton_ll": -0.06252338148600001,
+ "day": "2026-11-09",
+ "etas_expected": 0.10951879648,
+ "etas_ll": -0.10951879648,
+ "gain_bits": 0.06780005215636263,
+ "graded": "2026-11-13T02:51:11Z",
+ "largest": null,
+ "quakes": 0.0,
+ "sha256": "a65916e4dda2076ca384eb1c0fab244646474c857dac64b3059832ec3d60b4f2"
+}
