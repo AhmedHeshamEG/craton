@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 import torch
 
@@ -121,3 +123,72 @@ def test_free_head_is_born_a_whisper() -> None:
     with torch.no_grad():
         got = heart_rates(net, db, fd, torch.as_tensor(days), cfg).double().numpy()
     assert float(np.abs(np.log2(got.sum(1) / want.sum(1))).max()) < 0.01
+
+
+def test_rebuilt_heart_is_born_as_etas() -> None:
+    """(P11, redrawn) With a state, neighbours, rulers and the smooth clock, the untrained heart
+    is ETAS exactly; with the additive head on, within the plan's 0.01 bit."""
+    from craton.field2.place import PlaceHeart, quakes_to_device
+    from craton.field2.tested import StateQuakes
+
+    cat = _catalogue()
+    fit = _fit(cat)
+    proj = etas.Projection.for_grid(GRID)
+    cfg = load_field2_config("place")
+    days = np.arange(200.0, 230.0)
+    want = etas.forecast_days(fit, cat, days, GRID, proj).rates
+    box = make_box(fit, cat, GRID, proj, cfg.bins)
+    cpu = torch.device("cpu")
+    db = to_device(box, cfg.bins, cpu)
+    rng = np.random.default_rng(1)
+    q = StateQuakes(
+        cat.t * etas.DAY, rng.integers(0, GRID.n_cells, len(cat)), (cat.m - 2.0).astype("f4")
+    )
+    dq = quakes_to_device(q, 0.0, 0.5, cpu)
+    shape = (GRID.n_lat, GRID.n_lon)
+    for additive, tol in ((False, 1e-5), (True, 0.01)):
+        net = PlaceHeart(cfg.bins, cfg.net.model_copy(update={"additive": additive}))
+        with torch.no_grad():
+            got = net(db, dq, torch.as_tensor(days), shape).double().numpy()
+        bits = float(np.abs(np.log2(got.sum(1) / want.sum(1))).max())
+        assert bits < tol, (additive, bits)
+        if not additive:
+            assert np.allclose(got, want, rtol=1e-5, atol=1e-12)
+
+
+def test_the_state_is_read_from_the_past_only() -> None:
+    """A quake writes a place's state only from the midnight after it."""
+    from craton.field2.place import PlaceHeart, quakes_to_device
+    from craton.field2.tested import StateQuakes
+
+    cfg = load_field2_config("place")
+    net = PlaceHeart(cfg.bins, cfg.net)
+    last = net.readout[2]
+    assert isinstance(last, torch.nn.Linear)
+    torch.nn.init.normal_(last.weight)
+    q = StateQuakes(np.array([10.5 * etas.DAY]), np.array([3]), np.array([1.0], "f4"))
+    dq = quakes_to_device(q, 0.0, 0.5, torch.device("cpu"))
+    bg = torch.full((GRID.n_cells,), 0.01, dtype=torch.float32)
+    with torch.no_grad():
+        s = net.state(
+            dq,
+            torch.tensor([10.0, 11.0], dtype=torch.float64),
+            bg,
+            0.01,
+            (GRID.n_lat, GRID.n_lon),
+            None,
+        )
+        empty = net.state(
+            dq, torch.tensor([10.0], dtype=torch.float64), bg, 0.01, (GRID.n_lat, GRID.n_lon), None
+        )
+    assert torch.allclose(s[0], empty[0])
+    assert not torch.allclose(s[1], s[0])
+
+
+def test_origins_cover_blocks_to_the_cut() -> None:
+    from craton.field2.tested import YEAR, origins_of
+
+    o = origins_of(0.0, 0.5 * YEAR, 10 * YEAR, 2.0)
+    assert o[0] >= 1.0 * YEAR - etas.DAY
+    assert all(b - a > 1.9 * YEAR for a, b in itertools.pairwise(o))
+    assert o[-1] < 10 * YEAR

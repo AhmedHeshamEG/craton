@@ -48,6 +48,31 @@ class HeartNet(_Strict):
         default=(-0.5, 0.0, 0.5, 1.0, 2.0, 3.0),
         description="m − mc bins of the free head; it hears quakes from the first edge up.",
     )
+    # (P11, redrawn) The rebuilt heart: each part behind its own switch. All off = the first
+    # heart, number for number (``craton.field2.place``).
+    state: int = Field(
+        default=0, ge=0, description="Channels of each place's learned state; 0 = no state."
+    )
+    state_below_mc: float = Field(
+        default=0.5, ge=0, description="The state hears quakes from mc minus this."
+    )
+    neighbours: int = Field(default=0, ge=0, description="Rounds of places reading neighbours.")
+    rank: int = Field(
+        default=2, ge=0, description="How many ways a place's state bends each bin's weight."
+    )
+    rulers: bool = Field(
+        default=False,
+        description="Time in the region's Omori c, rates over its background: no context.",
+    )
+    smooth_clock: bool = Field(
+        default=False, description="Weights blended between neighbouring ages; no jumps."
+    )
+    additive: bool = Field(
+        default=False, description="A plus beside the times: quakes a place's state adds."
+    )
+    excitement: bool = Field(
+        default=False, description="The state also reads ETAS's rate over the background."
+    )
 
 
 class HeartTrain(_Strict):
@@ -60,6 +85,16 @@ class HeartTrain(_Strict):
     patience: int = Field(gt=0)
     members: int = Field(gt=0, description="Hearts averaged into one forecast.")
     seeds: tuple[int, ...] = Field(min_length=3)
+    # (P11, redrawn) Train as tested.
+    as_tested: bool = Field(
+        default=False,
+        description="Each day forecast by an ETAS fitted before its block (craton.field2.tested).",
+    )
+    origin_years: float = Field(default=2.0, gt=0, description="Length of one block.")
+    stop_outside: bool = Field(
+        default=False,
+        description="Each member stops early on a training region it does not train on.",
+    )
 
 
 class Field2Config(_Strict):
@@ -71,6 +106,33 @@ class Field2Config(_Strict):
     bins: HeartBins
     net: HeartNet
     train: HeartTrain
+
+
+_P11_REDRAW = {
+    "net": (
+        "state",
+        "state_below_mc",
+        "neighbours",
+        "rank",
+        "rulers",
+        "smooth_clock",
+        "additive",
+        "excitement",
+    ),
+    "train": ("as_tested", "origin_years", "stop_outside"),
+}
+
+
+def rebuilt(net: HeartNet) -> bool:
+    """Does this heart use any part of the P11 redraw (``craton.field2.place``)?"""
+    return bool(
+        net.state
+        or net.neighbours
+        or net.rulers
+        or net.smooth_clock
+        or net.additive
+        or net.excitement
+    )
 
 
 def load_field2_config(name_or_path: str | Path, root: Path | None = None) -> Field2Config:
@@ -90,4 +152,9 @@ def field2_hash(config: Field2Config) -> str:
         dump["net"].pop("free_magnitude")
     if config.net.context:
         dump["net"].pop("context")
+    # switches added in the P11 redraw keep the first heart's names when off
+    for section, model in (("net", HeartNet), ("train", HeartTrain)):
+        for key in _P11_REDRAW[section]:
+            if dump[section].get(key) == model.model_fields[key].default:
+                dump[section].pop(key)
     return hashlib.sha256(json.dumps(dump, sort_keys=True).encode()).hexdigest()[:12]

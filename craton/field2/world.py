@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -36,7 +37,7 @@ from craton.bench.baselines import Etas, _shares
 from craton.bench.data import DAY, Events
 from craton.bench.tasks import BenchContext, ForecastSpec, GriddedForecast
 from craton.field.world import PoolTile, WorldField, pool_keep, tile_spec
-from craton.field2.config import Field2Config, field2_hash, load_field2_config
+from craton.field2.config import Field2Config, field2_hash, load_field2_config, rebuilt
 from craton.field2.free import DeviceFree, FreeBox, free_rates, free_to_device, make_free
 from craton.field2.heart import (
     CONTEXT,
@@ -85,7 +86,7 @@ class HeartTile:
 
 def _save_box(path: Path, box: Box, extra: dict[str, np.ndarray]) -> None:
     e = box.entries
-    tmp = path.with_suffix(".tmp.npz")
+    tmp = path.with_suffix(f".{os.getpid()}.tmp.npz")
     arrays: dict[str, Any] = dict(extra)
     np.savez(
         tmp,
@@ -125,12 +126,12 @@ def _load_box(path: Path) -> tuple[Box, dict[str, np.ndarray]]:
         context=z["context"],
         n_cells=int(n_cells),
     )
-    return box, {k: z[k] for k in z.files if k in ("days",)}
+    return box, {k: z[k] for k in z.files if k in ("days", "pool_idx", "t_ref_s")}
 
 
 def _save_free(path: Path, fb: FreeBox) -> None:
     e = fb.entries
-    tmp = path.with_suffix(".tmp.npz")
+    tmp = path.with_suffix(f".{os.getpid()}.tmp.npz")
     np.savez(
         tmp,
         t=fb.t,
@@ -317,7 +318,11 @@ class Field2World:
             return self._states[seed]
         cfg = self.config
         if self.born:
-            net = Heart(cfg.bins, cfg.net)
+            net: torch.nn.Module = Heart(cfg.bins, cfg.net)
+            if rebuilt(cfg.net):
+                from craton.field2.place import PlaceHeart
+
+                net = PlaceHeart(cfg.bins, cfg.net)
             self._states[seed] = [{k: v.clone() for k, v in net.state_dict().items()}]
             return self._states[seed]
         path = self.folder(root, seed) / "model.pt"
@@ -325,13 +330,32 @@ class Field2World:
             body = torch.load(path, map_location="cpu", weights_only=True)
             self._states[seed] = list(body["members"])
             return self._states[seed]
-        tiles = self.tiles(root)
         t0 = time.perf_counter()
         states, runs = [], []
-        for m in range(cfg.train.members):
-            st, info = train_heart(tiles, cfg, seed * 100 + m, self.log)
-            states.append(st)
-            runs.append(info)
+        if cfg.train.as_tested:
+            # (P11, redrawn) every day forecast by an ETAS fitted before its block
+            from craton.field2.learn import members_plan, train_place
+            from craton.field2.tested import build_all
+
+            tiles_t = [
+                t
+                for t in build_all(self, root, cfg.train.origin_years, self.log)
+                if t.region != self.holdout
+            ]
+            for m, (learn, stop) in enumerate(members_plan(tiles_t, cfg)):
+                st, info = train_place(learn, stop, cfg, seed * 100 + m, self.log)
+                states.append(st)
+                runs.append(info)
+            keys = [t.key for t in tiles_t]
+            n_days = int(sum(len(t.days) for t in tiles_t))
+        else:
+            tiles = self.tiles(root)
+            for m in range(cfg.train.members):
+                st, info = train_heart(tiles, cfg, seed * 100 + m, self.log)
+                states.append(st)
+                runs.append(info)
+            keys = [t.key for t in tiles]
+            n_days = int(sum(len(t.train) for t in tiles))
         folder = self.folder(root, seed)
         folder.mkdir(parents=True, exist_ok=True)
         meta = {
@@ -342,8 +366,8 @@ class Field2World:
             "pool": self.world.pool_id(),
             "holdout": self.holdout or None,
             "craton_version": __version__,
-            "tiles": [t.key for t in tiles],
-            "training_days": int(sum(len(t.train) for t in tiles)),
+            "tiles": keys,
+            "training_days": n_days,
             "members": runs,
             "parameters": int(
                 sum(v.numel() for k, v in states[0].items() if not k.startswith(("bin_x", "ctx")))
@@ -376,6 +400,47 @@ class Field2World:
                 out += predict(net, db, fd, days, cfg) / len(states)
         return out
 
+    def place_rates(
+        self,
+        box: Box,
+        quakes: Any,
+        t_ref: float,
+        grid: Any,
+        days: np.ndarray,
+        seed: int,
+        root: Path,
+    ) -> np.ndarray:
+        """(days, cells) the rebuilt hearts' mean rate at or above mc (``craton.field2.place``)."""
+        from craton.field2.learn import Held, predict_place
+        from craton.field2.place import PlaceHeart
+        from craton.field2.tested import OriginTile
+
+        cfg = self.config
+        dev = _device()
+        ot = OriginTile(
+            "ask",
+            "ask",
+            "",
+            box,
+            t_ref,
+            days,
+            np.zeros(0, np.int64),
+            quakes,
+            np.zeros((0, box.n_cells, 2), np.float32),
+            np.zeros(0, np.float32),
+            np.zeros(0, bool),
+            grid,
+        )
+        held = Held(ot, cfg, dev)
+        out = np.zeros((len(days), box.n_cells))
+        states = self.states(root, seed)
+        for st in states:
+            net = PlaceHeart(cfg.bins, cfg.net).to(dev)
+            net.load_state_dict(st)
+            net.eval()
+            out += predict_place(net, held, days) / len(states)
+        return out
+
     def forecast(self, spec: ForecastSpec, ctx: BenchContext, seed: int) -> GriddedForecast:
         """Daily forecasts of any box: ETAS fitted on the box's past (its numbers are the
         context), every quake since the fit's start as a parent, the heart's weights on top.
@@ -386,6 +451,14 @@ class Field2World:
         hist = ctx.events.window(f.t_ref, spec.window.t1).above(f.mc)
         cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, f.t_ref)
         box = make_box(f, cat, spec.grid, proj, cfg.bins, span=spec.period_days)
+        if rebuilt(cfg.net):
+            from craton.field2.tested import state_quakes
+
+            q = state_quakes(ctx.events, spec.grid, f.mc, f.t_ref, spec.window.t1)
+            days = (spec.day_starts - f.t_ref) / DAY
+            r = self.place_rates(box, q, f.t_ref, spec.grid, days, seed, ctx.root)
+            scale, shares = _shares(f.b, f.mc, spec.grid)
+            return GriddedForecast(r * scale, shares)
         fb = None
         if cfg.net.free_head:
             fb = free_box(ctx.events, f.mc, f.t_ref, spec.window.t1, spec.grid, cfg)

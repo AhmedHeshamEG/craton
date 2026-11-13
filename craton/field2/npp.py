@@ -27,7 +27,9 @@ import torch
 from craton.bench import etas
 from craton.bench.data import DAY, Events
 from craton.field.npp import _tiles
+from craton.field2.config import rebuilt
 from craton.field2.heart import Heart, make_box, to_device
+from craton.field2.tested import state_quakes
 from craton.field2.world import (
     FIELD2_VERSION,
     Field2World,
@@ -104,8 +106,17 @@ def factor(world: Field2World, eng: Engine, events: Events, seed: int) -> np.nda
     out = np.ones((len(starts), GRID.n_cells), np.float64)
     root = eng.folder.parents[2]
     dev = _device()
-    born = Heart(cfg.bins, cfg.net).to(dev).eval()
+    born = Heart(cfg.bins, cfg.net.model_copy(update={"free_head": False})).to(dev).eval()
     for box, cells, grid in boxes(world, eng, events):
+        if rebuilt(cfg.net):
+            # (P11, redrawn) the place state hears their catalogue (M2.5+: nothing below mc)
+            inside = events.select(grid.cell_of(events.lat, events.lon) >= 0)
+            q = state_quakes(inside, grid, MC, t_aux, to_seconds(TEST_END))
+            heart = world.place_rates(box, q, t_aux, grid, days, seed, root)
+            with torch.no_grad():
+                base = predict(born, to_device(box, cfg.bins, dev), None, days, cfg)
+            out[:, cells] = heart / np.maximum(base, 1e-30)
+            continue
         fb = None
         if cfg.net.free_head:
             inside = events.select(grid.cell_of(events.lat, events.lon) >= 0)
