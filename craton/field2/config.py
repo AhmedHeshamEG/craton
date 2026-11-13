@@ -97,6 +97,40 @@ class HeartTrain(_Strict):
     )
 
 
+class SchemeNet(_Strict):
+    """(P11, the converged scheme, 2026-11-13 evening) Tanks per place, attention between
+    places with a relative-distance bias, and the ETAS line with a gain, a recent-quake
+    network and a background, all born silent (``craton.field2.scheme``)."""
+
+    tanks: int = Field(default=16, gt=0, description="Count tanks per place (and as many size).")
+    tau_min_days: float = Field(default=1.0 / 24.0, gt=0, description="Shortest lifetime at birth.")
+    tau_max_days: float = Field(default=10957.0, gt=0, description="Longest lifetime at birth.")
+    learn_lifetimes: bool = Field(
+        default=True, description="Lifetimes learned; off = a fixed log-spaced grid."
+    )
+    hears_below_mc: float = Field(default=0.5, ge=0, description="Tanks hear from mc minus this.")
+    max_age_days: float = Field(
+        default=10957.0, gt=0, description="Quakes older than this no longer fill a tank."
+    )
+    d_model: int = Field(default=128, gt=0)
+    n_layers: int = Field(default=3, ge=0)
+    n_heads: int = Field(default=4, gt=0)
+    dropout: float = Field(default=0.1, ge=0, lt=1)
+    recent_days: float = Field(
+        default=10.0, gt=0, description="Quakes younger than this also pass through N."
+    )
+    n_hidden: int = Field(default=64, gt=0, description="Width of N, the recent-quake MLP.")
+    max_nudge: float = Field(
+        default=4.0, gt=1, description="g, N and b each move ETAS at most this many times."
+    )
+    gain: bool = Field(default=True, description="g(s): one gain per place on the ETAS line.")
+    recent: bool = Field(default=True, description="N: the free function of the recent past.")
+    background: bool = Field(default=True, description="b(s): a quiet place may speak.")
+    distance_bias: bool = Field(
+        default=True, description="Attention biased by relative distance (cells, rupture lengths)."
+    )
+
+
 class Field2Config(_Strict):
     name: str
     description: str = ""
@@ -106,6 +140,9 @@ class Field2Config(_Strict):
     bins: HeartBins
     net: HeartNet
     train: HeartTrain
+    scheme: SchemeNet | None = Field(
+        default=None, description="(P11) The converged scheme in place of the heart."
+    )
 
 
 _P11_REDRAW = {
@@ -146,6 +183,8 @@ def load_field2_config(name_or_path: str | Path, root: Path | None = None) -> Fi
 def field2_hash(config: Field2Config) -> str:
     dump = config.model_dump(mode="json")
     dump.pop("description", None)
+    if dump.get("scheme") is None:
+        dump.pop("scheme", None)  # the hearts keep the names they had
     if not config.net.free_head:
         # a heart without the free head keeps the name it had before the switch existed
         dump["net"].pop("free_head")

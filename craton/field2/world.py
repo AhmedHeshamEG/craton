@@ -299,6 +299,78 @@ class Field2World:
                 out.append(ht)
         return out
 
+    def memory_start(self, root: Path, region: str) -> float:
+        """Seconds: the tanks hear from the world Field's memory start, or the region's."""
+        from craton.adapters.region import load_region
+
+        start = to_seconds(self.world.config.memory.start)
+        try:
+            return max(start, to_seconds(load_region(region, root).start))
+        except FileNotFoundError:
+            return start
+
+    def scheme_tiles(self, root: Path) -> list[Any]:
+        """(P11, the converged scheme) every training tile on the device, with the quakes its
+        tanks hear (from mc − below, since the memory start) cached beside its box."""
+        from craton.bench.world import RegionView
+        from craton.field2.scheme import (
+            SchemeTile,
+            load_quakes,
+            save_quakes,
+            scheme_box,
+            tank_quakes,
+            thickness_km,
+        )
+
+        cfg = self.config
+        assert cfg.scheme is not None
+        wcfg = self.world.config
+        assert wcfg.world is not None
+        below = cfg.scheme.hears_below_mc
+        dev = _device()
+        pool = self.world.training_pool(root) if not self.holdout else self._pool_without(root)
+        out = []
+        for p in pool:
+            ht = self.heart_tile(root, p)
+            if ht is None:
+                continue
+            path = self.prep_dir(root) / f"{p.tile.key}.tanks{below:g}.npz"
+            starts_all = np.arange(
+                to_seconds(wcfg.train.first_day), to_seconds(wcfg.world.cut) - DAY + 1, DAY
+            )
+            g = p.tile.grid
+            if not path.is_file():
+                t0 = time.perf_counter()
+                view = RegionView(
+                    root=root,
+                    region=p.tile.region,
+                    box=(g.lat_min, g.lat_max, g.lon_min, g.lon_max),
+                    cut=wcfg.world.cut,
+                )
+                events = view.train_events("world")
+                keep, _, _ = pool_keep(p.tile, events, starts_all, wcfg.world.quiet_share)
+                t_ref = float(starts_all[keep][0] - ht.days[0] * DAY)
+                mc = float(ht.box.context[CONTEXT.index("mc")])
+                q = tank_quakes(
+                    events,
+                    g,
+                    mc,
+                    below,
+                    t_ref,
+                    self.memory_start(root, p.tile.region),
+                    to_seconds(wcfg.world.cut),
+                )
+                save_quakes(path, q)
+                self.log(
+                    f"scheme tanks {p.tile.key}: {len(q):,} quakes, {time.perf_counter() - t0:.0f}s"
+                )
+            q = load_quakes(path)
+            sb = scheme_box(ht.box, q, g, cfg.bins, cfg.scheme, thickness_km(q, np.inf), dev)
+            out.append(
+                SchemeTile(ht.key, ht.region, sb, ht.days, ht.counts, ht.weights, ht.train, ht.val)
+            )
+        return out
+
     def _pool_without(self, root: Path) -> list[PoolTile]:
         wf = WorldField(self.config.world_config, log=self.log, holdout=self.holdout)
         return wf.training_pool(root)
@@ -317,6 +389,13 @@ class Field2World:
         if seed in self._states:
             return self._states[seed]
         cfg = self.config
+        if self.born and cfg.scheme is not None:
+            from craton.field2.scheme import SchemeModel
+
+            torch.manual_seed(seed)
+            born = SchemeModel(cfg.scheme)
+            self._states[seed] = [{k: v.clone() for k, v in born.state_dict().items()}]
+            return self._states[seed]
         if self.born:
             net: torch.nn.Module = Heart(cfg.bins, cfg.net)
             if rebuilt(cfg.net):
@@ -332,7 +411,19 @@ class Field2World:
             return self._states[seed]
         t0 = time.perf_counter()
         states, runs = [], []
-        if cfg.train.as_tested:
+        if cfg.scheme is not None:
+            from craton.field2.scheme import train_scheme
+
+            stiles = self.scheme_tiles(root)
+            for m in range(cfg.train.members):
+                st, info = train_scheme(stiles, cfg, seed * 100 + m, self.log)
+                states.append(st)
+                runs.append(info)
+            keys = [t.key for t in stiles]
+            n_days = int(sum(len(t.train) for t in stiles))
+            del stiles
+            torch.cuda.empty_cache()
+        elif cfg.train.as_tested:
             # (P11, redrawn) every day forecast by an ETAS fitted before its block
             from craton.field2.learn import members_plan, train_place
             from craton.field2.tested import build_all
@@ -451,6 +542,27 @@ class Field2World:
         hist = ctx.events.window(f.t_ref, spec.window.t1).above(f.mc)
         cat = etas.to_catalog(hist.time, hist.lat, hist.lon, hist.mag, proj, f.t_ref)
         box = make_box(f, cat, spec.grid, proj, cfg.bins, span=spec.period_days)
+        if cfg.scheme is not None:
+            from craton.field2.scheme import predict_scheme, scheme_box, tank_quakes, thickness_km
+
+            region = getattr(ctx, "region", "")
+            tq = tank_quakes(
+                ctx.events,
+                spec.grid,
+                f.mc,
+                cfg.scheme.hears_below_mc,
+                f.t_ref,
+                self.memory_start(ctx.root, region) if region else ctx.events.time.min(),
+                spec.window.t1,
+            )
+            cut_day = (to_seconds(spec.cut or spec.window.start) - f.t_ref) / DAY
+            sb = scheme_box(
+                box, tq, spec.grid, cfg.bins, cfg.scheme, thickness_km(tq, cut_day), _device()
+            )
+            days = (spec.day_starts - f.t_ref) / DAY
+            r = predict_scheme(self.states(ctx.root, seed), cfg, sb, days)
+            scale, shares = _shares(f.b, f.mc, spec.grid)
+            return GriddedForecast(r * scale, shares)
         if rebuilt(cfg.net):
             from craton.field2.tested import state_quakes
 

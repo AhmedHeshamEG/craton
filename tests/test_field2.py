@@ -192,3 +192,55 @@ def test_origins_cover_blocks_to_the_cut() -> None:
     assert o[0] >= 1.0 * YEAR - etas.DAY
     assert all(b - a > 1.9 * YEAR for a, b in itertools.pairwise(o))
     assert o[-1] < 10 * YEAR
+
+
+def _scheme_box(cfg_name: str = "scheme") -> tuple[object, object, object, np.ndarray, object]:
+    from craton.field2.scheme import TankQuakes, scheme_box
+
+    cat = _catalogue()
+    fit = _fit(cat)
+    proj = etas.Projection.for_grid(GRID)
+    cfg = load_field2_config(cfg_name)
+    assert cfg.scheme is not None
+    box = make_box(fit, cat, GRID, proj, cfg.bins)
+    rng = np.random.default_rng(1)
+    q = TankQuakes(
+        cat.t.astype("f8"),
+        rng.integers(0, GRID.n_cells, len(cat)),
+        (cat.m - 2.0).astype("f4"),
+        rng.uniform(2, 20, len(cat)).astype("f4"),
+    )
+    sb = scheme_box(box, q, GRID, cfg.bins, cfg.scheme, 15.0, torch.device("cpu"))
+    return cfg, fit, cat, np.arange(200.0, 230.0), sb
+
+
+def test_scheme_is_born_as_etas() -> None:
+    """(P11, the converged scheme) Untrained, tanks + attention + g, N, b give ETAS exactly."""
+    from craton.field2.scheme import SchemeModel
+
+    cfg, fit, cat, days, sb = _scheme_box()
+    want = etas.forecast_days(fit, cat, days, GRID, etas.Projection.for_grid(GRID)).rates
+    net = SchemeModel(cfg.scheme).eval()
+    with torch.no_grad():
+        got = net(sb, torch.as_tensor(days)).double().numpy()
+    assert np.allclose(got, want, rtol=1e-5, atol=1e-12)
+
+
+def test_scheme_places_read_the_past_only() -> None:
+    """A quake fills a place's tanks only from the midnight after it."""
+    from craton.field2.scheme import SchemeModel
+
+    cfg, _, _, _, sb = _scheme_box()
+    net = SchemeModel(cfg.scheme)
+    t_q = float(sb.q_t[len(sb.q_t) // 2])
+    before = torch.tensor([np.floor(t_q) + 1.0], dtype=torch.float64)
+    with torch.no_grad():
+        x0, _ = net.places(sb, before)
+        sb.q_t[len(sb.q_t) // 2] = before[0] + 0.5  # the same quake moved after the midnight
+        x1, _ = net.places(sb, before)
+    k = cfg.scheme.tanks
+    assert float((x0[..., : 2 * k] - x1[..., : 2 * k]).abs().max()) > 0
+    sb.q_t[len(sb.q_t) // 2] = before[0] + 2.0
+    with torch.no_grad():
+        x2, _ = net.places(sb, before)
+    assert torch.allclose(x1, x2)

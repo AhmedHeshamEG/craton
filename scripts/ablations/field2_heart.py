@@ -12,6 +12,7 @@ Three questions, three answers, all in ``results/ablation/field2_heart.json``:
     uv run --no-sync python scripts/ablations/field2_heart.py train heart 0 1 2
     uv run --no-sync python scripts/ablations/field2_heart.py score heart 0 1 2
     uv run --no-sync python scripts/ablations/field2_heart.py born heart 0
+    uv run --no-sync python scripts/ablations/field2_heart.py timing scheme 0 --regions japan
 
 ``train`` fits every fold (and the all-region heart CB-29 reads); cached folds are skipped, so
 the same line resumes after a stop. ``score`` runs the config through the bench harness and
@@ -133,15 +134,39 @@ def members(config: str, seeds: list[int]) -> dict[str, Any]:
     return found
 
 
+def timing(config: str, region: str, minutes: float) -> None:
+    """(P11, the scheme) Ten minutes of training on one fold: steps a second, memory, the real
+    parameter count, a validation pass's time, and the long run's estimate."""
+    from craton.field2.scheme import train_scheme
+
+    w = Field2World(config, log=log, holdout=region)
+    cfg = w.config
+    t0 = time.perf_counter()
+    tiles = w.scheme_tiles(ROOT)
+    log(f"{len(tiles)} tiles on the device in {(time.perf_counter() - t0) / 60:.1f} min")
+    _, info = train_scheme(tiles, cfg, 0, log, max_minutes=minutes)
+    train_min = info["minutes"] - info["validation_minutes"]
+    per_step = train_min * 60 / max(info["steps"], 1)
+    epoch_min = (per_step * cfg.train.steps_per_epoch) / 60 + info["validation_minutes"]
+    info["seconds_per_step"] = per_step
+    info["minutes_per_epoch"] = epoch_min
+    log(json.dumps(info, indent=2))
+    out = _load()
+    out.setdefault("timing", {})[f"{config}:{region or 'all'}"] = info
+    _save(out)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("step", choices=("train", "score", "born", "members"))
+    ap.add_argument("step", choices=("train", "score", "born", "members", "timing"))
     ap.add_argument("config", help="a Field 2 config (configs/field2/)")
     ap.add_argument("seeds", nargs="+", type=int)
     ap.add_argument("--tasks", nargs="*", default=list(TASKS))
     ap.add_argument("--regions", nargs="*", default=["all", *FOLDS])
     args = ap.parse_args()
-    if args.step == "train":
+    if args.step == "timing":
+        timing(args.config, args.regions[0] if args.regions[0] != "all" else "", 10.0)
+    elif args.step == "train":
         train(args.config, args.seeds, ["" if r == "all" else r for r in args.regions])
     elif args.step == "members":
         out = _load()

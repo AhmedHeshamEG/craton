@@ -983,6 +983,231 @@
           ]
         }
       }
+    },
+    "scheme-born": {
+      "CB-32": {
+        "seeds": [
+          0
+        ],
+        "values": [
+          -5.667742551951349e-07
+        ],
+        "extras": {
+          "cb02.bits": [
+            -7.117966419589781
+          ],
+          "cb02.gain": [
+            -2.892817945188142e-06
+          ],
+          "cb02.observed": [
+            1065.0
+          ],
+          "cb02.expected": [
+            582.7910260380202
+          ],
+          "cb02.how_many_bits": [
+            -2.4808859149514273
+          ],
+          "cb02.where_bits": [
+            -4.183209564409257
+          ],
+          "cb02.how_big_bits": [
+            -3.327792789946061
+          ],
+          "cb02.qualified": [
+            1.0
+          ],
+          "cb03.bits": [
+            -9.396095665320086
+          ],
+          "cb03.gain": [
+            -3.798780774388888e-07
+          ],
+          "cb03.observed": [
+            315.0
+          ],
+          "cb03.expected": [
+            69.50916007492887
+          ],
+          "cb03.how_many_bits": [
+            -4.086335761429694
+          ],
+          "cb03.where_bits": [
+            -3.851117020917053
+          ],
+          "cb03.how_big_bits": [
+            -3.448595681506061
+          ],
+          "cb03.qualified": [
+            1.0
+          ],
+          "el_mayor.bits": [
+            -8.72076302454465
+          ],
+          "el_mayor.gain": [
+            -3.9956367103854973e-07
+          ],
+          "el_mayor.observed": [
+            549.0
+          ],
+          "el_mayor.expected": [
+            261.13742026874286
+          ],
+          "el_mayor.how_many_bits": [
+            -2.09592866781435
+          ],
+          "el_mayor.where_bits": [
+            -5.483057462484399
+          ],
+          "el_mayor.how_big_bits": [
+            -3.4474770177695007
+          ],
+          "el_mayor.qualified": [
+            1.0
+          ],
+          "ridgecrest.bits": [
+            -9.722476420950652
+          ],
+          "ridgecrest.gain": [
+            4.2228877106254004e-07
+          ],
+          "ridgecrest.observed": [
+            502.0
+          ],
+          "ridgecrest.expected": [
+            243.91288439572355
+          ],
+          "ridgecrest.how_many_bits": [
+            -3.558498031380515
+          ],
+          "ridgecrest.where_bits": [
+            -6.611996762198059
+          ],
+          "ridgecrest.how_big_bits": [
+            -3.293567079602851
+          ],
+          "ridgecrest.qualified": [
+            1.0
+          ],
+          "tohoku.bits": [
+            -10.99254122398439
+          ],
+          "tohoku.gain": [
+            -3.607638561220483e-07
+          ],
+          "tohoku.observed": [
+            3478.0
+          ],
+          "tohoku.expected": [
+            1128.9900262230865
+          ],
+          "tohoku.how_many_bits": [
+            -1.7262548798360833
+          ],
+          "tohoku.where_bits": [
+            -9.631705303389818
+          ],
+          "tohoku.how_big_bits": [
+            -3.72573555256598
+          ],
+          "tohoku.qualified": [
+            1.0
+          ],
+          "kumamoto.bits": [
+            -10.817296763825754
+          ],
+          "kumamoto.gain": [
+            1.6331936691926785e-07
+          ],
+          "kumamoto.observed": [
+            118.0
+          ],
+          "kumamoto.expected": [
+            64.46239630887564
+          ],
+          "kumamoto.how_many_bits": [
+            -2.962079898345609
+          ],
+          "kumamoto.where_bits": [
+            -6.251525153210096
+          ],
+          "kumamoto.how_big_bits": [
+            -3.791432593218731
+          ],
+          "kumamoto.qualified": [
+            1.0
+          ],
+          "darfield.bits": [
+            -8.334320232556578
+          ],
+          "darfield.gain": [
+            -1.0740457678792836e-06
+          ],
+          "darfield.observed": [
+            216.0
+          ],
+          "darfield.expected": [
+            139.03244165960115
+          ],
+          "darfield.how_many_bits": [
+            -2.7316686402199877
+          ],
+          "darfield.where_bits": [
+            -4.083841992887423
+          ],
+          "darfield.how_big_bits": [
+            -3.207851055041407
+          ],
+          "darfield.qualified": [
+            1.0
+          ],
+          "kaikoura.bits": [
+            -9.397457017434618
+          ],
+          "kaikoura.gain": [
+            -1.2732861875974777e-08
+          ],
+          "kaikoura.observed": [
+            330.0
+          ],
+          "kaikoura.expected": [
+            249.7033045204434
+          ],
+          "kaikoura.how_many_bits": [
+            -1.4964256593802039
+          ],
+          "kaikoura.where_bits": [
+            -6.809574614327413
+          ],
+          "kaikoura.how_big_bits": [
+            -3.5479738356867556
+          ],
+          "kaikoura.qualified": [
+            1.0
+          ],
+          "central_italy.mean_gain": [
+            -1.6363480113135154e-06
+          ],
+          "california.mean_gain": [
+            1.1362550011995154e-08
+          ],
+          "japan.mean_gain": [
+            -9.872224460139023e-08
+          ],
+          "new_zealand.mean_gain": [
+            -5.433893148776292e-07
+          ],
+          "folds_beaten": [
+            0.25
+          ],
+          "sequences_beaten": [
+            0.25
+          ],
+          "mean_gain_per_sequence": [
+            -5.667742551951349e-07
+          ]
+        }
+      }
     }
   },
   "paired": {
@@ -1332,6 +1557,39 @@
           "gain_nats": 0.0
         }
       ]
+    }
+  },
+  "timing": {
+    "scheme:central_italy": {
+      "epochs": 3.0,
+      "steps": 1211.0,
+      "validation_etas": 6.278433522777682,
+      "validation_best": 6.27380691480919,
+      "validation_minutes": 1.4780427416670137,
+      "minutes": 10.002566710000004,
+      "peak_gb": 1.654761472,
+      "stopped": "max_minutes",
+      "parameters": 625979.0,
+      "tau_days": [
+        0.041966017335653305,
+        0.09392166137695312,
+        0.2239387482404709,
+        0.5017178058624268,
+        1.1833891868591309,
+        2.6631014347076416,
+        6.137301921844482,
+        13.973830223083496,
+        32.02424621582031,
+        73.23220825195312,
+        167.79405212402344,
+        380.166748046875,
+        901.7282104492188,
+        2015.82470703125,
+        4669.91162109375,
+        10903.392578125
+      ],
+      "seconds_per_step": 0.42235461445085004,
+      "minutes_per_epoch": 4.99766452875743
     }
   }
 }
