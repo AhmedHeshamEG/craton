@@ -761,6 +761,15 @@ def _verdict_row(t: Table, label: str, v: Any) -> None:
     )
 
 
+def cmd_screen(args: argparse.Namespace) -> int:
+    """What ETAS misses on the world pool held as tested, and which information explains it in
+    a region left out (``craton.field2.screen``): minutes, before anything is built."""
+    from craton.field2.screen import main as screen
+
+    root = find_root()
+    return screen(root, root / "results" / "ablation" / "field2_screen.json", log=console.print)
+
+
 def cmd_referee(args: argparse.Namespace) -> int:
     from craton.bench.tasks import BenchContext
     from craton.spec.timeaxis import to_seconds
@@ -941,6 +950,9 @@ def build_parser() -> argparse.ArgumentParser:
     rf.add_argument("--holdout", nargs=2, metavar=("START", "END"), help="a held-out catalogue")
     rf.add_argument("--min-mag", type=float, default=1.5)
     rf.set_defaults(func=cmd_referee)
+
+    sc = sub.add_parser("screen", help="what ETAS misses and which information explains it")
+    sc.set_defaults(func=cmd_screen)
 
     lv = sub.add_parser("live", help="locked daily forecasts: run, bundle, page, verify")
     lv.add_argument("action", choices=("run", "bundle", "page", "verify"))
