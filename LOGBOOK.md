@@ -1357,3 +1357,44 @@ Decisions: D-152, D-153, D-154, D-155.
 
 Next: a decision on how the heart stops (the four-member rotation, a pooled stopping set, or blocks
 that start at large quakes), before any more training and before P12.
+
+## 2026-11-13 — P11 — The converged scheme: built, born as ETAS, a tie
+
+TLDR: The scheme decided on the scheme page was built as drawn (16 count + 16 size tanks per
+place, 128 x 3 attention with a distance bias, the ETAS line with g, N and b born at zero) and
+trained exactly as the old world Field. Untrained it scores 0.000 on all eight CB-32 sequences.
+Trained (one member, seed 0): **CB-32 -0.007**, a tie with ETAS. It counts better in six of eight
+sequences and places worse in six of eight. By the phase's step 7 it stops here, on its branch.
+
+Built:
+- `craton/field2/scheme.py` (tanks, places, biased encoder, equation layer, trainer, forecast),
+  `configs/field2/scheme.yaml`, a `scheme:` section in the Field 2 config; `Field2World` trains
+  and forecasts it
+- tests: born as ETAS (exactly), tanks read the past only
+- `scripts/ablations/field2_heart.py timing`: ten minutes on one fold, speed, memory, size
+
+Scores (ablation record `results/ablation/field2_heart.json`, nothing on the board):
+- untrained: CB-32 0.000 on every sequence
+- trained, one member, seed 0: CB-32 -0.007 (central Italy +0.156, California -0.113, Japan
+  -0.067, New Zealand -0.006)
+- per sequence (gain over ETAS): central Italy +0.123, L'Aquila +0.189, Kumamoto +0.147,
+  Kaikoura +0.003, Darfield -0.014, El Mayor -0.015, Ridgecrest -0.211, Tohoku -0.281
+- the old Field, seed 0, four members: +0.294, every sequence above ETAS
+
+Measured: 625,979 parameters; 0.42 s a step; folds took 36, 30, 125 and 26 min. The fold without
+Japan learned four times more on its own held-back days (0.072 nats a quake) than the others
+(0.016-0.018) and kept improving to epoch 39; the others peaked at epochs 2-3. The learned tank
+lifetimes hardly moved from their log-spaced start.
+
+Surprises / problems:
+- *Where* moved for the first time: -0.19 on Ridgecrest, -0.18 on Tohoku, -0.17 on Kumamoto (every
+  earlier model stayed within 0.02). *How many* went up: +0.15 central Italy, +0.19 L'Aquila,
+  +0.32 Kumamoto.
+- `spec.cut` is empty on CB-32 questions; the first born run crashed on it (mypy flagged the same
+  line).
+
+Decisions: D-156, D-157.
+
+Next: talk with Hesham. The reading (to test, not yet tested): the scheme cannot see where ETAS
+already put its quakes, and its tanks hear only quakes inside a place, so its per-place gain moves
+mass blindly. The old Field read both.

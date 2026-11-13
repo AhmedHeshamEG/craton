@@ -3041,3 +3041,62 @@ released. The record, the figure and the lesson say what happened.
 **Open, for the next decision:** the four-member heart (stopping regions in turn, averaged), early
 stopping on a pooled set of regions, or blocks that start at large quakes (closer to how CB-32 asks)
 are each one run away. None was run here.
+
+### D-156 · 2026-11-13 · P11 — The converged scheme, as built
+
+What was decided with Hesham on the scheme page (the evening converge), built in
+`craton/field2/scheme.py` with `configs/field2/scheme.yaml`, every part behind a switch:
+
+- **Input:** raw quakes from mc - 0.5 since the memory start (1990 or the region's start).
+- **Tanks:** 16 count + 16 size tanks per 0.1 degree place, lifetimes learned (born log-spaced,
+  one hour to thirty years), a size tank pouring 10^(beta (m - mc)) with beta learned (born 0.25
+  to 1.5). Read as log(1 + tank / (usual rate x lifetime)): "how full, over usual".
+- **Eight more pure numbers per place:** largest quake heard (m - mc, log age in Omori c, heard or
+  not), mean depth over the tile's thickness (90th percentile depth before the cut), the place's
+  usual rate over the box's, mc, b, branching number.
+- **Attention:** 128 wide, 3 pre-norm layers, 4 heads, MLP x4, dropout 0.1, full attention over the
+  tile's places, with a learned bias per layer and head on the distance between places, in cells
+  and in rupture lengths of the box's largest quake of the last 30 days. No place code.
+- **Equation layer:** rate = cascade (e^b(s) background + sum_i ETAS_i e^(g(s) + 1[age < 10 d]
+  N(pi_i, s))), ETAS_i the fitted ETAS's own weight of quake i there that day. g, b and N's last
+  layers start at zero; each is bounded x4 by a tanh. Untrained it scores 0.000 on all eight
+  CB-32 sequences.
+- **Training:** the old world Field's: the same pool tile-days, in-sample ETAS per tile, lr 3e-4,
+  weight decay 0.01, 8 days of one tile per step, 500 steps per epoch, early stopping (patience 6)
+  on the held-back days of every training region. One member, seed 0.
+- **Measured:** 625,979 parameters; 0.42 s a step, ~4-5 min an epoch with its validation; 1.7 GB
+  of GPU memory at most.
+
+**Decided by the agent while building (each can be reopened):** the distance bias is a table of
+log-spaced distance bins (a 2-number MLP over every pair of places would cost 1,050^2 x hidden
+memory per day); the depth ruler is the tile's 90th-percentile depth; the size-tank amount is a
+power of ten in m - mc; N reads the ETAS kernel's ring (its distance in rupture lengths) rather
+than the exact distance; gradients are clipped at norm 1. The ETAS pieces are the hearts' cached
+boxes, so a pool day is used only once ETAS has its 90-day burn-in behind it: central Italy's
+pool (ETAS fitted from 2005) keeps 462 of its 3,519 days. It is held out in its own fold anyway.
+
+**Rejected.** Training as tested, single-region stopping, mainshock blocks (the second run's
+recipe): this run changes the model only, so a result can be pinned on it.
+
+### D-157 · 2026-11-13 · P11 — The scheme ties ETAS; stop and talk
+
+One member, seed 0, the four CB-32 folds trained as the old world Field: **CB-32 -0.007** (x0.995
+ETAS's probability per quake). The old Field on the same seed (four members): +0.294.
+
+Split by part, against ETAS: *how many* improved in six of eight sequences (up to +0.32, Kumamoto);
+*where* got worse in six of eight (down to -0.19, Ridgecrest), the first model in this project to
+move *where* by more than 0.02. The two cancel.
+
+**Decision.** The phase's step 7: not above ETAS, so stop and talk. Nothing more is trained: no
+old-size run, no members, no seeds, no CB-29. The work stays on `phase/p11-scheme`; no merge, no
+tag. The scheme page carries the new line.
+
+**The reading, for the talk (not tested):** the old Field read ETAS's own rate in each place and
+counts of the quakes around it; the scheme reads neither. Its tanks fill only from quakes inside a
+place, and its gain g turns ETAS up or down without knowing where ETAS already put its mass.
+Cheapest checks, each one run: (a) the tanks also fill from the 3 x 3 and 9 x 9 places around (a
+pooling of the same tanks, no new input); (b) the place also reads log ETAS there (ETAS's rate,
+not its errors); (c) g bounded to one gain per box (count only), so *where* stays ETAS's.
+
+**Rejected.** Training more members or seeds first: a tie on one member does not say which piece
+lost, and the where/how-many split already points at one.
