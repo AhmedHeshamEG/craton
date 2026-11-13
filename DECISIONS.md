@@ -2957,3 +2957,87 @@ The Field, its checkpoints and every task on the board stay as they are.
 
 **Rejected.** Deleting the cut tasks from the catalogue (the board would lose the record that they
 were planned). Renumbering the phases.
+
+### D-152 · 2026-11-13 · P11 — The viable test is redrawn after its first run
+
+The heart as first built (seed 0, CB-32): born exactly as ETAS (0.000 on all eight sequences, 7.256
+on CB-29), then −0.248 trained with the region's ETAS numbers as context and +0.007 without. The Field
+has +0.336. The stop rule fired. Four causes, read from the code and the numbers: its query was empty
+(each quake got a weight by age, size and distance, the same for every place, while ETAS's miss on
+the test is all in how many); each tile's ETAS was fitted on the days the heart learned from, so the
+miss was invisible in training; the context was learned on three regions and extrapolated on the
+fourth (central Italy's count cut to 230); and it heard nothing below completeness, places never saw
+each other, the learning rate was one the world Field had found too hot, and early stopping read the
+regions it trained on.
+
+**Decision.** P11 is rerun with: a learned state per place, written by the quakes that reach it;
+places reading their neighbours; the region's ETAS numbers as rulers, never as an input; hearing from
+mc − 0.5; a smooth clock; an additive head beside the reweighted ETAS one; training as tested
+(ETAS fitted on one period, the heart on the period after); learning rate 3e-4, four members, early
+stopping on a region outside training. A check of minutes before any of it is built, with the
+expected score written down before training. P12 gains the hourly test, forecasts from any hour,
+more regions, ETAS jittered in training and the full dimensional analysis.
+
+**Rejected.** A memory of ETAS's own recent mistakes (came ÷ expected) as an input: it hands the
+model the error instead of making it learn why places get busy. It may appear in the check as a
+yardstick of what there is to win, never as an input. ETAS's own excitement (its rate over the
+background) as an input stays off unless the check says it pays, and then it is a decision for
+later, not for this run.
+
+### D-153 · 2026-11-13 · P11 — The check: what transfers, and the expectation
+
+`craton screen` on the pool held as tested (214 blocks, 3.3 M cell-days): ETAS's miss runs both
+ways there (California came ÷ expected 0.76, New Zealand 0.89, Japan 1.15, central Italy 1.01; at
+mc + 1, 0.57, 0.66, 1.04, 1.02). A one-layer correction on each candidate, fitted on three regions,
+scored on the fourth, bits per quake at mc + 1: the place's own quakes −0.000; with the small ones
+−0.060; with the neighbours' −0.055; with ETAS's excitement +0.010; the region's ETAS numbers alone
+−4.40; the Field's 54 counters −0.154; the yardstick (came ÷ expected, never an input) +0.168.
+
+Read: the region's numbers as an input are the first run's failure, measured. The information a
+place state may learn from transfers almost nothing on the pool; there is +0.17 to win. The Field's
+counters score −0.15 here and +0.34 on CB-32, so the pool undersells the test by an amount nobody
+knows, and its number can't be scaled into an expectation.
+
+**Expectation, committed before training** (`results/ablation/field2_screen.json`): CB-32 between
+−0.05 and +0.15, centre +0.05, about even odds of being above ETAS, almost surely below the Field;
+CB-29 a tie with their ETAS within 0.02. ETAS's excitement pays a little in the check (+0.06 at
+mc + 1 over the state alone) and stays off.
+
+### D-154 · 2026-11-13 · P11 — Training as tested, and a lean pass first
+
+The pool's days are cut into two-year blocks per tile from the first day a block has a year of
+catalogue behind it; each block is forecast by an ETAS fitted on the tile's quakes before it, day by
+day, as the bench runs it. A block counts only if its ETAS was fitted on at least 200 quakes, CB-22's
+rule for its reference: fitted on fewer, ETAS came out explosive (a New Zealand tile's 1995 block:
+1,920 expected, 82 came). 214 blocks, 64,414 tile-days. Each member sets one training region aside
+and stops on it; with four members the regions are taken in turn.
+
+The order of runs: the rebuilt heart alone, one member, seed 0, on CB-32 and CB-29 first. Only if it
+is above ETAS do the three seeds, the four members and the switch-off runs follow (CB-32 every seed;
+the Field is a four-member ensemble, so a fair comparison needs four). The switch-off runs were to
+be judged on the stopping regions (before 2007), not on CB-32's sequences.
+
+**Rejected.** All seeds and switch trials up front: hours spent before knowing whether the heart
+can beat ETAS at all. Early stopping on the training regions' own held-out days: it rewards
+memorising them.
+
+### D-155 · 2026-11-13 · P11 — The rebuilt heart's lean pass loses; the stop rule fires again
+
+Lean pass (one member, seed 0): **CB-32 −0.044** (central Italy +0.060, California +0.155, Japan
+−0.391, New Zealand 0.000), **CB-29 7.260** (their ETAS 7.256; lower is better). The Field: +0.336,
+7.167. It lands at the bottom of the expectation.
+
+Per sequence, quakes expected as a share of those that came (ETAS → heart): El Mayor 48% → 92%,
+Ridgecrest 49% → 100%, central Italy 55% → 60%, L'Aquila 22% → 24%, Tohoku 32% → 27%, Kumamoto
+55% → 40%, Darfield and Kaikoura unchanged. The one fold that stopped on central Italy (whose
+past-fitted ETAS is right on average) kept a heart that turns ETAS up when a place is busy, and it
+counted California's two sequences almost exactly. The three that stopped on California (whose
+past-fitted ETAS over-counts the next two years) kept hearts that turn ETAS down; New Zealand's
+found nothing and stayed ETAS. Where to stop decided the sign of what was learned.
+
+**Decision.** Stop, as the rule says: no more seeds, members or switch-off runs, no P12. P11 is not
+released. The record, the figure and the lesson say what happened.
+
+**Open, for the next decision:** the four-member heart (stopping regions in turn, averaged), early
+stopping on a pooled set of regions, or blocks that start at large quakes (closer to how CB-32 asks)
+are each one run away. None was run here.

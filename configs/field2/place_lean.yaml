@@ -1,0 +1,45 @@
+# The lean first pass (2026-11-13): the rebuilt heart alone, ONE member, seed 0,
+# scored on CB-32 and CB-29 before anything else trains. Never the final score.
+# Field 2, the heart rebuilt (P11, redrawn 2026-11-13): a query with content.
+# Each place carries a learned state written by the quakes that fall in it (from mc - 0.5),
+# places read their neighbours, and the state bends every quake's message to it. The region's
+# ETAS numbers are rulers (time in Omori c, rates over the background), never an input. A
+# smooth clock, an additive head beside the reweighted ETAS one. Trained as tested: each day
+# forecast by an ETAS fitted before its two-year block; each member stops on a region it does
+# not learn from. Born as ETAS.
+name: place_lean
+description: "The rebuilt heart, one member, seed 0 only: the lean first pass."
+world_config: world
+
+bins:
+  age_days: [0.0, 0.0208333, 0.0833333, 0.25, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0]
+  magnitude: [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0]
+  ruler: [0.0, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0]
+
+net:
+  hidden: 64
+  layers: 2
+  cap: 2.0
+  context: false          # rulers instead: the region's ETAS scales the inputs
+  state: 8                # channels of each place's state
+  state_below_mc: 0.5     # it hears from mc - 0.5
+  neighbours: 2           # rounds of places reading the places around them
+  rank: 2                 # ways the state bends each bin's weight
+  rulers: true
+  smooth_clock: true
+  additive: true
+  excitement: false       # off: the check says it pays a little; switching it on is a decision of its own
+
+train:
+  days_per_step: 4
+  tiles_per_step: 8
+  steps_per_epoch: 150
+  lr: 3.0e-4
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 5
+  members: 1
+  seeds: [0, 1, 2]
+  as_tested: true
+  origin_years: 2.0
+  stop_outside: true

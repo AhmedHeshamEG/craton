@@ -5,6 +5,30 @@ follow D-009 (phase Pn ships as v0.(n+1).0).
 
 ## [Unreleased]
 
+P11, the viable test, stopped by its stop rule (not released as v0.12.0).
+
+### Added
+- **Field 2's heart** (`craton/field2/`): counting attention from every past quake to every
+  cell, ETAS's own kernel cut by cell and by ring of the quake's rupture length, re-weighed by a
+  small network; its last layers start at zero, so an untrained heart is ETAS exactly
+  (`tests/test_field2.py`). Registered with the bench as `field2` and `field2-born`.
+- **The rebuilt heart** (`craton/field2/place.py`, D-154): a learned state per place written by its
+  quakes from mc − 0.5, two rounds of neighbours, the state bending each message, rulers instead of
+  context, a smooth clock, an additive head; ETAS's excitement as an optional input (off). Each part
+  behind its own switch in `HeartNet`; all off is the first heart.
+- **Train as tested** (`craton/field2/tested.py`, `craton/field2/learn.py`, D-152): the world pool
+  cut into two-year blocks, each forecast by an ETAS fitted only before it (214 blocks, 64,414
+  tile-days; CB-22's 200-quake rule for a fit); members stop on a region they do not learn from.
+- **`craton screen`** (`craton/field2/screen.py`, D-153): ETAS's miss on the pool held as tested, and
+  how much of it each piece of information explains in a region left out.
+- `scripts/ablations/field2_heart.py`, `scripts/figures/field2_heart.py`,
+  `docs/assets/field2-heart-*.png`, `lessons/P11.md`.
+
+### Results
+- First heart, seed 0, CB-32: −0.248 with the region's ETAS numbers as context, +0.007 without.
+- Rebuilt heart, lean pass (one member, seed 0): CB-32 −0.044, CB-29 7.260 (their ETAS 7.256).
+  The Field: +0.336 and 7.167. Stop rule fired (D-155).
+
 ## [0.11.0] — 2026-11-12 · P10 Listening: the crust's hum as two instruments
 
 ### Added
