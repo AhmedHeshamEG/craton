@@ -641,60 +641,85 @@ taken check-first, inside P15.
 
 # FIELD 2
 
-## P11 · The viable test → v0.12.0 (and closes P10 as v0.11.0)
-**Goal:** the smallest real Field 2, trained on the world and scored for real. Three plain answers before
-anything big is built.
+## P11 · The viable test → v0.12.0 (P10 closed as v0.11.0)
+**Redrawn on 2026-11-13, after its first run.**
 
-**Why:** fifteen ideas were each built in full before anyone checked the signal was there. This time the
-smallest version that truly works runs first.
+**What the first run said (kept: it is a result).** The heart as first built, seed 0, on CB-32: untrained,
+0.000 on all eight sequences and 7.256 on CB-29 (born as ETAS, exactly); trained with the region's ETAS
+numbers as context, **−0.25**; trained without them, **+0.007**. The Field has +0.34. The stop rule fired.
+Read from the code and the numbers, four causes:
 
-**LLM analogy:** the tiny model you train first to see the loss go down; an attention head with an
-inductive bias (relative position encodings, ALiBi).
+1. ETAS's miss on the test sequences is all in *how many* (Italy 2016: 583 expected, 1,065 came; L'Aquila
+   70 and 315; Tohoku 1,129 and 3,478). *Where* never moved. The heart gave each quake a fixed weight by age,
+   size and distance and added them up: its query was empty, so it could not say "this place is running hot".
+2. Training hid the miss. Each tile's ETAS was fitted on the very days the heart learned from, so its totals
+   were already right there.
+3. The context was learned from three regions and extrapolated on the fourth (it cut Italy's count to 230).
+4. It heard nothing below completeness, places never saw each other, 6,018 parameters, a learning rate the
+   world Field had already found too hot, one member, early stopping on the regions it trained on, and hard
+   time bins.
+
+**Goal:** the smallest real Field 2 that fixes those, trained and scored for real.
+
+**Why:** places have to see each other (quakes infect their neighbours); the model should be ETAS's equation
+made bigger, with terms for what ETAS cannot see; hard time bins are a bottleneck; and the dimensional
+analysis belongs early. A memory of ETAS's own mistakes fed in by hand is out: it would be the answer
+smuggled in as an input. The state is learned.
+
+**LLM analogy:** attention needs a query with content; a recurrent state; training on the distribution you
+will be tested on.
 
 **Steps**
-0. **Close P10** (was P10e): the dv/v figure under the 2016 sequence, day by day, shocks marked;
-   `lessons/P10.md`; data cards; tag v0.11.0 and upload the live bundle.
-1. `craton/field2/`: the heart only. Counting (additive) attention from quakes to query cells; distance in
-   rupture lengths; log time; quakes only. Memory is a fixed log-binned history for now (the learned one is
-   P13). The region's ETAS numbers and its completeness arrive as context. No place name, no coordinate.
-2. **Born as ETAS**: at step 0 the forecast equals ETAS's on every test, within 0.01 bits. This is a test in
-   the suite.
-3. Train on the world pool (the tiles of `configs/field/world.yaml`), three seeds.
-4. Score on tests that exist today and were never tuned on it: CB-32 (regions never read) and CB-29
-   (EarthquakeNPP), paired with ETAS, `etas_local_alpha` and the Field.
-5. **The three answers**, in the lesson and in chat: born equal to ETAS? above ETAS on every seed? how far
-   from the Field?
-6. **The film**: "How Field 2 works", made the way the Field film was, from the real run's data, with
-   clips for the project page and the README.
-7. The honest verdict in plain words.
+1. **Record the first run** (`results/ablation/field2_heart.json`); it opens the lesson.
+2. **The check before building** (`craton screen`, minutes, no training): ETAS's miss on the pool, held the
+   way the test holds it, and how much of it each candidate piece of information explains in a region left
+   out. The running came ÷ expected ratio appears only as a yardstick of what there is to win, never as an
+   input. The expectation for step 6 is written down *before* training, from this check.
+3. **The heart, rebuilt**, each part behind its own switch:
+   - **a query with content**: every place carries a learned state, written by the quakes that reach it
+     and fading on the log clock; a message's weight depends on its bin *and* on the state of the place
+     receiving it; trained by the forecast loss only;
+   - **neighbours**: places read each other's state for a round or two, by relative geometry only;
+   - **rulers, not context**: time over the region's Omori c, distance over rupture length, rate over the
+     background, size above completeness; the region's ETAS numbers scale the inputs and are never one;
+   - **small quakes**: it hears from mc − 0.5;
+   - **a smooth clock**: weights blended between neighbouring ages;
+   - **a plus beside the times**: an additive head next to the reweighted ETAS one;
+   - **how excited ETAS is** (its rate over the background) as a state input: a switch, off by default.
+4. **Born as ETAS** stays a test in the suite (within 0.01 bits).
+5. **Train as tested**: ETAS fitted on one period, the heart trained on the period after it, over several
+   origins per tile; learning rate 3e-4, four members, each stopping on a region it does not learn from.
+6. **A lean pass first**: one member, seed 0, on CB-32 and CB-29. Only if it is above ETAS do the three
+   seeds, the four members and the switch-off runs follow (CB-32 every seed; the Field is a four-member
+   ensemble, so a fair comparison needs four).
+7. **The three answers**, the film ("How Field 2 works", from the run's data), the honest verdict.
 
 **Benchmarks:** CB-32, CB-29 (existing). No new task.
 
-**Not in this phase:** places with state, the learned memory, the world gate, any other instrument.
+**Not in this phase:** more regions, the hourly test, rupture shapes, hide-and-rebuild, any other instrument.
 
 **Done when**
-- P10 is closed and tagged
+- the check's verdicts and the written expectation exist before the training run
 - the born-as-ETAS test passes
-- the three answers are written with their numbers
+- the three answers are written with their numbers, the first run's beside them
 - the film renders from the run's data
 - `lessons/P11.md` written
 
-**Stop rule:** if the heart is not above ETAS on every seed of CB-32, the plan stops here and is redrawn
-before P12.
+**Stop rule:** if the rebuilt heart is not above ETAS on every seed of CB-32, the plan stops before P12.
 
-**Expect:** born equal: yes · CB-32 +0.15 to +0.30 (the Field has +0.34) · CB-29 a tie or a small win over
-their ETAS (7.256).
+**Expect:** written after the check (DECISIONS, D-153). The first guess (+0.15 to +0.30) was wrong.
 
-**Learn:** attention as a sum against attention as a share, why a model that starts as the baseline is easy
-to trust, self-similarity.
+**Learn:** attention as a sum, a query with content, why a model must be trained on the errors it will meet,
+dimensional analysis as a way to remove the address.
 
 ## P12 · The heart and the fair judge → v0.13.0
-**Goal:** a judge that can see a small gain, the growth curve, and the full heart graded on it against the
-Field.
+**Goal:** a judge that can see a small gain, the growth curve, more of the world, and the full heart graded
+on it against the Field.
 
 **Why:** one Italian day graded fifteen ideas. And nobody knows yet whether more data is the lever.
 
-**LLM analogy:** building the eval before the model (lm-eval-harness); scaling laws (Kaplan, Chinchilla).
+**LLM analogy:** building the eval before the model (lm-eval-harness); scaling laws (Kaplan, Chinchilla);
+data augmentation.
 
 **Steps**
 1. **The world gate, CB-35**: tier one, the sharp sequences (CB-22's and CB-32's); tier two, hundreds of
@@ -703,25 +728,34 @@ Field.
 2. **The vault**: a share of tier two sealed by hash. Nobody reads its sequences, us included; only
    the score comes out, at adoption time.
 3. **The roof on the world**: the oracles of `craton bench ceiling` on the gate.
-4. **The small judge** (~15 min, a fixed subset) and **the signal check** (`craton screen`: does this input
-   explain ETAS's mistakes on the pool at all?). Rerun the check on every past loser.
+4. **The small judge** (~15 min, a fixed subset); `craton screen` (from P11) rerun on every past loser.
+   From here on, every training run decides when to stop on a region it did not train on.
 5. **One command for a stranger**: `craton bench gate MODEL` grades anyone's forecaster.
-6. **Everything together**: one Field with the small winners (GPS and noise at 30 days, the curriculum on
-   CB-20), inputs allowed per horizon so next-day never sees them.
-7. **Calibration**: the day totals recalibrated before the cut (CB-05).
-8. **The growth curve, CB-16**: the gate score against the number of tiles (5, 10, 20, 37, all) and three
-   model sizes; the next point predicted before it is trained.
-9. **The full heart**: softmax heads beside the additive ones, the context in full (ETAS numbers,
-   completeness, the region's first year, lookalike sequences), trained on everything the curve says pays.
-10. Head to head on the gate: Field 2 vs the Field vs `etas_local_alpha`. Figure: the growth curve with the
+6. **The hourly test** (a new task, numbered when frozen): forecasts refreshed every hour or after every
+   large quake, ETAS given the same refresh. A midnight test cannot score the quakes of a mainshock's own day
+   for anyone.
+7. **Ask from any moment**: train on the next 24 hours from any hour, not only midnight.
+8. **More of the world**: more regions in the pool (Japan is half of it today), mixed through the rulers.
+9. **ETAS wrong on purpose**: its numbers jittered in training, so the model corrects from evidence.
+10. **The dimensional analysis in full**: the dimensionless groups of the whole equation, on paper, then one
+    small run on them.
+11. **Everything together**: one Field with the small winners (GPS and noise at 30 days, the curriculum on
+    CB-20), inputs allowed per horizon so next-day never sees them.
+12. **Calibration**: the day totals recalibrated before the cut (CB-05).
+13. **The growth curve, CB-16**: the gate score against the number of tiles and three model sizes; the next
+    point predicted before it is trained.
+14. **The full heart**: softmax heads beside the additive ones, the region's first year and lookalike
+    sequences as context, trained on everything the curve says pays.
+15. Head to head on the gate: Field 2 vs the Field vs `etas_local_alpha`. Figure: the growth curve with the
     predicted point and the real one.
 
-**Benchmarks:** **CB-35 (the world gate), new**; CB-16; CB-05, CB-19, CB-20.
+**Benchmarks:** **CB-35 (the world gate), new**; the hourly test, new; CB-16; CB-05, CB-19, CB-20.
 
 **Reds aimed at:** CB-05, CB-20, CB-19.
 
 **Done when**
 - CB-35 frozen, the vault sealed, the roof measured
+- the hourly test frozen, ETAS scored on it
 - the growth curve's predicted point is within its stated error
 - every past loser has a signal-check verdict
 - Field 2's heart is graded on the gate beside the Field
@@ -730,10 +764,9 @@ Field.
 **Stop rule:** if the full heart cannot pass `etas_local_alpha` on the gate, the plan stops here and is
 redrawn before P13.
 
-**Expect:** gate +0.35 to +0.40 (the Field's level, with no hand-made counter) · CB-05 and CB-20 green ·
-CB-19 near ETAS.
+**Expect:** written at the end of P11, from its numbers.
 
-**Learn:** statistical power, sealed test sets, scaling laws.
+**Learn:** statistical power, sealed test sets, scaling laws, augmentation.
 
 ## P13 · The places → v0.14.0
 **Goal:** the Earth as places that carry a hidden state, with quakes writing into them.
@@ -880,8 +913,9 @@ the world gate from P12).
 |---|---|---|
 | the Field (measured, P9h) | **+0.34** | 54 hand-made counters, a stock transformer |
 | best simple floor (measured) | +0.07 | `etas_local_alpha` |
-| P11 the viable test | +0.15 to +0.30 | the heart alone, born as ETAS |
-| P12 the heart, in full | +0.35 to +0.40 | softmax heads, the context, more data |
+| P11 first run (measured, seed 0) | −0.25 with context, +0.007 without | the heart alone: an empty query |
+| P11 rebuilt, lean pass (measured, one member, seed 0) | **−0.044** (expected −0.05 to +0.15) | state, neighbours, rulers, trained as tested |
+| P12 the heart, in full | not set: P11 stopped | more of the world, any moment, the hourly test |
 | P13 the places | +0.45 to +0.55 | state, rupture shapes, the context |
 | P14 what pushes them | +0.5 to +0.6 | charging and identity, in where |
 | P15 understanding | +0.6 to +0.7 | experiments, the month dreamed |
@@ -911,5 +945,5 @@ ocean-floor data adapters · a prior-fitted Craton (FIM-PP, arXiv 2509.24762).
 - [x] P0 Foundation · [x] P1 Universal token · [x] P2 Adapters + store · [x] P3 Benchmarks + baselines
 - [x] P4 Craton-mini v0 · [x] P5 Fusion · [x] P6 Beat ETAS · [x] P7 The 8 locks
 - [x] P8 Other planets (v0.9.0) · [x] P9 Hidden state (v0.10.0) · [x] P10 Listening (v0.11.0)
-- [ ] P11 The viable test · [ ] P12 The heart + the fair judge · [ ] P13 The places
+- [ ] P11 The viable test (stopped twice by its stop rule, 2026-11-13) · [ ] P12 The heart + the fair judge · [ ] P13 The places
 - [ ] P14 What pushes the places · [ ] P15 Understanding + the equation · [ ] P16 Grow and ship (v1.0.0)
