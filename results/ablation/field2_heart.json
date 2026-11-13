@@ -730,6 +730,259 @@
           ]
         }
       }
+    },
+    "place_lean": {
+      "CB-29": {
+        "seeds": [
+          0
+        ],
+        "values": [
+          7.260400575218046
+        ],
+        "extras": {
+          "quakes": [
+            21889.0
+          ],
+          "etas_nll": [
+            7.255593098430601
+          ],
+          "gain_over_etas": [
+            -0.00480747678744553
+          ],
+          "published_etas_nll": [
+            7.2554275527505645
+          ],
+          "published_poisson_nll": [
+            13.261863460288378
+          ],
+          "factor_median": [
+            1.0
+          ]
+        }
+      },
+      "CB-32": {
+        "seeds": [
+          0
+        ],
+        "values": [
+          -0.04379599475866014
+        ],
+        "extras": {
+          "cb02.bits": [
+            -7.070217814746756
+          ],
+          "cb02.gain": [
+            0.04774571202507971
+          ],
+          "cb02.observed": [
+            1065.0
+          ],
+          "cb02.expected": [
+            641.689478467513
+          ],
+          "cb02.how_many_bits": [
+            -2.437538124371324
+          ],
+          "cb02.where_bits": [
+            -4.178808750146335
+          ],
+          "cb02.how_big_bits": [
+            -3.327792789946061
+          ],
+          "cb02.qualified": [
+            1.0
+          ],
+          "cb03.bits": [
+            -9.323495450082811
+          ],
+          "cb03.gain": [
+            0.07259983535919723
+          ],
+          "cb03.observed": [
+            315.0
+          ],
+          "cb03.expected": [
+            75.89272686367265
+          ],
+          "cb03.how_many_bits": [
+            -4.031350144766173
+          ],
+          "cb03.where_bits": [
+            -3.8335024223432987
+          ],
+          "cb03.how_big_bits": [
+            -3.448595681506061
+          ],
+          "cb03.qualified": [
+            1.0
+          ],
+          "el_mayor.bits": [
+            -8.521208482048614
+          ],
+          "el_mayor.gain": [
+            0.1995541429323655
+          ],
+          "el_mayor.observed": [
+            549.0
+          ],
+          "el_mayor.expected": [
+            507.60776335163916
+          ],
+          "el_mayor.how_many_bits": [
+            -1.896971266105048
+          ],
+          "el_mayor.where_bits": [
+            -5.482460321697663
+          ],
+          "el_mayor.how_big_bits": [
+            -3.4474770177695007
+          ],
+          "el_mayor.qualified": [
+            1.0
+          ],
+          "ridgecrest.bits": [
+            -9.611690894089351
+          ],
+          "ridgecrest.gain": [
+            0.11078594915007223
+          ],
+          "ridgecrest.observed": [
+            502.0
+          ],
+          "ridgecrest.expected": [
+            502.545939111664
+          ],
+          "ridgecrest.how_many_bits": [
+            -3.203297733836651
+          ],
+          "ridgecrest.where_bits": [
+            -6.856411532880618
+          ],
+          "ridgecrest.how_big_bits": [
+            -3.293567079602851
+          ],
+          "ridgecrest.qualified": [
+            1.0
+          ],
+          "tohoku.bits": [
+            -11.358686171073657
+          ],
+          "tohoku.gain": [
+            -0.3661453078531238
+          ],
+          "tohoku.observed": [
+            3478.0
+          ],
+          "tohoku.expected": [
+            931.8320699435703
+          ],
+          "tohoku.how_many_bits": [
+            -2.16290184919316
+          ],
+          "tohoku.where_bits": [
+            -9.56120328112201
+          ],
+          "tohoku.how_big_bits": [
+            -3.72573555256598
+          ],
+          "tohoku.qualified": [
+            1.0
+          ],
+          "kumamoto.bits": [
+            -11.232189623522167
+          ],
+          "kumamoto.gain": [
+            -0.41489269637704673
+          ],
+          "kumamoto.observed": [
+            118.0
+          ],
+          "kumamoto.expected": [
+            47.75618221467852
+          ],
+          "kumamoto.how_many_bits": [
+            -3.4047011469442365
+          ],
+          "kumamoto.where_bits": [
+            -6.223796764307879
+          ],
+          "kumamoto.how_big_bits": [
+            -3.791432593218731
+          ],
+          "kumamoto.qualified": [
+            1.0
+          ],
+          "darfield.bits": [
+            -8.334324129070131
+          ],
+          "darfield.gain": [
+            -4.970559320582879e-06
+          ],
+          "darfield.observed": [
+            216.0
+          ],
+          "darfield.expected": [
+            139.04037607358327
+          ],
+          "darfield.how_many_bits": [
+            -2.7316475941497544
+          ],
+          "darfield.where_bits": [
+            -4.083866935471207
+          ],
+          "darfield.how_big_bits": [
+            -3.207851055041407
+          ],
+          "darfield.qualified": [
+            1.0
+          ],
+          "kaikoura.bits": [
+            -9.397467627448261
+          ],
+          "kaikoura.gain": [
+            -1.0622746504651559e-05
+          ],
+          "kaikoura.observed": [
+            330.0
+          ],
+          "kaikoura.expected": [
+            249.72641681596366
+          ],
+          "kaikoura.how_many_bits": [
+            -1.4964532408784643
+          ],
+          "kaikoura.where_bits": [
+            -6.809557642842798
+          ],
+          "kaikoura.how_big_bits": [
+            -3.5479738356867556
+          ],
+          "kaikoura.qualified": [
+            1.0
+          ],
+          "central_italy.mean_gain": [
+            0.06017277369213847
+          ],
+          "california.mean_gain": [
+            0.15517004604121887
+          ],
+          "japan.mean_gain": [
+            -0.3905190021150853
+          ],
+          "new_zealand.mean_gain": [
+            -7.796652912617219e-06
+          ],
+          "folds_beaten": [
+            0.5
+          ],
+          "sequences_beaten": [
+            0.5
+          ],
+          "mean_gain_per_sequence": [
+            -0.04379599475866014
+          ]
+        }
+      }
     }
   },
   "paired": {
@@ -1009,6 +1262,76 @@
           ]
         }
       }
+    }
+  },
+  "members": {
+    "place_lean": {
+      "s0:all": [
+        {
+          "learn": [
+            "central_italy",
+            "japan",
+            "new_zealand"
+          ],
+          "stop": [
+            "california"
+          ],
+          "epochs": 6.0,
+          "gain_nats": 0.00804
+        }
+      ],
+      "s0:central_italy": [
+        {
+          "learn": [
+            "japan",
+            "new_zealand"
+          ],
+          "stop": [
+            "california"
+          ],
+          "epochs": 7.0,
+          "gain_nats": 0.01787
+        }
+      ],
+      "s0:california": [
+        {
+          "learn": [
+            "japan",
+            "new_zealand"
+          ],
+          "stop": [
+            "central_italy"
+          ],
+          "epochs": 14.0,
+          "gain_nats": 0.17076
+        }
+      ],
+      "s0:japan": [
+        {
+          "learn": [
+            "central_italy",
+            "new_zealand"
+          ],
+          "stop": [
+            "california"
+          ],
+          "epochs": 8.0,
+          "gain_nats": 0.0304
+        }
+      ],
+      "s0:new_zealand": [
+        {
+          "learn": [
+            "central_italy",
+            "japan"
+          ],
+          "stop": [
+            "california"
+          ],
+          "epochs": 5.0,
+          "gain_nats": 0.0
+        }
+      ]
     }
   }
 }

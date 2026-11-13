@@ -106,12 +106,36 @@ def score(config: str, seeds: list[int], tasks: list[str], born: bool = False) -
             "extras": {k: list(v) for k, v in r.extras.items()},
         }
         log(f"{name} {r.task_id}: {[round(v, 4) for v in r.values]}")
+    if not born:
+        out.setdefault("members", {})[name] = members(config, seeds)
     _save(out)
+
+
+def members(config: str, seeds: list[int]) -> dict[str, Any]:
+    """Each trained heart's members: where they learned, where they stopped, what they found
+    there (nats per quake over ETAS on the stopping days), per seed and fold."""
+    found: dict[str, Any] = {}
+    for seed in seeds:
+        for region in ["", *FOLDS]:
+            meta = Field2World(config, holdout=region).folder(ROOT, seed) / "meta.json"
+            if not meta.is_file():
+                continue
+            body = json.loads(meta.read_text("utf-8"))
+            found[f"s{seed}:{region or 'all'}"] = [
+                {
+                    "learn": m.get("learn_regions"),
+                    "stop": m.get("stop_regions"),
+                    "epochs": m["epochs"],
+                    "gain_nats": round(m["validation_etas"] - m["validation_best"], 5),
+                }
+                for m in body["members"]
+            ]
+    return found
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("step", choices=("train", "score", "born"))
+    ap.add_argument("step", choices=("train", "score", "born", "members"))
     ap.add_argument("config", help="a Field 2 config (configs/field2/)")
     ap.add_argument("seeds", nargs="+", type=int)
     ap.add_argument("--tasks", nargs="*", default=list(TASKS))
@@ -119,6 +143,10 @@ def main() -> None:
     args = ap.parse_args()
     if args.step == "train":
         train(args.config, args.seeds, ["" if r == "all" else r for r in args.regions])
+    elif args.step == "members":
+        out = _load()
+        out.setdefault("members", {})[args.config] = members(args.config, args.seeds)
+        _save(out)
     else:
         score(args.config, args.seeds, args.tasks, born=args.step == "born")
 
