@@ -1,0 +1,50 @@
+# Field 2, the scheme's second run (P11, 2026-11-13 night, agreed with Hesham).
+# Switching knobs off on the trained first run showed g moves quakes to the wrong places and N
+# makes the counts worse. So, as one run: N off; each place reads ETAS's own rate there; the
+# tanks are also read pooled over the 3 x 3 and 9 x 9 places around (what the old Field had).
+name: scheme2
+description: "The scheme, second run: N off, places read ETAS, tanks pooled over 3x3 and 9x9."
+world_config: world
+
+bins:   # the hearts' bins: ETAS's kernel pieces are cut by these rings (cached, shared)
+  age_days: [0.0, 0.0208333, 0.0833333, 0.25, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0]
+  magnitude: [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0]
+  ruler: [0.0, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0]
+
+net:    # unused by the scheme; kept so the config reads like the hearts'
+  hidden: 64
+  layers: 2
+  cap: 2.0
+  context: false
+
+train:  # the world Field's recipe (configs/field/world.yaml)
+  days_per_step: 8
+  tiles_per_step: 1
+  steps_per_epoch: 500
+  lr: 3.0e-4
+  weight_decay: 0.01
+  max_epochs: 40
+  patience: 6
+  members: 1
+  seeds: [0, 1, 2]
+
+scheme:
+  tanks: 16
+  tau_min_days: 0.0416667     # an hour
+  tau_max_days: 10957.0       # thirty years
+  learn_lifetimes: true
+  hears_below_mc: 0.5
+  max_age_days: 10957.0
+  d_model: 128
+  n_layers: 3
+  n_heads: 4
+  dropout: 0.1
+  recent_days: 10.0
+  n_hidden: 64
+  max_nudge: 4.0
+  gain: true
+  recent: false
+  background: true
+  distance_bias: true
+  neighbours: [3, 9]
+  reads_etas: true

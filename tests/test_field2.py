@@ -9,7 +9,7 @@ import torch
 
 from craton.bench import etas
 from craton.bench.csep import Grid
-from craton.field2.config import load_field2_config
+from craton.field2.config import field2_hash, load_field2_config
 from craton.field2.heart import Heart, bin_coordinates, make_box, rates, ring_entries, to_device
 
 GRID = Grid(42.0, 42.6, 13.0, 13.7, cell_deg=0.1, m_min=2.0, m_max=8.0)
@@ -224,6 +224,30 @@ def test_scheme_is_born_as_etas() -> None:
     with torch.no_grad():
         got = net(sb, torch.as_tensor(days)).double().numpy()
     assert np.allclose(got, want, rtol=1e-5, atol=1e-12)
+
+
+def test_scheme2_is_born_as_etas() -> None:
+    """The second run (neighbour tanks, places read ETAS, N off) is born as ETAS too."""
+    from craton.field2.scheme import SchemeModel
+
+    cfg, fit, cat, days, sb = _scheme_box("scheme2")
+    assert cfg.scheme is not None
+    assert cfg.scheme.neighbours
+    assert cfg.scheme.reads_etas
+    want = etas.forecast_days(fit, cat, days, GRID, etas.Projection.for_grid(GRID)).rates
+    net = SchemeModel(cfg.scheme).eval()
+    with torch.no_grad():
+        got = net(sb, torch.as_tensor(days)).double().numpy()
+    assert np.allclose(got, want, rtol=1e-5, atol=1e-12)
+
+
+def test_scheme_keeps_its_first_name() -> None:
+    """Switches added for the second run, left off, keep the first run's checkpoint name."""
+    cfg = load_field2_config("scheme")
+    assert cfg.scheme is not None
+    assert field2_hash(cfg)[:8] == "e3a29a35"  # the first run's trained folds
+    off = cfg.model_copy(update={"scheme": cfg.scheme.model_copy(update={"neighbours": [3]})})
+    assert field2_hash(cfg) != field2_hash(off)
 
 
 def test_scheme_places_read_the_past_only() -> None:

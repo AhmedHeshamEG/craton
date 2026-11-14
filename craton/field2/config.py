@@ -129,6 +129,15 @@ class SchemeNet(_Strict):
     distance_bias: bool = Field(
         default=True, description="Attention biased by relative distance (cells, rupture lengths)."
     )
+    neighbours: list[int] = Field(
+        default_factory=list,
+        description="(P11 second run) the tanks also read pooled over k x k squares of places.",
+    )
+    reads_etas: bool = Field(
+        default=False,
+        description="(P11 second run) each place reads ETAS's own rate there: over its quiet, "
+        "and its share of the box.",
+    )
 
 
 class Field2Config(_Strict):
@@ -180,11 +189,21 @@ def load_field2_config(name_or_path: str | Path, root: Path | None = None) -> Fi
         return Field2Config.model_validate(yaml.safe_load(f))
 
 
+_SCHEME_SECOND = ("neighbours", "reads_etas")
+
+
 def field2_hash(config: Field2Config) -> str:
     dump = config.model_dump(mode="json")
     dump.pop("description", None)
     if dump.get("scheme") is None:
         dump.pop("scheme", None)  # the hearts keep the names they had
+    else:
+        # switches added after the first scheme run keep its name when off
+        for key in _SCHEME_SECOND:
+            if dump["scheme"].get(key) == SchemeNet.model_fields[key].get_default(
+                call_default_factory=True
+            ):
+                dump["scheme"].pop(key)
     if not config.net.free_head:
         # a heart without the free head keeps the name it had before the switch existed
         dump["net"].pop("free_head")

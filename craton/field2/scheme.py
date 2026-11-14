@@ -161,6 +161,8 @@ class SchemeBox:
     branching: float
     thickness: float
     n_cells: int
+    n_lat: int = 0  # the grid's shape, row-major (cell = i_lat * n_lon + i_lon)
+    n_lon: int = 0
 
 
 def ring_centres(edges: tuple[float, ...]) -> np.ndarray:
@@ -214,6 +216,8 @@ def scheme_box(
         branching=float(ctx[CONTEXT.index("branching")]),
         thickness=thickness,
         n_cells=box.n_cells,
+        n_lat=grid.n_lat,
+        n_lon=grid.n_lon,
     )
 
 
@@ -249,6 +253,15 @@ class BiasedLayer(nn.Module):
         return out
 
 
+def _pool(v: torch.Tensor, n_d: int, sb: SchemeBox, k: int) -> torch.Tensor:
+    """(days * cells, F) summed tanks -> their mean over the k x k square of places around each
+    place (only places on the grid count)."""
+    f = v.shape[-1]
+    img = v.reshape(n_d, sb.n_lat, sb.n_lon, f).permute(0, 3, 1, 2)
+    out = F.avg_pool2d(img, k, stride=1, padding=k // 2, count_include_pad=False)
+    return out.permute(0, 2, 3, 1).reshape(n_d * sb.n_cells, f)
+
+
 def _bounded(d_in: int, d_out: int = 1) -> nn.Linear:
     lin = nn.Linear(d_in, d_out)
     nn.init.zeros_(lin.weight)
@@ -258,6 +271,8 @@ def _bounded(d_in: int, d_out: int = 1) -> nn.Linear:
 
 #: Features per place besides the tanks: largest (size, age, heard), depth, usual, mc, b, n.
 N_EXTRA = 8
+#: (second run) what ETAS says in a place: its rate over the place's quiet, its share of the box.
+N_ETAS = 2
 #: π, a recent quake's pure numbers: age in c, size − mc, distance in rupture lengths.
 N_PI = 3
 
@@ -280,7 +295,7 @@ class SchemeModel(nn.Module):
             self.register_buffer("log_tau", log_tau)
             self.register_buffer("beta", beta)
         d = net.d_model
-        n_in = 2 * k + N_EXTRA
+        n_in = 2 * k * (1 + len(net.neighbours)) + N_EXTRA + (N_ETAS if net.reads_etas else 0)
         self.inp = nn.Sequential(nn.LayerNorm(n_in), nn.Linear(n_in, d), nn.GELU(), nn.Linear(d, d))
         self.layers = nn.ModuleList(
             [BiasedLayer(d, net.n_heads, net.dropout) for _ in range(net.n_layers)]
@@ -301,9 +316,12 @@ class SchemeModel(nn.Module):
         lt: torch.Tensor = self.log_tau
         return lt.exp()
 
-    def places(self, sb: SchemeBox, days: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def places(
+        self, sb: SchemeBox, days: torch.Tensor, etas_x: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """(days, cells, features) what every place says at each midnight, and (days,) the
-        rupture length (km) of the box's largest quake of the last ``RULER_DAYS``."""
+        rupture length (km) of the box's largest quake of the last ``RULER_DAYS``. ``etas_x``
+        (days, cells, 2) is what ETAS says there, read when ``reads_etas``."""
         n_d, n_c = len(days), sb.n_cells
         net = self.net
         age = days[:, None] - sb.q_t[None, :]
@@ -321,6 +339,14 @@ class SchemeModel(nn.Module):
         size = torch.zeros_like(count).index_add_(0, flat, dec * amt)
         usual = sb.usual.repeat(n_d)[:, None] * tau[None, :]
         tanks = torch.cat([torch.log1p(count / usual), torch.log1p(size / usual)], -1)
+        if net.neighbours:
+            both = torch.cat([count, size], -1)
+            pooled = [tanks]
+            for k in net.neighbours:
+                u = _pool(sb.usual[None, :, None], 1, sb, k).view(-1)  # (C,) mean usual around
+                around = _pool(both, n_d, sb, k)
+                pooled.append(torch.log1p(around / (u.repeat(n_d)[:, None] * tau.repeat(2)[None])))
+            tanks = torch.cat(pooled, -1)
         with torch.no_grad():
             mx = torch.full((n_d * n_c,), -1e9, device=a.device)
             mx = mx.scatter_reduce(0, flat, m, "amax")
@@ -355,7 +381,11 @@ class SchemeModel(nn.Module):
             if bool(recent.any()):
                 biggest = biggest.scatter_reduce(0, d_i[recent], m[recent], "amax")
             length = 10.0 ** (-2.44 + 0.59 * (biggest + sb.mc))
-        x = torch.cat([tanks, extra], -1).view(n_d, n_c, -1)
+        parts = [tanks, extra]
+        if net.reads_etas:
+            assert etas_x is not None
+            parts.append(etas_x.reshape(n_d * n_c, -1))
+        x = torch.cat(parts, -1).view(n_d, n_c, -1)
         return x, length
 
     def bias(self, sb: SchemeBox, length: torch.Tensor, layer: int) -> torch.Tensor | None:
@@ -371,9 +401,11 @@ class SchemeModel(nn.Module):
         out: torch.Tensor = (cb[None] + rr).permute(0, 3, 1, 2)
         return out
 
-    def state(self, sb: SchemeBox, days: torch.Tensor) -> torch.Tensor:
+    def state(
+        self, sb: SchemeBox, days: torch.Tensor, etas_x: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """(days, cells, d_model) every place's numbers after attention."""
-        x, length = self.places(sb, days)
+        x, length = self.places(sb, days, etas_x)
         dev = x.device
         with torch.autocast(dev.type, torch.float16, enabled=dev.type == "cuda"):
             h = self.inp(x)
@@ -389,9 +421,6 @@ class SchemeModel(nn.Module):
         box = db.box
         n_d, n_c = len(days), sb.n_cells
         cap = self.cap
-        s = self.state(sb, days)
-        g = cap * torch.tanh(self.g(s).squeeze(-1) / cap) if self.net.gain else None
-        bb = cap * torch.tanh(self.b(s).squeeze(-1) / cap) if self.net.background else None
 
         days64 = days.double()
         age = days64[:, None] - db.t[None, :]  # (D, P)
@@ -404,6 +433,25 @@ class SchemeModel(nn.Module):
         w = w.float()
         piece = w.index_select(1, db.e_parent) * db.e_share[None, :]
         trig = torch.zeros(n_d, n_c, device=w.device).index_add_(1, db.e_cell, piece)
+        bg = (db.background * box.span)[None, :].expand(n_d, n_c)
+        etas_x = None
+        if self.net.reads_etas:
+            with torch.no_grad():
+                line = trig + bg
+                quiet = bg.clamp(min=1e-12)
+                etas_x = torch.stack(
+                    [
+                        torch.log10(line.clamp(min=1e-12) / quiet) / 2.0,
+                        torch.log10(
+                            line.clamp(min=1e-12) / line.mean(-1, keepdim=True).clamp(min=1e-12)
+                        )
+                        / 2.0,
+                    ],
+                    -1,
+                )
+        s = self.state(sb, days, etas_x)
+        g = cap * torch.tanh(self.g(s).squeeze(-1) / cap) if self.net.gain else None
+        bb = cap * torch.tanh(self.b(s).squeeze(-1) / cap) if self.net.background else None
         if self.net.recent:
             recent = seen & (age < self.net.recent_days)
             r_pieces = recent.index_select(1, db.e_parent)
@@ -429,7 +477,6 @@ class SchemeModel(nn.Module):
                 ).view(n_d, n_c)
         if g is not None:
             trig = trig * g.exp()
-        bg = (db.background * box.span)[None, :].expand(n_d, n_c)
         if bb is not None:
             bg = bg * bb.exp()
         return box.cascade * (bg + trig)
