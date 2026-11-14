@@ -255,6 +255,21 @@ def test_scheme3_is_born_as_etas() -> None:
     assert np.allclose(got, want, rtol=1e-5, atol=1e-12)
 
 
+def test_scheme4_is_born_as_etas() -> None:
+    """The fourth run (scheme2 plus g reading busy-ness straight) is born as ETAS."""
+    from craton.field2.scheme import SchemeModel
+
+    cfg, fit, cat, days, sb = _scheme_box("scheme4")
+    assert cfg.scheme is not None
+    assert cfg.scheme.direct_loudness
+    want = etas.forecast_days(fit, cat, days, GRID, etas.Projection.for_grid(GRID)).rates
+    net = SchemeModel(cfg.scheme).eval()
+    assert net.direct.numel() == 4
+    with torch.no_grad():
+        got = net(sb, torch.as_tensor(days)).double().numpy()
+    assert np.allclose(got, want, rtol=1e-5, atol=1e-12)
+
+
 def test_scheme_keeps_its_first_name() -> None:
     """Switches added for the second run, left off, keep the first run's checkpoint name."""
     cfg = load_field2_config("scheme")

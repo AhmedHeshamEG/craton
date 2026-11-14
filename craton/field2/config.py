@@ -142,6 +142,10 @@ class SchemeNet(_Strict):
         default=False,
         description="(P11 third run) the first LayerNorm's mean and spread go in beside it.",
     )
+    direct_loudness: bool = Field(
+        default=False,
+        description="(P11 fourth run) g also reads the busy-ness numbers straight, one slope each.",
+    )
 
 
 class Field2Config(_Strict):
@@ -193,7 +197,7 @@ def load_field2_config(name_or_path: str | Path, root: Path | None = None) -> Fi
         return Field2Config.model_validate(yaml.safe_load(f))
 
 
-_SCHEME_SECOND = ("neighbours", "reads_etas", "keeps_loudness")
+_SCHEME_SECOND = ("neighbours", "reads_etas", "keeps_loudness", "direct_loudness")
 
 
 def field2_hash(config: Field2Config) -> str:

@@ -314,6 +314,11 @@ class SchemeModel(nn.Module):
         self.n_pi = nn.Linear(N_PI, net.n_hidden)
         self.n_s = nn.Linear(d, net.n_hidden, bias=False)
         self.n_out = _bounded(net.n_hidden)
+        n_direct = (
+            (1 + len(net.neighbours) + (1 if net.reads_etas else 0)) if net.direct_loudness else 0
+        )
+        # one slope per busy-ness number, born at zero: the far-sighted lens of the bifocals
+        self.direct = nn.Parameter(torch.zeros(n_direct))
 
     # ------------------------------------------------------------ the places
 
@@ -422,7 +427,19 @@ class SchemeModel(nn.Module):
             for i, layer in enumerate(self.layers):
                 h = layer(h, self.bias(sb, length, i))
             s: torch.Tensor = self.ln_out(h)
+        self._x = x if self.net.direct_loudness else None
         return s.float()
+
+    def loudness(self, x: torch.Tensor, etas_x: torch.Tensor | None) -> torch.Tensor:
+        """(days, cells, n) the pure busy-ness numbers g reads straight, past the network: the
+        count tanks over usual, here and over each neighbour square, and ETAS over the quiet."""
+        k = self.net.tanks
+        cols = [
+            x[..., 2 * k * j : 2 * k * j + k].mean(-1) for j in range(1 + len(self.net.neighbours))
+        ]
+        if etas_x is not None:
+            cols.append(etas_x[..., 0])
+        return torch.stack(cols, -1).float()
 
     # ------------------------------------------------------------ the equation layer
 
@@ -460,7 +477,13 @@ class SchemeModel(nn.Module):
                     -1,
                 )
         s = self.state(sb, days, etas_x)
-        g = cap * torch.tanh(self.g(s).squeeze(-1) / cap) if self.net.gain else None
+        g = None
+        if self.net.gain:
+            g_raw = self.g(s).squeeze(-1)
+            if self.net.direct_loudness:
+                assert self._x is not None
+                g_raw = g_raw + self.loudness(self._x, etas_x) @ self.direct
+            g = cap * torch.tanh(g_raw / cap)
         bb = cap * torch.tanh(self.b(s).squeeze(-1) / cap) if self.net.background else None
         if self.net.recent:
             recent = seen & (age < self.net.recent_days)
