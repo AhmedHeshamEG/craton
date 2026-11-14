@@ -3126,3 +3126,21 @@ against ETAS on six of eight sequences, by more than the scheme does (Tohoku −
 Ridgecrest −0.234; scheme2 −0.126 to +0.093, Ridgecrest −0.145). The old Field's whole lead is in
 *how many*: on the big ruptures it expects 95-118% of what came (Tohoku 54%), scheme2 60-90%
 (Tohoku 30%, as ETAS). The 0.02 held on CB-02 only.
+
+### D-159 · 2026-11-14 · P11 — Loudness past the LayerNorm: not kept
+
+**Checks, no training.** On scheme2 the gain g never reaches its x4 wall, so the wall does not
+explain the old Field's lead on the big ruptures (and the old Field has the same wall). The first
+LayerNorm sends the busiest place-days out the same size as places a hundred times quieter.
+
+**Run.** scheme3 = scheme2 plus each place's input mean and log spread beside the LayerNorm's
+output. One member, seed 0: **CB-32 +0.073** against scheme2's +0.179. Japan +0.115 (was -0.014;
+Tohoku -0.214 -> +0.102), central Italy +0.059 (was +0.360), California +0.121 (+0.258), New
+Zealand -0.003 (+0.113).
+
+**Decision.** Not kept; scheme2 stays the scheme's best. The work stays on `phase/p11-scheme`.
+Before another one-seed comparison, the scheme's seed noise has to be known: every comparison in
+P11 so far is one run against one run.
+
+**Rejected.** Reading Japan's gain as proof and keeping scheme3: the total is lower and three of four
+regions fell.

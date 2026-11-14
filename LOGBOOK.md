@@ -1433,3 +1433,37 @@ Surprises / problems:
 Decisions: D-158.
 
 Next: talk with Hesham. Two inputs were given at once, so the next run separates them.
+
+## 2026-11-14 — P11 — The loudness the LayerNorm took: Japan up, the rest down
+
+TLDR: Two checks on the trained scheme2 with no training: its gain g never comes near the x4 wall
+(no expected quake sits there; the old Field has the same wall), and the first LayerNorm sends a
+place a hundred times busier out at the same size. A third run, scheme3, gives the network the two
+numbers that LayerNorm removes. **CB-32 +0.073** (one member, seed 0). Japan rose as predicted
+(Tohoku -0.214 -> +0.102), every other region fell. Below scheme2; it stays on its branch.
+
+Built:
+- `SchemeNet.keeps_loudness` (each place's input mean and log spread, beside the LayerNorm's
+  output), off by default; earlier hashes unchanged
+- `configs/field2/scheme3.yaml` (scheme2 plus loudness); test: scheme3 born as ETAS
+
+Measured on scheme2, no training:
+- g where the quakes are expected: x0.91 (Tohoku) to x1.89 (Ridgecrest), at most x3.00; none at
+  the wall
+- busiest 0.1% of place-days against the busiest 1%: input size 69 vs 58 (Tohoku), 74 vs 48
+  (Ridgecrest); after the first LayerNorm 10.7 vs 10.6, 10.4 vs 10.2
+
+Scores (ablation record `results/ablation/field2_heart.json`):
+- scheme3 CB-32 +0.073 (central Italy +0.059, California +0.121, Japan +0.115, New Zealand -0.003)
+- against scheme2: Tohoku +0.102 (was -0.214, expects 42% of what came, was 30%), Kumamoto +0.129
+  (+0.185), Ridgecrest +0.109 (+0.263, *where* -0.280), L'Aquila +0.057 (+0.446), central Italy
+  +0.061 (+0.274)
+
+Folds took 42, 57, 124 and 197 min (best epochs 4, 10, 31, 18).
+
+Surprises / problems:
+- The fix did what it was built for in Japan and cost more everywhere else. With one seed per run,
+  how much of a 0.1 difference is noise is not known for the scheme (the old Field's three seeds
+  spread +0.294 to +0.375).
+
+Decisions: D-159.
