@@ -3119,3 +3119,10 @@ the run, the two inputs are separated next, then the winner gets the full size. 
 
 **Rejected.** Members and seeds for scheme2 now: it is still below the old Field, and two inputs
 changed at once, so its number doesn't say which one earned it.
+
+**Correction to D-157 and D-158 (2026-11-14).** D-157 says the scheme was the first model to move
+*where* by more than 0.02. On CB-32 that is wrong: the old Field (seed 0, four members) loses *where*
+against ETAS on six of eight sequences, by more than the scheme does (Tohoku −0.311, Kumamoto −0.265,
+Ridgecrest −0.234; scheme2 −0.126 to +0.093, Ridgecrest −0.145). The old Field's whole lead is in
+*how many*: on the big ruptures it expects 95-118% of what came (Tohoku 54%), scheme2 60-90%
+(Tohoku 30%, as ETAS). The 0.02 held on CB-02 only.
