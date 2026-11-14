@@ -3100,3 +3100,22 @@ not its errors); (c) g bounded to one gain per box (count only), so *where* stay
 
 **Rejected.** Training more members or seeds first: a tie on one member does not say which piece
 lost, and the where/how-many split already points at one.
+
+### D-158 · 2026-11-14 · P11 — The scheme reads ETAS's map; above ETAS, below the old Field
+
+**Diagnostic.** The trained first run forecast CB-32 again with one dial held at zero: g off
+−0.080, N off +0.060, b off +0.001, g and N off −0.005. With g off, *where* returns to ETAS's on
+every sequence. So g, which turns a place up or down blind to where ETAS already put its quakes,
+lost *where*. N cost *how many*. b did nothing.
+
+**Second run.** Checks (a) and (b) of D-157 together, plus N off: each place reads log ETAS over
+its quiet rate and log ETAS's share of the box, and its tanks averaged over 3 × 3 and 9 × 9 places.
+One member, seed 0, trained as before: **CB-32 +0.179**, seven of eight sequences above ETAS
+(Tohoku −0.214).
+
+**Decision.** Above ETAS, below the old Field (+0.294 on the same seed). By the rule agreed before
+the run, the two inputs are separated next, then the winner gets the full size. The work stays on
+`phase/p11-scheme`; no merge, no tag. The scheme page carries the new line.
+
+**Rejected.** Members and seeds for scheme2 now: it is still below the old Field, and two inputs
+changed at once, so its number doesn't say which one earned it.

@@ -1398,3 +1398,38 @@ Decisions: D-156, D-157.
 Next: talk with Hesham. The reading (to test, not yet tested): the scheme cannot see where ETAS
 already put its quakes, and its tanks hear only quakes inside a place, so its per-place gain moves
 mass blindly. The old Field read both.
+
+## 2026-11-14 — P11 — The scheme's dials, one at a time, and a second run above ETAS
+
+TLDR: Switching the trained scheme's dials off at forecast time showed *where* was lost by g (the
+place's gain) and *how many* by N (the last ten days). A second run gives each place ETAS's own rate
+and its neighbours' tanks, with N off: **CB-32 +0.179** (one member, seed 0), seven of eight
+sequences above ETAS. Below the old Field's +0.294, so it stays on its branch.
+
+Built:
+- `SchemeNet.neighbours` (the tanks read again, averaged over k × k places) and
+  `SchemeNet.reads_etas` (log ETAS over the quiet rate, log ETAS's share of the box), both off by
+  default; the first run's config hash is unchanged
+- `configs/field2/scheme2.yaml`: N off, neighbours [3, 9], reads ETAS
+- tests: scheme2 born as ETAS; the first scheme keeps its name
+
+Scores (ablation record `results/ablation/field2_heart.json`, nothing on the board):
+- dials off on the first run (no training): none −0.007, g off −0.080, N off +0.060, b off +0.001,
+  g and N off −0.005
+- scheme2: CB-32 +0.179 (central Italy +0.360, California +0.258, Japan −0.014, New Zealand
+  +0.113)
+- per sequence: L'Aquila +0.446, central Italy +0.274, Ridgecrest +0.263, El Mayor +0.253,
+  Kumamoto +0.185, Kaikoura +0.130, Darfield +0.096, Tohoku −0.214
+
+Measured: folds took 107, 62, 72 and 163 min. The New Zealand fold slowed from 3.5 to 22 min an
+epoch after epoch 16, with 5.8 of 6 GB in use. Every fold stopped later than the first run's
+(best epochs 20, 10, 15, 15).
+
+Surprises / problems:
+- *Where* got better on five sequences and still loses on Ridgecrest (−0.145) and Kumamoto
+  (−0.126).
+- Tohoku now loses on *how many* (−0.221), expecting 30% of what came, like ETAS.
+
+Decisions: D-158.
+
+Next: talk with Hesham. Two inputs were given at once, so the next run separates them.
