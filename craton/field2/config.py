@@ -138,6 +138,10 @@ class SchemeNet(_Strict):
         description="(P11 second run) each place reads ETAS's own rate there: over its quiet, "
         "and its share of the box.",
     )
+    keeps_loudness: bool = Field(
+        default=False,
+        description="(P11 third run) the first LayerNorm's mean and spread go in beside it.",
+    )
 
 
 class Field2Config(_Strict):
@@ -189,7 +193,7 @@ def load_field2_config(name_or_path: str | Path, root: Path | None = None) -> Fi
         return Field2Config.model_validate(yaml.safe_load(f))
 
 
-_SCHEME_SECOND = ("neighbours", "reads_etas")
+_SCHEME_SECOND = ("neighbours", "reads_etas", "keeps_loudness")
 
 
 def field2_hash(config: Field2Config) -> str:

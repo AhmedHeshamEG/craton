@@ -273,6 +273,8 @@ def _bounded(d_in: int, d_out: int = 1) -> nn.Linear:
 N_EXTRA = 8
 #: (second run) what ETAS says in a place: its rate over the place's quiet, its share of the box.
 N_ETAS = 2
+#: (third run) what the first LayerNorm takes from a place: its inputs' mean and log spread.
+N_LOUD = 2
 #: π, a recent quake's pure numbers: age in c, size − mc, distance in rupture lengths.
 N_PI = 3
 
@@ -296,7 +298,10 @@ class SchemeModel(nn.Module):
             self.register_buffer("beta", beta)
         d = net.d_model
         n_in = 2 * k * (1 + len(net.neighbours)) + N_EXTRA + (N_ETAS if net.reads_etas else 0)
-        self.inp = nn.Sequential(nn.LayerNorm(n_in), nn.Linear(n_in, d), nn.GELU(), nn.Linear(d, d))
+        n_loud = N_LOUD if net.keeps_loudness else 0
+        self.inp = nn.Sequential(
+            nn.LayerNorm(n_in), nn.Linear(n_in + n_loud, d), nn.GELU(), nn.Linear(d, d)
+        )
         self.layers = nn.ModuleList(
             [BiasedLayer(d, net.n_heads, net.dropout) for _ in range(net.n_layers)]
         )
@@ -408,7 +413,12 @@ class SchemeModel(nn.Module):
         x, length = self.places(sb, days, etas_x)
         dev = x.device
         with torch.autocast(dev.type, torch.float16, enabled=dev.type == "cuda"):
-            h = self.inp(x)
+            if self.net.keeps_loudness:
+                # the two numbers the first LayerNorm takes away: how high and how spread
+                loud = torch.stack([x.mean(-1), x.std(-1).clamp(min=1e-3).log()], -1)
+                h = self.inp[1:](torch.cat([self.inp[0](x), loud.to(x.dtype)], -1))
+            else:
+                h = self.inp(x)
             for i, layer in enumerate(self.layers):
                 h = layer(h, self.bias(sb, length, i))
             s: torch.Tensor = self.ln_out(h)
