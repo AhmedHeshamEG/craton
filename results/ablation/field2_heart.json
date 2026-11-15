@@ -1883,6 +1883,231 @@
           ]
         }
       }
+    },
+    "scheme4": {
+      "CB-32": {
+        "seeds": [
+          0
+        ],
+        "values": [
+          0.06782735855720501
+        ],
+        "extras": {
+          "cb02.bits": [
+            -6.95372032626306
+          ],
+          "cb02.gain": [
+            0.16424320050877572
+          ],
+          "cb02.observed": [
+            1065.0
+          ],
+          "cb02.expected": [
+            783.1454338869478
+          ],
+          "cb02.how_many_bits": [
+            -2.298429434288685
+          ],
+          "cb02.where_bits": [
+            -4.201419951745279
+          ],
+          "cb02.how_big_bits": [
+            -3.327792789946061
+          ],
+          "cb02.qualified": [
+            1.0
+          ],
+          "cb03.bits": [
+            -9.240280811952875
+          ],
+          "cb03.gain": [
+            0.15581447348913358
+          ],
+          "cb03.observed": [
+            315.0
+          ],
+          "cb03.expected": [
+            84.11095878762683
+          ],
+          "cb03.how_many_bits": [
+            -3.920362212768658
+          ],
+          "cb03.where_bits": [
+            -3.861275716210876
+          ],
+          "cb03.how_big_bits": [
+            -3.448595681506061
+          ],
+          "cb03.qualified": [
+            1.0
+          ],
+          "el_mayor.bits": [
+            -8.738240528774828
+          ],
+          "el_mayor.gain": [
+            -0.01747790379384817
+          ],
+          "el_mayor.observed": [
+            549.0
+          ],
+          "el_mayor.expected": [
+            481.379638099701
+          ],
+          "el_mayor.how_many_bits": [
+            -2.106289791039567
+          ],
+          "el_mayor.where_bits": [
+            -5.490173843489359
+          ],
+          "el_mayor.how_big_bits": [
+            -3.4474770177695007
+          ],
+          "el_mayor.qualified": [
+            1.0
+          ],
+          "ridgecrest.bits": [
+            -9.649471141825876
+          ],
+          "ridgecrest.gain": [
+            0.0730057014135479
+          ],
+          "ridgecrest.observed": [
+            502.0
+          ],
+          "ridgecrest.expected": [
+            530.0930306875672
+          ],
+          "ridgecrest.how_many_bits": [
+            -3.1132376637268395
+          ],
+          "ridgecrest.where_bits": [
+            -6.984251850726956
+          ],
+          "ridgecrest.how_big_bits": [
+            -3.293567079602851
+          ],
+          "ridgecrest.qualified": [
+            1.0
+          ],
+          "tohoku.bits": [
+            -11.100347718878387
+          ],
+          "tohoku.gain": [
+            -0.10780685565785397
+          ],
+          "tohoku.observed": [
+            3478.0
+          ],
+          "tohoku.expected": [
+            1137.0524798379022
+          ],
+          "tohoku.how_many_bits": [
+            -1.8081863184252485
+          ],
+          "tohoku.where_bits": [
+            -9.657580359694652
+          ],
+          "tohoku.how_big_bits": [
+            -3.72573555256598
+          ],
+          "tohoku.qualified": [
+            1.0
+          ],
+          "kumamoto.bits": [
+            -10.655789456632517
+          ],
+          "kumamoto.gain": [
+            0.1615074705126034
+          ],
+          "kumamoto.observed": [
+            118.0
+          ],
+          "kumamoto.expected": [
+            65.71529956390931
+          ],
+          "kumamoto.how_many_bits": [
+            -2.650347997963915
+          ],
+          "kumamoto.where_bits": [
+            -6.401749746398554
+          ],
+          "kumamoto.how_big_bits": [
+            -3.791432593218731
+          ],
+          "kumamoto.qualified": [
+            1.0
+          ],
+          "darfield.bits": [
+            -8.298528920111673
+          ],
+          "darfield.gain": [
+            0.03579023839913731
+          ],
+          "darfield.observed": [
+            216.0
+          ],
+          "darfield.expected": [
+            204.7883682957476
+          ],
+          "darfield.how_many_bits": [
+            -2.7787324244416967
+          ],
+          "darfield.where_bits": [
+            -4.000986896220809
+          ],
+          "darfield.how_big_bits": [
+            -3.207851055041407
+          ],
+          "darfield.qualified": [
+            1.0
+          ],
+          "kaikoura.bits": [
+            -9.319914461115612
+          ],
+          "kaikoura.gain": [
+            0.07754254358614432
+          ],
+          "kaikoura.observed": [
+            330.0
+          ],
+          "kaikoura.expected": [
+            316.1042794092108
+          ],
+          "kaikoura.how_many_bits": [
+            -1.3974816240211194
+          ],
+          "kaikoura.where_bits": [
+            -6.830976093367494
+          ],
+          "kaikoura.how_big_bits": [
+            -3.5479738356867556
+          ],
+          "kaikoura.qualified": [
+            1.0
+          ],
+          "central_italy.mean_gain": [
+            0.16002883699895465
+          ],
+          "california.mean_gain": [
+            0.027763898809849863
+          ],
+          "japan.mean_gain": [
+            0.02685030742737471
+          ],
+          "new_zealand.mean_gain": [
+            0.056666390992640814
+          ],
+          "folds_beaten": [
+            1.0
+          ],
+          "sequences_beaten": [
+            0.75
+          ],
+          "mean_gain_per_sequence": [
+            0.06782735855720501
+          ]
+        }
+      }
     }
   },
   "paired": {
@@ -2332,6 +2557,40 @@
           "stop": null,
           "epochs": 24.0,
           "gain_nats": 0.10399
+        }
+      ]
+    },
+    "scheme4": {
+      "s0:central_italy": [
+        {
+          "learn": null,
+          "stop": null,
+          "epochs": 9.0,
+          "gain_nats": 0.03167
+        }
+      ],
+      "s0:california": [
+        {
+          "learn": null,
+          "stop": null,
+          "epochs": 17.0,
+          "gain_nats": 0.05031
+        }
+      ],
+      "s0:japan": [
+        {
+          "learn": null,
+          "stop": null,
+          "epochs": 26.0,
+          "gain_nats": 0.06628
+        }
+      ],
+      "s0:new_zealand": [
+        {
+          "learn": null,
+          "stop": null,
+          "epochs": 24.0,
+          "gain_nats": 0.12001
         }
       ]
     }

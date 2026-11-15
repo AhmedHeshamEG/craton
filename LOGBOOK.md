@@ -1467,3 +1467,34 @@ Surprises / problems:
   spread +0.294 to +0.375).
 
 Decisions: D-159.
+
+## 2026-11-15 — P11 — Bifocals: g reads busy-ness straight, and learns to turn the loudest down
+
+TLDR: scheme4 = scheme2 plus a straight path to g: four pure busy-ness numbers (count tanks over
+usual here, over 3 x 3, over 9 x 9, ETAS over the quiet), one slope each, born at zero. It follows
+scheme3, whose loudness also carried each region's constants (mc, b, branching). **CB-32 +0.068**
+(one member, seed 0), below scheme2 (+0.179). In every fold the slope on ETAS's own loudness came
+out negative: where ETAS says a place is loudest, the training regions teach "ETAS is too high".
+
+Built:
+- `SchemeNet.direct_loudness` and `SchemeModel.direct` (n slopes, zero at birth), off by default;
+  `configs/field2/scheme4.yaml`; test: scheme4 born as ETAS
+
+Scores (ablation record `results/ablation/field2_heart.json`):
+- CB-32 +0.068 (central Italy +0.160, California +0.028, Japan +0.027, New Zealand +0.057)
+- against scheme2: L'Aquila +0.156 (+0.446), central Italy +0.164 (+0.274), Kumamoto +0.162
+  (+0.185), Kaikoura +0.078 (+0.130), Ridgecrest +0.073 (+0.263; *where* -0.372), Darfield +0.036
+  (+0.096), El Mayor -0.017 (+0.253), Tohoku -0.108 (-0.214)
+- learned slopes (tanks here, 3 x 3, 9 x 9, ETAS): without California +0.082 +0.048 +0.055 -0.128;
+  without central Italy +0.039 +0.034 +0.033 -0.027; without Japan +0.037 +0.017 -0.009 -0.271;
+  without New Zealand +0.046 +0.013 +0.009 -0.207
+
+Folds took 42, 72, 87 and 88 min. The first launch was killed from outside during the Japan fold
+(exit 127, no traceback); the rerun skipped the two finished folds.
+
+Surprises / problems:
+- Three different changes to scheme2 (scheme3, scheme4, and four zero-born numbers alone in
+  scheme4) all land near +0.07. A change that starts as nothing moved central Italy by 0.2.
+  scheme2's +0.179 may be partly a lucky seed; the scheme's seed noise is still unmeasured.
+
+Decisions: D-160.

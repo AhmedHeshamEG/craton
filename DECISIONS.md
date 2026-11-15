@@ -3144,3 +3144,17 @@ P11 so far is one run against one run.
 
 **Rejected.** Reading Japan's gain as proof and keeping scheme3: the total is lower and three of four
 regions fell.
+
+### D-160 · 2026-11-15 · P11 — Bifocals not kept; measure the seed noise next
+
+**Run.** scheme4 = scheme2 plus g += a . z, with z four pure busy-ness numbers (no region constants)
+and a four slopes born at zero. One member, seed 0: **CB-32 +0.068** against scheme2's +0.179.
+The slope on ETAS over the quiet is negative in all four folds (-0.03 to -0.27): the training
+regions say ETAS runs high where it is loudest, the opposite of what Tohoku needs.
+
+**Decision.** Not kept. Before any further variant, scheme2 is trained again on another seed. Two
+changes that start as ETAS (one of them four numbers at zero) each moved the total by 0.1; until
+the scheme's seed-to-seed spread is known, no one-run difference of that size is read as a cause.
+
+**Rejected.** A fifth variant first: it would be a fourth one-run comparison against an
+unmeasured noise.
