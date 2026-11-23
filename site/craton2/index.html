@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Craton 2 · beta</title>
+<meta name="description" content="Craton 2 (beta): a neural network built out of the laws of physics, that reads earthquakes backwards to the stress under the ground.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+/* One look with the README figures: near-black ground, magma orange for Craton, greys for the rest. */
+:root {
+  --ground: #0b0b0d; --panel: #141417; --ink: #f5f5f7; --muted: #86868b; --faint: #2c2c31; --mid: #8e8e93;
+  --accent: #ff6b35; --ok: #30d158; --bad: #ff453a;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root { --ground: #f5f5f7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6e6e73; --faint: #d2d2d7; --mid: #636366;
+          --accent: #e8551f; --ok: #1f8f3a; --bad: #d70015; color-scheme: light; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.55 var(--sans); }
+.wrap { max-width: 68rem; margin-inline: auto; padding-block: 48px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+a { color: inherit; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header { display: grid; gap: 14px; }
+.brand { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; }
+.brand b { color: var(--ink); font-weight: 600; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; margin: 0; font-weight: 600; letter-spacing: -.02em; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--accent); }
+.lede { margin: 0; color: var(--muted); font-size: 17px; max-width: 62ch; }
+.lede b { color: var(--ink); font-weight: 500; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1px; background: var(--faint); border: 1px solid var(--faint); border-radius: 14px; overflow: hidden; }
+.tile { background: var(--ground); padding: 22px; display: grid; gap: 6px; align-content: start; }
+.tile .k { font-size: 12px; color: var(--muted); }
+.tile .v { font-size: 2.5rem; font-weight: 600; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tile .v.hot { color: var(--accent); }
+.tile .s { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tile .s b { color: var(--ink); font-weight: 500; }
+section { display: grid; gap: 14px; position: relative; min-width: 0; }
+h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+.note { margin: 0; color: var(--muted); font-size: 14px; max-width: 70ch; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 28px; }
+.sub { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.sub b { color: var(--ink); font-weight: 500; }
+.chart { width: 100%; min-height: 160px; }
+.chart svg { display: block; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.dot.c { background: var(--accent); }
+.dot.i { border: 2px solid var(--muted); }
+.dot.a { background: var(--faint); width: 8px; height: 8px; }
+.fig { margin: 20px 0 0; } .fig img { width: 100%; height: auto; display: block; border-radius: 12px; }
+.tt { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--faint); border-radius: 8px; padding: 7px 10px; font-size: 12px; line-height: 1.5; max-width: 17rem; z-index: 5; box-shadow: 0 8px 24px rgba(0,0,0,.25); font-variant-numeric: tabular-nums; }
+.tt .h { color: var(--muted); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--faint); vertical-align: top; }
+td.n, th.n { text-align: right; white-space: nowrap; }
+td .m { color: var(--muted); font-size: 12px; }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; border: 1px solid currentColor; }
+.pill.win { color: var(--ok); } .pill.loss { color: var(--bad); } .pill.tie { color: var(--muted); }
+@media (max-width: 40rem) { .wide { display: none; } }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 28px; }
+.clip { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.clip video { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; border-radius: 12px; background: #0b0b0d; border: 1px solid var(--faint); }
+.clip figcaption { font-size: 14px; color: var(--muted); max-width: 60ch; }
+.clip figcaption b { color: var(--ink); font-weight: 500; }
+.clip figcaption i { font-style: normal; color: var(--accent); margin-right: 6px; font-weight: 600; }
+footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-top: 1px solid var(--faint); padding-top: 20px; }
+.err { color: var(--muted); font-size: 14px; }
+/* Craton 2: visuals first */
+.beta { font-size: 11px; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0 8px; }
+h2 i { font-style: normal; color: var(--accent); margin-right: 10px; font-weight: 600; }
+.stage { position: relative; height: min(72vh, 640px); min-height: 380px; border: 1px solid var(--faint); border-radius: 18px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 0%, var(--panel), var(--ground)); }
+#crust { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; } #crust:active { cursor: grabbing; }
+.hud { position: absolute; left: 18px; top: 16px; display: flex; gap: 10px; flex-wrap: wrap; pointer-events: none; }
+.hud span { background: var(--ground); border: 1px solid var(--faint); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+.hud #phase { color: var(--accent); font-weight: 600; } .hud #day:empty { display: none; }
+.ramp { position: absolute; left: 18px; bottom: 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); pointer-events: none; }
+.ramp i { width: 120px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #b3c3d4, #f2d16b, #ff7a2a, #d1261c); }
+.play { position: absolute; right: 16px; bottom: 14px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--faint); background: var(--ground); color: var(--ink); font-size: 13px; cursor: pointer; }
+.play:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { position: absolute; right: 70px; bottom: 22px; margin: 0; font-size: 12px; color: var(--muted); pointer-events: none; }
+@media (max-width: 40rem) { .hint { display: none; } }
+.hero { margin: 0; }
+.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: 1px; background: var(--faint); border: 1px solid var(--faint); border-radius: 14px; overflow: hidden; counter-reset: f; }
+.flow li { background: var(--ground); counter-increment: f; } .flow a { display: block; padding: 14px 16px; text-decoration: none; }
+.flow a:hover { background: var(--panel); } .flow b::before { content: counter(f) "  "; color: var(--accent); }
+.beat { gap: 16px; }
+.beat video { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; border-radius: 16px; background: #0b0b0d; border: 1px solid var(--faint); }
+.one { margin: 0; font-size: 18px; max-width: 60ch; text-wrap: balance; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips span { border: 1px solid var(--faint); border-radius: 999px; padding: 5px 13px; font-size: 14px; }
+.chips b { color: var(--accent); font-weight: 600; margin-right: 4px; } .chips .judge { border-color: var(--ok); color: var(--ok); }
+.floors { display: grid; gap: 8px; perspective: 900px; }
+.floors div { display: grid; gap: 2px; padding: 12px 18px; border-radius: 12px; border: 1px solid var(--faint); transform: rotateX(18deg); transform-origin: bottom; }
+.floors span { font-size: 13px; color: var(--muted); }
+.floors .f3 { background: color-mix(in srgb, #f0dfb2 22%, var(--ground)); } .floors .f2 { background: color-mix(in srgb, #bfe0ee 22%, var(--ground)); margin-inline: 3%; } .floors .f1 { background: color-mix(in srgb, #f3c9c2 22%, var(--ground)); margin-inline: 6%; }
+.stairs { display: grid; grid-template-columns: repeat(8, 1fr); align-items: end; gap: 6px; height: 260px; padding-top: 10px; }
+.stairs div { height: calc(var(--h) * 12%); min-height: 34px; border-radius: 8px 8px 2px 2px; position: relative; display: flex; flex-direction: column; justify-content: flex-start; padding: 8px 6px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) calc(var(--h) * 11%), var(--faint)), color-mix(in srgb, var(--accent) calc(var(--h) * 6%), var(--ground)));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 20px rgba(0,0,0,.18); }
+.stairs span { font-weight: 600; font-size: 15px; } .stairs em { font-style: normal; font-size: 11px; color: var(--muted); line-height: 1.25; }
+@media (max-width: 40rem) { .flow { grid-template-columns: repeat(5, 1fr); } .flow a { padding: 12px 6px; font-size: 12px; text-align: center; } .flow b::before { content: counter(f) " "; } .stairs { height: 220px; gap: 3px; } .stairs em { font-size: 9.5px; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>Craton 2</b><span class="beta">beta</span><a href="../">Craton today</a><a href="https://github.com/AhmedHeshamEG/craton">GitHub</a></div>
+    <h1>A neural network built out of the <em>laws of physics</em></h1>
+    <p class="lede">It reads the quakes backwards to the stress under the ground. <b>The design, before training.</b></p>
+  </header>
+
+  <section id="live" class="stage">
+    <div id="crust" aria-label="A live 3D block of crust: stress builds, a fault slips, the stress moves, aftershocks follow. Drag to turn it."></div>
+    <div class="hud"><span id="phase">loading</span><span id="day">day 1</span></div>
+    <div class="ramp"><span>calm</span><i></i><span>about to slip</span></div>
+    <button id="play" class="play" aria-label="Pause">❚❚</button>
+    <p class="hint">drag to turn · the hidden layer, live</p>
+  </section>
+
+  <section>
+    <figure class="clip hero"><video src="clips/full.mp4" controls muted playsinline preload="metadata" poster="clips/poster.jpg" aria-label="The whole design in one video"></video><figcaption><b>The whole idea · 4:42</b> · no sound</figcaption></figure>
+  </section>
+
+  <ol class="flow" aria-label="The path">
+    <li><a href="#input"><b>Quakes</b></a></li><li><a href="#eye"><b>The eye</b></a></li><li><a href="#map"><b>The map</b></a></li><li><a href="#ladder"><b>The ladder</b></a></li><li><a href="#output"><b>Outputs</b></a></li>
+  </ol>
+
+  <section id="idea" class="beat">
+    <h2><i>0</i>The idea</h2>
+    <p class="one">The laws are known. The map under the ground isn't. Read the quakes backwards.</p>
+    <video src="clips/0-idea.mp4" autoplay muted loop playsinline preload="metadata" aria-label="The idea"></video>
+  </section>
+
+  <section id="input" class="beat">
+    <h2><i>1</i>Quakes become tokens</h2>
+    <div class="chips"><span>when</span><span>where</span><span>how big</span><span>how it slipped</span></div>
+    <video src="clips/1-input.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Input"></video>
+  </section>
+
+  <section id="eye" class="beat">
+    <h2><i>2</i>The eye</h2>
+    <p class="one">A transformer reads them. Each cube asks: which quakes are about me?</p>
+    <video src="clips/2-eye.mp4" autoplay muted loop playsinline preload="metadata" aria-label="The eye"></video>
+  </section>
+
+  <section id="map" class="beat">
+    <h2><i>3</i>The hidden layer is the crust</h2>
+    <div class="chips"><span><b>σ</b> stress</span><span><b>p</b> fluids</span><span><b>T</b> heat</span><span><b>θ</b> friction</span><span><b>dσ/dt</b> plates</span><span><b>rock</b> G, ρ, a, b, μ…</span></div>
+    <video src="clips/3-map.mp4" autoplay muted loop playsinline preload="metadata" aria-label="The hidden map"></video>
+  </section>
+
+  <section id="ladder" class="beat">
+    <h2><i>4</i>Neurons are laws</h2>
+    <div class="floors">
+      <div class="f3"><b>Statistical laws</b><span>Omori · Gutenberg–Richter → experts + router</span></div>
+      <div class="f2"><b>Trigger laws</b><span>friction · Coulomb · Okada · Dieterich → the layers</span></div>
+      <div class="f1"><b>State laws</b><span>Newton · Hooke · Darcy + Biot · heat → the loss</span></div>
+    </div>
+    <p class="one">An arrow only where one law's output is the next one's input. A combination nobody wrote is a new law.</p>
+    <video src="clips/4-ladder.mp4" autoplay muted loop playsinline preload="metadata" aria-label="The ladder of laws"></video>
+  </section>
+
+  <section id="loss" class="beat">
+    <h2><i>5</i>Break a law, pay for it</h2>
+    <p class="one">The map must obey the state laws, cube by cube.</p>
+    <video src="clips/5-loss.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Laws as loss"></video>
+  </section>
+
+  <section id="time" class="beat">
+    <h2><i>6</i>One step a day</h2>
+    <div class="chips"><span>plates load</span><span>a fault slips</span><span>stress moves</span><span>aftershocks</span><span>the map corrects itself</span></div>
+    <video src="clips/6-time.mp4" autoplay muted loop playsinline preload="metadata" aria-label="The time step"></video>
+  </section>
+
+  <section id="output" class="beat">
+    <h2><i>7</i>What comes out</h2>
+    <div class="chips"><span><b>λ</b> when · where · how big</span><span><b>HOW</b> it slips</span><span><b>futures</b> → probabilities</span><span><b>the map</b> today + the past</span></div>
+    <video src="clips/7-output.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Outputs"></video>
+  </section>
+
+  <section id="training" class="beat">
+    <h2><i>8</i>Training</h2>
+    <div class="chips"><span>simulator planet</span><span>→ real quakes</span><span>→ each region</span><span class="judge">judge: World Stress Map</span></div>
+    <video src="clips/8-training.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Training"></video>
+  </section>
+
+  <section id="scale" class="beat">
+    <h2><i>9</i>A laptop or the world</h2>
+    <p class="one">One model. Same weights in every tile.</p>
+    <video src="clips/9-scale.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Scale"></video>
+  </section>
+
+  <section id="build" class="beat">
+    <h2><i>10</i>One rung at a time</h2>
+    <div class="stairs" aria-label="The build, rungs 0 to 7">
+      <div style="--h:1"><span>0</span><em>Craton today</em></div><div style="--h:2"><span>1</span><em>law neurons</em></div><div style="--h:3"><span>2</span><em>+ experts</em></div><div style="--h:4"><span>3</span><em>+ the 3D map</em></div>
+      <div style="--h:5"><span>4</span><em>+ simulator stress</em></div><div style="--h:6"><span>5</span><em>+ brakes</em></div><div style="--h:7"><span>6</span><em>+ each region</em></div><div style="--h:8"><span>7</span><em>+ safety net</em></div>
+    </div>
+    <p class="one">Each rung is scored on forecast skill + five physics tests.</p>
+  </section>
+
+  <footer>
+    <div>A design in progress. The current model and every score: <a href="../">the main page</a>.</div>
+  </footer>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module" src="crust.js"></script>
+</body>
+</html>
