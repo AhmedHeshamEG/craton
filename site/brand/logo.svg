@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3 3 58 58">
+  <title>Craton</title>
+  <g transform="translate(-1.4 0)">
+    <path d="M32 5 12 16.5 32 28Z" fill="#dfe3e8"/>
+    <path d="M12 16.5 32 28v23L12 39.5Z" fill="#8b939d"/>
+  </g>
+  <g transform="translate(1.4 0)">
+    <path d="M32 13 52 24.5 32 36Z" fill="#ff8a55"/>
+    <path d="M32 36 52 24.5v23L32 59Z" fill="#e8551f"/>
+  </g>
+</svg>
