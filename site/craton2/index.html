@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Craton 2 · beta</title>
+<link rel="icon" href="../brand/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../brand/apple-touch-icon.png">
 <meta name="description" content="Craton 2 (beta): a neural network built out of the laws of physics, that reads earthquakes backwards to the stress under the ground.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +32,7 @@ a:hover { text-decoration-color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 header { display: grid; gap: 14px; }
 .brand { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; }
+.brand .mark { width: 22px; height: 22px; margin-right: -8px; align-self: center; }
 .brand b { color: var(--ink); font-weight: 600; }
 h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; margin: 0; font-weight: 600; letter-spacing: -.02em; text-wrap: balance; }
 h1 em { font-style: normal; color: var(--accent); }
@@ -117,7 +120,7 @@ h2 i { font-style: normal; color: var(--accent); margin-right: 10px; font-weight
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><b>Craton 2</b><span class="beta">beta</span><a href="../">Craton today</a><a href="https://github.com/AhmedHeshamEG/craton">GitHub</a></div>
+    <div class="brand"><img class="mark" src="../brand/logo.svg" alt=""><b>Craton 2</b><span class="beta">beta</span><a href="../">Craton today</a><a href="https://github.com/AhmedHeshamEG/craton">GitHub</a></div>
     <h1>A neural network built out of the <em>laws of physics</em></h1>
     <p class="lede">It reads the quakes backwards to the stress under the ground. <b>The design, before training.</b></p>
   </header>
