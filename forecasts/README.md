@@ -11,16 +11,17 @@ gave the real quakes more probability than ETAS did.
 
 These are forecasts: probabilities over the next day. Never a prediction of a quake.
 
-**37 days locked · 32 graded · 2 M3+ quakes · Craton vs ETAS:
--0.40 bits in total, -0.200 bits per quake.**
+**38 days locked · 33 graded · 2 M3+ quakes · Craton vs ETAS:
+-0.33 bits in total, -0.164 bits per quake.**
 
 | Day (UTC) | Craton expects M3+ | ETAS expects | Came | Gain (bits) | Seal |
 |---|---|---|---|---|---|
+| 2026-11-29 | 0.06 | 0.11 | · | · | `df005a26f3a6` |
 | 2026-11-28 | 0.06 | 0.11 | · | · | `16d5b3409820` |
 | 2026-11-27 | 0.06 | 0.11 | · | · | `4b1a9acd9434` |
 | 2026-11-26 | 0.06 | 0.11 | · | · | `c8eecd605089` |
 | 2026-11-25 | 0.06 | 0.11 | · | · | `b2655287d705` |
-| 2026-11-24 | 0.06 | 0.11 | · | · | `e8261729d868` |
+| 2026-11-24 | 0.06 | 0.11 | 0 | +0.07 | `e8261729d868` |
 | 2026-11-23 | 0.06 | 0.10 | 0 | +0.06 | `e43ad2ee55a4` |
 | 2026-11-22 | 0.06 | 0.11 | 0 | +0.07 | `728a6a4c22a5` |
 | 2026-11-21 | 0.06 | 0.11 | 0 | +0.07 | `d1b81156efa9` |
